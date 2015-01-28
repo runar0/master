@@ -1,0 +1,7 @@
+
+\subsection{UCP}
+\label{sec:background:algorithms:ucp}
+
+The algorithm opens up for allocating zero columns to a core. 
+As Sniper expects inclusive caches we have to add a requirement of atleast 1 column per core. 
+The allocation algorithm will then start by setting all to 1 and then allocate the remanding m\_assoc-m\_cores ways.
