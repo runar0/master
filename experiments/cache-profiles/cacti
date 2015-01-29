@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+
+cat base.cfg > /tmp/cacti_config
+cat cfgs/$1.cfg >> /tmp/cacti_config
+
+../../tools/cacti65/cacti -infile /tmp/cacti_config
