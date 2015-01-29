@@ -1,0 +1,24 @@
+
+\section{Sensitivity Analysis}
+
+\todo{Introduce, specify why we chose the variables we do, and why we lock those we do.}
+
+\subsection{ROB}
+\todo{Begin by locking down outstanding loads and stores, set mshrs high and fine tune rob}
+
+\subsection{MSHRs}
+\paragraph{L1}
+\todo{Lock ROB size to result from previous section, tune L1 MSHRs first data then instruction, just make sure L2 and L3 has as many MSHRs}
+
+
+\paragraph{L2}
+\todo{Start at sum of L1, attempt to lower and see how it effects the performance, if we can remove more than 5\% we probably want to}
+
+\paragraph{L3}
+\todo{This is harder, I assume that L2*Cores is max, but how far down can we go, and do we bother? unlike l1 and l2 we need to do multi core  experiments here ...}
+
+\subsection{Outstanding Load/Store}
+\todo{With ROB and MSHRs set we can confirm that changing this does not matter, we might just leave it}
+
+\subsection{?}
+\todo{Are there other variables we should check?}

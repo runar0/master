@@ -1,0 +1,113 @@
+
+\section{Architectural overview}
+
+\todo{Insert figure here}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rl}
+\toprule
+\bf{Processor core}                 & 3GHz 8 inst. dispatch width,          \\
+                                    & 128 rob entries, 8 inst. commit width \\
+\bf{Private L1 inst. and data cache}& 32kB, 64B line-size, 16-way, 8 mshrs, LRU \\
+\bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B line-size, 16-way, \\
+                                    & 12 mshrs, LRU      \\
+\bf{Shared L3 cache}                & 4/8/16/32MB, 64B line-size, 24 mshrs, \\
+                                    & 32-way, varying replacement algorithm         \\
+\bf{Memory controller}              & 12.8GB/s, 45ns access latency         \\
+\bottomrule                             
+\end{tabular}
+\caption{Model properties}
+\label{tbl:processor_model:properties}
+\end{table}
+
+Throughout this thesis, we utilize a CMP model simulated on Sniper~\cite{Carlson2011a} to obtain our results. 
+In our model, each processing core has two levels of private cache, the L1 data and code caches and a unified L2 cache.
+Additionally there is a third cache level, L3, which is shared by all cores. 
+The private caches are managed by an LRU replacement policy, and the replacement policy of the third cache level varies throughout our experiments.
+Figure~\todo{ref} shows an overview of the simulated architecture and Table~\ref{tbl:processor_model:properties} contains an overview of the system properties.
+We base our first level cache sizes on current CMP architectures like the Intel Haswell architecture~\cite{Jain2013}. 
+In the two lower levels, we use varying cache sizes in order to investigate the effect this has on the partitioning algorithms.
+All cache timings are derived using CACTI 6.5\todo{ref} assuming a core frequency of 3GHz.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rl}
+\toprule
+\bf{Size}               & 32kB              \\
+\bf{Block size}         & 64B               \\
+\bf{Associativity}      & 16                \\
+\bf{Banks}              & 1                 \\
+\bf{Technology}         & 32nm              \\
+\bf{Access time (Tag)}  & 0.16ns \\
+\bf{Access time (Data)} & 0.62ns \\
+\bf{Access cycles (Tag)}  & 1 \\
+\bf{Access cycles (Data)} & 2 \\
+\bottomrule
+\end{tabular}
+\caption{L1 cache properties}
+\label{tbl:processor_model:l1}
+\end{table}
+
+Both the first level caches have a size of 32kB; divided into sets of 16 lines where each line is 64-bytes long.
+Table~\ref{tbl:processor_model:l1} summaries these values as well as the optimal bank count\footnote{We define optimal bank count as the number of banks that provide the lowest access delay for data and tags measured in cycles.} and access times for the tag directory and data as estimated by CACTI. 
+The access times are converted to cycles assuming a period of 0.3ns or a core clock of 3GHz. 
+A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns equals two cycles.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+\bf{Size}                 & 128kB       & 256kB       & 512kB       & 1024kB            \\
+\bf{Block size}           & 64B         & 64B         & 64B         & 64B               \\
+\bf{Associativity}        & 16          & 16          & 16          & 16                \\
+\bf{Banks}                & 1           & 2           & 4           & 4                 \\
+\bf{Technology}           & 32nm        & 32nm        & 32nm        & 32nm              \\
+\bf{Access time (Tag)}    & 0.28ns      & 0.29ns      & 0.33ns      & 0.39ns            \\
+\bf{Access time (Data)}   & 0.66ns      & 0.83ns      & 1.18ns      & 1.08ns            \\
+\bf{Access cycles (Tag)}  & 1           & 1           & 2           & 2                 \\
+\bf{Access cycles (Data)} & 3           & 3           & 4           & 4                 \\
+\bottomrule
+\end{tabular}
+\caption{L2 cache properties}
+\label{tbl:processor_model:l2}
+\end{table}
+
+For the unified second level cache we have modelled four different sizes; 128kB, 256kB, 512kB and 1024kB. 
+In all configurations there are 16 lines in each set and each line is 64-bytes long.
+Using CACTI, we have found the optimal number of banks per size configuration and the corresponding access delays.
+Table~\ref{tbl:processor_model:l2} summarises these values and shows the CACTI estimated access times. 
+Again we have converted access times to cycle assuming a 0.3ns period.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+\bf{Size}                 & 4MB         & 8MB         & 16MB        & 32MB              \\
+\bf{Block size}           & 64B         & 64B         & 64B         & 64B               \\
+\bf{Associativity}        & 32          & 32          & 32          & 32                \\
+\bf{Banks}                & 4           & 4           & 4           & 8                 \\
+\bf{Technology}           & 32nm        & 32nm        & 32nm        & 32nm              \\
+\bf{Access time (Tag)}    & 0.52ns      & 0.71ns      & 0.88ns      & 0.85ns            \\
+\bf{Access time (Data)}   & 1.81ns      & 2.11ns      & 2.69ns      & 3.30ns            \\
+\bf{Access cycles (Tag)}  & 2           & 3           & 3           & 3                 \\
+\bf{Access cycles (Data)} & 6           & 7           & 9           & 10                \\
+\bottomrule
+\end{tabular}
+\caption{L3 cache properties}
+\label{tbl:processor_model:l3}
+\end{table}
+
+Like the previous level we have four different size configurations for the third cache level; 4MB, 8MB, 16MB and 32MB.
+Unlike the previous two cache levels, that all use a standard LRU replacement policy, we will vary the replacement policy of the third level.
+The algorithms we are experimenting with in this work all resemble some form of way-partitioning by assigning a number of ways (or cache lines) per cache set to each core.
+For this reason, the third level cache has 32 cache lines per cache set, giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
+The line size is set to be 64-bytes as in the previous level.
+Again using CACTI we find the optimal bank count and the corresponding access times.
+Table~\ref{tbl:processor_model:l3} summarises the cache properties for the various cache sizes.
+
+
+
+\todo{Explain core interconnection network}
+
+

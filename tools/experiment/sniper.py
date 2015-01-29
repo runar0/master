@@ -7,6 +7,8 @@ def build_config_string(config):
 
 	for cache in ['l2', 'l3']:
 		variables.append('-g perf_model/%s_cache/cache_size=%d' % (cache, config[cache]['size']))
+		variables.append('-g perf_model/%s_cache/tags_access_time=%d' % (cache, config[cache]['tags']))
+		variables.append('-g perf_model/%s_cache/data_access_time=%d' % (cache, config[cache]['data']))
 
 	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % config['policy']['policy'])
 
