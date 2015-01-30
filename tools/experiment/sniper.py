@@ -12,6 +12,15 @@ def build_config_string(config):
 
 	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % config['policy']['policy'])
 
+	# Core model
+	variables.append('-g perf_model/core/interval_timer/window_size=%d' % config['core']['rob'])
+	variables.append('-g perf_model/core/rob_timer/outstanding_loads=%d' % config['core']['ol'])
+	variables.append('-g perf_model/core/rob_timer/outstanding_stores=%d' % config['core']['os'])
+	variables.append('-g perf_model/core/rob_timer/rs_entries=%d' % config['core']['rs'])
+	variables.append('-g perf_model/l1i_cache/outstanding_misses=%d' % config['core']['mshr'])
+	variables.append('-g perf_model/l1d_cache/outstanding_misses=%d' % config['core']['mshr'])
+	variables.append('-g perf_model/l2_cache/outstanding_misses=%d' % (config['core']['mshr']*2))
+
 	return ' '.join(variables)
 
 
