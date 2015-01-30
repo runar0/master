@@ -117,14 +117,12 @@ for replacement in args.replacement_profile:
 					'name': name
 				})
 	
-print configurations
 
+import benchmarks
+runs = benchmarks.get_benchmarks(args.traces, args.benchmarks) 
 
-#import benchmarks
-#runs = benchmarks.get_benchmarks(args.traces, args.benchmarks) 
-
-#import sniper
-#print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations)
+import sniper
+print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations)
 
 
 # TODO: Expand benchmark list using benchmark aliases
