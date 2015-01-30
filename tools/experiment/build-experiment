@@ -25,6 +25,31 @@ profiles = {
 		'ucp': {'policy': 'ucp'},
 		'pipp': {'policy': 'pipp'},
 		'drrip': {'policy': 'drrip'},
+	},
+
+	'core': {
+		'default' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+
+		'02' : {'rob': 96, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+		'03' : {'rob': 160, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+		'04' : {'rob': 192, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+
+		'05' : {'rob': 128, 'rs': 28, 'ol': 48, 'os': 32, 'mshr': 8},
+		'06' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8},
+		'07' : {'rob': 128, 'rs': 40, 'ol': 48, 'os': 32, 'mshr': 8},
+
+		'08' : {'rob': 128, 'rs': 32, 'ol': 40, 'os': 32, 'mshr': 8},
+		'09' : {'rob': 128, 'rs': 32, 'ol': 52, 'os': 32, 'mshr': 8},
+		'10' : {'rob': 128, 'rs': 32, 'ol': 56, 'os': 32, 'mshr': 8},
+
+		'11' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 26, 'mshr': 8},
+		'12' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 36, 'mshr': 8},
+		'13' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 40, 'mshr': 8},
+
+		'14' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 6},
+		'15' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 10},
+		'16' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 12},
+		'17' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 14},
 	}
 }
 
@@ -32,8 +57,10 @@ profiles = {
 parser = argparse.ArgumentParser(description="Build a experiment script")
 
 # Add profile choices
-for component in profiles.keys():
-	parser.add_argument('--%s-profile' % component, choices=profiles[component].keys(), default=[profiles[component].keys()[0]], nargs='*')
+parser.add_argument('--l2-profile', choices=profiles['l2'].keys(), default=['256k'], nargs='*')
+parser.add_argument('--l3-profile', choices=profiles['l3'].keys(), default=['4M'], nargs='*')
+parser.add_argument('--replacement-profile', choices=profiles['replacement'].keys(), default=['lru'], nargs='*')
+parser.add_argument('--core-profile', choices=profiles['core'].keys(), default=['default'], nargs='*')
 
 # Path options
 basedir = path.dirname(path.realpath(__file__))
@@ -79,20 +106,25 @@ configurations = []
 for replacement in args.replacement_profile:
 	for l2 in args.l2_profile:
 		for l3 in args.l3_profile:
-			configurations.append({
-				'l2': profiles['l2'][l2], 
-				'l3': profiles['l3'][l3], 
-				'policy': profiles['replacement'][replacement], 
-				'name': '%s-l2-%s-l3-%s' % (replacement, l2.rjust(5, '0'), l3.rjust(3, '0'))
-			})
-			
-import benchmarks
+			for core in args.core_profile:
+				core = profiles['core'][core]
+				name = '%s.l2-%s.l3-%s.rob-%s.rs-%d.ol-%d.os-%d.mshr-%s' % (replacement, l2.rjust(5, '0'), l3.rjust(3, '0'), str(core['rob']).rjust(3, '0'), core['rs'], core['ol'], core['os'], str(core['mshr']).rjust(2, '0'))
+				configurations.append({
+					'l2': profiles['l2'][l2], 
+					'l3': profiles['l3'][l3], 
+					'policy': profiles['replacement'][replacement], 
+					'core': core,
+					'name': name
+				})
+	
+print configurations
 
-runs = benchmarks.get_benchmarks(args.traces, args.benchmarks) 
 
-import sniper
+#import benchmarks
+#runs = benchmarks.get_benchmarks(args.traces, args.benchmarks) 
 
-print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations)
+#import sniper
+#print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations)
 
 
 # TODO: Expand benchmark list using benchmark aliases
