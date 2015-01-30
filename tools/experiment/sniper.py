@@ -61,7 +61,7 @@ def build_bash_script(output_dir, sniper_dir, runs, configs):
 	script.append('pushd "%s"' % output_dir)
 
 	# Job scheduler variables
-	script.append('MAX_JOBS=%d' % 2)
+	script.append('MAX_JOBS=%d' % 16)
 	script.append('BLOCK_DURATION=15') 
 
 	# Generate all commands
