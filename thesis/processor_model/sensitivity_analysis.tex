@@ -1,24 +1,34 @@
 
 \section{Sensitivity Analysis}
 
-\todo{Introduce, specify why we chose the variables we do, and why we lock those we do.}
+\todo{Introduce, specify what the variables are and present the grahs}
 
-\subsection{ROB}
-\todo{Begin by locking down outstanding loads and stores, set mshrs high and fine tune rob}
+\begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{figures/processor_model/ol}
+                \label{fig:gull}
+        \end{subfigure}%
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{figures/processor_model/os}
+                \label{fig:tiger}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{figures/processor_model/mshr}
+                \label{fig:mouse}
+        \end{subfigure}%
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{figures/processor_model/rob}
+                \label{fig:mouse}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{figures/processor_model/rs}
+                \label{fig:mouse}
+        \end{subfigure}%
+        \caption{Core model property sensitivity}\label{fig:animals}
+\end{figure}
 
-\subsection{MSHRs}
-\paragraph{L1}
-\todo{Lock ROB size to result from previous section, tune L1 MSHRs first data then instruction, just make sure L2 and L3 has as many MSHRs}
+No noticable sensitivity to ol, os and mshr changes.
 
-
-\paragraph{L2}
-\todo{Start at sum of L1, attempt to lower and see how it effects the performance, if we can remove more than 5\% we probably want to}
-
-\paragraph{L3}
-\todo{This is harder, I assume that L2*Cores is max, but how far down can we go, and do we bother? unlike l1 and l2 we need to do multi core  experiments here ...}
-
-\subsection{Outstanding Load/Store}
-\todo{With ROB and MSHRs set we can confirm that changing this does not matter, we might just leave it}
-
-\subsection{?}
-\todo{Are there other variables we should check?}
+Slight improvement with increasing RS and ROB size, but still less than 3\% with >50\% size increase.
+Stddev. outgrows performance gain, we therefor choose to use original model parameters.
