@@ -1,0 +1,122 @@
+#!/usr/bin/env python 
+
+# Generate the sensitivity analysis graphs
+
+#TODO: We want to do graphing as generic as possible, one script per graph is not optimal. However these graphs are kind of corner cases so it might pass
+
+
+import argparse
+import os
+import numpy as np
+from matplotlib import pyplot as plt
+
+from os import path
+from sys import exit
+
+from build import profiles
+
+#print profiles
+
+parser = argparse.ArgumentParser(description='Sensitivity experiment grapher')
+parser.add_argument('--dir', default='.', help='Sensitivity run directory')
+parser.add_argument('--out', default='_figures/sensitivity/', help='Figure output directory')
+
+args = parser.parse_args()
+
+if not path.exists(args.dir):
+	exit('Run directory %s does not exist!' % args.dir)
+
+if not path.exists(args.out):
+	os.makedirs(args.out)
+	print 'Created output directory %s' % args.out
+
+rundir = path.realpath(args.dir)
+
+# Collect simulation results per benchmark per profile
+# ex: results = { 'rob-1': {'namd': 10, 'gcc': 11 }, 'rob-2': {'namd': 11, 'gcc': 1}}
+results = {}
+for name in profiles['core'].keys():
+	results[name] = {}
+
+for subdir, dirs, files in os.walk(rundir):
+	for name in dirs:
+		run = name.split('.')
+		benchmark = run[0]
+
+		# Filter out invalid folders
+		if benchmark.startswith('_') or len(run) == 1:
+			continue;
+
+		# Extract properties present in core profiles from the directory name
+		config = {}
+		for prop in run:
+			part = prop.split('-')
+			if len(part) == 2 and part[0] in profiles['core']['default']:
+				config[part[0]] = int(part[1])
+
+		# Using the properties extracted figure out which core profile this is
+		runprofile = None
+		for profile in profiles['core']:
+			match = True
+
+			for key in profiles['core'][profile]:
+				if profiles['core'][profile][key] != config[key]:
+					match = False
+					break
+
+			if match:
+				runprofile = profile
+				break
+
+		# Extract ipc
+		ipc = None
+		with open('%s/%s/stats-benchmark-0.txt' % (rundir, name)) as f:
+			for line in f:
+				line = line.split(' = ')
+				if line[0] == 'ipc':
+					ipc = float(line[1])
+
+
+		# Store ipc result for this benchmark for the correct profile
+		results[runprofile][benchmark] = ipc
+
+# Loop each profile type and generate a data set
+for prop in ['rob', 'os', 'ol', 'rs', 'mshr']:
+	mean = {profiles['core']['default'][prop]: 1}
+	std = {profiles['core']['default'][prop]: 0}
+
+	# Iterate each profile
+	for profile in results:
+		# IF profile name start with current propert we care about it
+		if profile.startswith(prop):
+			speedup = []
+			for benchmark in results[profile]:
+				# Find benchmark speedup relative to default configuration
+				speedup.append(results[profile][benchmark] / results['default'][benchmark])
+				
+			mean[profiles['core'][profile][prop]] = np.mean(speedup)
+			std[profiles['core'][profile][prop]] = np.std(speedup)
+
+	
+	sortedmean = sorted(mean.items(), key=lambda x:x[0])
+	sortedstd = sorted(std.items(), key=lambda x:x[0])
+
+	x = [i[0] for i in sortedmean]
+	y = [i[1] for i in sortedmean]
+	e = [i[1] for i in sortedstd]
+
+		plt.errorbar(x,y,e, linestyle='--', marker='^')
+	plt.xticks(mean.keys())
+	plt.yticks([i/100.0 for i in range(95, 106)])
+	plt.ylim([0.94, 1.06])
+
+	pad = (max(mean.keys()) - min(mean.keys())) * 0.05
+	plt.xlim([min(mean.keys()) - pad, max(mean.keys()) + pad])
+
+	plt.suptitle('Model sensitivity to %s' % prop)
+	plt.xlabel('Size')
+	plt.ylabel('Speedup')
+
+	#plt.show()
+	plt.savefig('%s/%s.png' % (args.out, prop), dpi=600, frameon=False, bbox_inches='tight')
+	plt.clf()

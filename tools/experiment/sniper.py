@@ -41,7 +41,7 @@ def build_command(traces, config):
 
 def wrap_command(run_name, config_name, cmd):
 	folder = '%s.%s' % (run_name,config_name)
-	return '{ rm -rf "%s" ; mkdir "%s" ; pushd "%s" ; %s ; popd ; }' % (folder, folder, folder, cmd)
+	return '{ if [ ! -f "%s/.sift_done" ]; then { rm -rf "%s"; mkdir "%s" ; pushd "%s" ; %s; popd ; } fi }' % (folder, folder, folder, folder, cmd)
 
 
 def build_commands(runs, configs):
