@@ -1,13 +1,16 @@
 
 LATEX=pdflatex
+BIBTEX=bibtex
 VIEWER=xdg-open
 
-MAIN=thesis.tex
+MAIN=thesis
 PDF=thesis.pdf
 
 build:
-	$(LATEX) $(MAIN)
-	$(LATEX) $(MAIN)
+	$(LATEX) $(MAIN).tex
+	$(BIBTEX) $(MAIN).aux
+	$(LATEX) $(MAIN).tex
+	$(LATEX) $(MAIN).tex
 
 show: build
 	$(VIEWER) $(PDF)
