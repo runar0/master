@@ -1,3 +1,72 @@
 
 \subsection{LRU}
 \label{sec:background:algorithms:lru}
+
+
+\begin{figure}[ht]
+	\centering
+	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+		\hline
+		A & B & C & D \\
+		\hline
+	\end{tabular}
+	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+		MRU (3) & 2 & 1 & LRU (0) \\
+		    &  &  & \bf{Hit C}
+	\end{tabular}	
+
+	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+		\hline
+		C & A & B & D \\
+		\hline
+	\end{tabular}
+	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+		MRU (3) & 2 & 1 & LRU (0) \\
+		    &  &  & \bf{Miss E}
+	\end{tabular}	
+
+	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+		\hline
+		E & C & A & B \\
+		\hline
+	\end{tabular}
+	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+		MRU (3) & 2 & 1 & LRU (0) \\
+		    &  &  & \bf{Hit E}
+	\end{tabular}	
+
+	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+		\hline
+		E & C & A & B \\
+		\hline
+	\end{tabular}
+	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+		MRU (3) & 2 & 1 & LRU (0) \\
+	\end{tabular}	
+
+	\caption{LRU managed 4-way cache set}
+	\label{fig:background:lru_example}
+\end{figure}
+
+Least recently used (LRU) replacement is one of the dominant cache replacement algorithms. \todo{ref!}
+The LRU algorithm relies on the temporal locality of data accesses; it assumes that recently accessed data has a higher reuse frequency that less recently accessed data.
+When a cache miss occurs, and a new cache line is stored in a cache set, the LRU algorithm will evict the least recently used cache block.
+Theoretically one can envision a cache set managed by LRU as a stack, where recently accessed cache blocks are near the top and less recently accessed blocks are near the bottom.
+The bottom position of the stack is the LRU position, and the top position is the most recently used (MRU) position. 
+In a hardware implementation, the blocks are not stored in a sorted fashion.
+
+Figure~\ref{fig:background:lru_example} shows how a 4-way cache set managed by LRU replacement handles three requests. 
+Initially, the set contains four blocks; A, B, C and D. 
+A is in the MRU position while D is in the LRU position.
+The first request is for block C; this is a hit, and that causes the block to move to the MRU position, pushing both block A and B one step closer to the LRU position.
+The second request is made to block E; this block is not present in the cache.
+The LRU algorithm evicts block D at the LRU position and then places block E at the MRU position.
+Finally, another request is made to block E. Nothing changes since the block already is at the MRU position.
+
+LRU is a simple replacement algorithm that is usable in both private and shared caches.
+In shared caches, LRU will favour access frequency, giving cores that issue many cache requests more cache space then those how issue few requests. 
+In some cases, this might be the an acceptable solution. 
+However, several thread aware replacement algorithms claiming to outperform LRU exists. 
+In this thesis, we will investigate several such algorithms and compare their performance against the simple LRU algorithm.
+
+\todo{Mention Pseudo-LRU}
