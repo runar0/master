@@ -1,7 +1,11 @@
-
 \section{Architectural overview}
 
-\todo{Insert figure here}
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=.5]{figures/processor_model/processor_model}
+\caption{Processor model architecture}
+\label{fig:processor_model}
+\end{figure}
 
 \begin{table}[ht]
 \centering
@@ -11,7 +15,7 @@
                                     & 128 rob entries, 8 inst. commit width \\
 \bf{Private L1 inst. and data cache}& 32kB, 64B line-size, 16-way, 8 mshrs, LRU \\
 \bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B line-size, 16-way, \\
-                                    & 12 mshrs, LRU      \\
+                                    & 12 MSHRs, LRU      \\
 \bf{Shared L3 cache}                & 4/8/16/32MB, 64B line-size, 24 mshrs, \\
                                     & 32-way, varying replacement algorithm         \\
 \bf{Memory controller}              & 12.8GB/s, 45ns access latency         \\
@@ -25,10 +29,26 @@ Throughout this thesis, we utilize a CMP model simulated on Sniper~\cite{Carlson
 In our model, each processing core has two levels of private cache, the L1 data and code caches and a unified L2 cache.
 Additionally there is a third cache level, L3, which is shared by all cores. 
 The private caches are managed by an LRU replacement policy, and the replacement policy of the third cache level varies throughout our experiments.
-Figure~\todo{ref} shows an overview of the simulated architecture and Table~\ref{tbl:processor_model:properties} contains an overview of the system properties.
-We base our first level cache sizes on current CMP architectures like the Intel Haswell architecture~\cite{Jain2013}. 
-In the two lower levels, we use varying cache sizes in order to investigate the effect this has on the partitioning algorithms.
-All cache timings are derived using CACTI 6.5\todo{ref} assuming a core frequency of 3GHz.
+Figure~\ref{fig:processor_model} shows an overview of the simulated architecture and Table~\ref{tbl:processor_model:properties} contains an overview of the system properties.
+
+As the sniper simulation system implements a Nehalem core model, all our processor core properties are based on Intel's Nehalem architecture~\cite{Thomadakis2011}. 
+The first level cache size is also selected based on the Nehalem architecture. 
+We do note that in more recent architectures such as Intel's Haswell~\cite{Jain2013} the core properties have changed compared to the older Nehalem, but the size of the first level cache remains the same.
+The reason being that with increasing cache size the access latency also increases this in turn can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions.
+
+For our second and third cache layer, we have selected four different size configurations. 
+We will use these configurations to explore how the cache partitioning algorithms respond to low or high memory situations with varying L3 sizes.
+Also, we will explore how decreasing or increasing the L2 cache size, in turn possibly raising or reducing the L3 access rate, effects the L3 cache partitioning algorithms.
+
+In the following sections, we describe how CACTI~\todo{ref} was used to estimate the access latency for each of our caches. 
+When using CACTI we model each cache with parallel access to the tag directory and data.
+We also opted for high-performance storage cells over the power saving ones that CACTI also supports.
+Finally, we specify an optimization goal with a preference to lower access latencies.
+To get a model that is as accurate as possible we have estimated the access latency for each configuration in both the L2 and the L3 caches.
+As a result, we will correctly observe increasing access latencies with increasing cache sizes.
+
+
+\subsection{L1 Code and Data Caches}
 
 \begin{table}[ht]
 \centering
@@ -49,11 +69,15 @@ All cache timings are derived using CACTI 6.5\todo{ref} assuming a core frequenc
 \label{tbl:processor_model:l1}
 \end{table}
 
+As previously noted, first level cache sizes have remained constant between Intel's Nehalem~\cite{Thomadakis2011} and the newer Haswell~\cite{Jain2013} architectures.
+We have for this reason opted to simulate only a single size configuration at this cache level.
 Both the first level caches have a size of 32kB; divided into sets of 16 lines where each line is 64-bytes long.
-Table~\ref{tbl:processor_model:l1} summaries these values as well as the optimal bank count\footnote{We define optimal bank count as the number of banks that provide the lowest access delay for data and tags measured in cycles.} and access times for the tag directory and data as estimated by CACTI. 
-The access times are converted to cycles assuming a period of 0.3ns or a core clock of 3GHz. 
+Table~\ref{tbl:processor_model:l1} summaries these values as well as the optimal bank count\footnote{We defined optimal bank count as the number of banks that provide the lowest access latency for data and tags measured in cycles.} and access latency for the tag directory and data as estimated by CACTI. 
+
+We convert the access latency to cycles assuming a period of 0.3ns, equal to a clock speed of 3GHz .
 A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns equals two cycles.
 
+\subsection{L2 Cache}
 \begin{table}[ht]
 \centering
 \begin{tabular}{rrrrr}
@@ -74,11 +98,13 @@ A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns
 \end{table}
 
 For the unified second level cache we have modelled four different sizes; 128kB, 256kB, 512kB and 1024kB. 
-In all configurations there are 16 lines in each set and each line is 64-bytes long.
-Using CACTI, we have found the optimal number of banks per size configuration and the corresponding access delays.
-Table~\ref{tbl:processor_model:l2} summarises these values and shows the CACTI estimated access times. 
+In all configurations, there are 16 lines in each set and each line is 64-bytes long.
+Using CACTI, we have found the optimal number of banks per size configuration and the corresponding access latencies.
+Table~\ref{tbl:processor_model:l2} summarises these values. 
 Again we have converted access times to cycle assuming a 0.3ns period.
+As expected we observe an access latency increase when the cache size increases.
 
+\subsection{L3 Cache}
 \begin{table}[ht]
 \centering
 \begin{tabular}{rrrrr}
@@ -98,16 +124,10 @@ Again we have converted access times to cycle assuming a 0.3ns period.
 \label{tbl:processor_model:l3}
 \end{table}
 
-Like the previous level we have four different size configurations for the third cache level; 4MB, 8MB, 16MB and 32MB.
+Like the previous level we have four different size configurations for the L3 cache; 4MB, 8MB, 16MB, and 32MB.
 Unlike the previous two cache levels, that all use a standard LRU replacement policy, we will vary the replacement policy of the third level.
 The algorithms we are experimenting with in this work all resemble some form of way-partitioning by assigning a number of ways (or cache lines) per cache set to each core.
 For this reason, the third level cache has 32 cache lines per cache set, giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
 The line size is set to be 64-bytes as in the previous level.
-Again using CACTI we find the optimal bank count and the corresponding access times.
+Again using CACTI we find the optimal bank count and the corresponding access latencies.
 Table~\ref{tbl:processor_model:l3} summarises the cache properties for the various cache sizes.
-
-
-
-\todo{Explain core interconnection network}
-
-
