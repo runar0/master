@@ -9,6 +9,8 @@ import argparse
 import os
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.rcParams.update({'font.size': 20})
 
 from os import path
 from sys import exit
@@ -80,22 +82,37 @@ for subdir, dirs, files in os.walk(rundir):
 		# Store ipc result for this benchmark for the correct profile
 		results[runprofile][benchmark] = ipc
 
+import csv
+
 # Loop each profile type and generate a data set
 for prop in ['rob', 'os', 'ol', 'rs', 'mshr']:
 	mean = {profiles['core']['default'][prop]: 1}
 	std = {profiles['core']['default'][prop]: 0}
 
-	# Iterate each profile
-	for profile in results:
-		# IF profile name start with current propert we care about it
-		if profile.startswith(prop):
-			speedup = []
-			for benchmark in results[profile]:
-				# Find benchmark speedup relative to default configuration
-				speedup.append(results[profile][benchmark] / results['default'][benchmark])
-				
-			mean[profiles['core'][profile][prop]] = np.mean(speedup)
-			std[profiles['core'][profile][prop]] = np.std(speedup)
+	with (open('%s/%s.csv' % (args.out, prop), 'wb')) as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+		first = True
+		keys = []
+
+		# Iterate each profile
+		for profile in results:
+			# IF profile name start with current propert we care about it
+			if profile.startswith(prop):
+				if first:
+					keys = results[profile].keys()
+					writer.writerow(["profile"] + keys)
+					frist = False
+
+				speedup = []
+				for benchmark in keys:
+					# Find benchmark speedup relative to default configuration
+					speedup.append(results[profile][benchmark] / results['default'][benchmark])
+					
+
+				writer.writerow([profile] + speedup)
+
+				mean[profiles['core'][profile][prop]] = np.mean(speedup)
+				std[profiles['core'][profile][prop]] = np.std(speedup)
 
 	
 	sortedmean = sorted(mean.items(), key=lambda x:x[0])
@@ -104,10 +121,10 @@ for prop in ['rob', 'os', 'ol', 'rs', 'mshr']:
 	x = [i[0] for i in sortedmean]
 	y = [i[1] for i in sortedmean]
 	e = [i[1] for i in sortedstd]
-
-		plt.errorbar(x,y,e, linestyle='--', marker='^')
+	
+	plt.errorbar(x,y,e, linestyle='--', marker='^')
 	plt.xticks(mean.keys())
-	plt.yticks([i/100.0 for i in range(95, 106)])
+	plt.yticks([i/100.0 for i in range(94, 107, 2)])
 	plt.ylim([0.94, 1.06])
 
 	pad = (max(mean.keys()) - min(mean.keys())) * 0.05
@@ -118,5 +135,5 @@ for prop in ['rob', 'os', 'ol', 'rs', 'mshr']:
 	plt.ylabel('Speedup')
 
 	#plt.show()
-	plt.savefig('%s/%s.png' % (args.out, prop), dpi=600, frameon=False, bbox_inches='tight')
+	plt.savefig('%s/%s.png' % (args.out, prop), frameon=False, bbox_inches='tight')
 	plt.clf()

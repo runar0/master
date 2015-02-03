@@ -1,11 +1,11 @@
 Cache size                    : 1048576
 Block size                    : 64
-Associativity                 : 16
+Associativity                 : 8
 Read only ports               : 0
 Write only ports              : 0
 Read write ports              : 1
 Single ended read ports       : 0
-Cache banks (UCA)             : 4
+Cache banks (UCA)             : 8
 Technology                    : 0.032
 Temperature                   : 300
 Tag size                      : 42
@@ -38,21 +38,21 @@ Force cache config            : 0
 
 Cache Parameters:
     Total cache size (bytes): 1048576
-    Number of banks: 4
-    Associativity: 16
+    Number of banks: 8
+    Associativity: 8
     Block size (bytes): 64
     Read/write Ports: 1
     Read ports: 0
     Write ports: 0
     Technology size (nm): 32
 
-    Access time (ns): 1.08588
+    Access time (ns): 0.952649
     Cycle time (ns):  0.223046
-    Total dynamic read energy per access (nJ): 4.52167
-    Total leakage power of a bank (mW): 162.347
-    Cache height x width (mm): 5.91147 x 4.89327
+    Total dynamic read energy per access (nJ): 1.9722
+    Total leakage power of a bank (mW): 68.555
+    Cache height x width (mm): 3.5605 x 4.51088
 
-    Best Ndwl : 32
+    Best Ndwl : 16
     Best Ndbl : 2
     Best Nspd : 0.5
     Best Ndcm : 1
@@ -60,78 +60,78 @@ Cache Parameters:
     Best Ndsam L2 : 1
 
     Best Ntwl : 4
-    Best Ntbl : 4
-    Best Ntspd : 0.5
+    Best Ntbl : 2
+    Best Ntspd : 1
     Best Ntcm : 1
-    Best Ntsam L1 : 1
+    Best Ntsam L1 : 2
     Best Ntsam L2 : 1
     Data array, H-tree wire type: Delay optimized global wires
     Tag array, H-tree wire type: Global wires with 30% delay penalty
 
 Time Components:
 
-  Data side (with Output driver) (ns): 1.08588
-	H-tree input delay (ns): 0.368246
+  Data side (with Output driver) (ns): 0.952649
+	H-tree input delay (ns): 0.321036
 	Decoder + wordline delay (ns): 0.132786
 	Bitline delay (ns): 0.0992239
 	Sense Amplifier delay (ns): 0.00254624
-	H-tree output delay (ns): 0.301451
+	H-tree output delay (ns): 0.207246
 
-  Tag side (with Output driver) (ns): 0.393459
-	H-tree input delay (ns): 0.0480381
-	Decoder + wordline delay (ns): 0.115898
-	Bitline delay (ns): 0.052803
+  Tag side (with Output driver) (ns): 0.320025
+	H-tree input delay (ns): 0.0352105
+	Decoder + wordline delay (ns): 0.115173
+	Bitline delay (ns): 0.0526165
 	Sense Amplifier delay (ns): 0.00254624
-	Comparator delay (ns): 0.0347248
-	H-tree output delay (ns): 0.160835
+	Comparator delay (ns): 0.0327059
+	H-tree output delay (ns): 0.0959267
 
 
 Power Components:
 
-  Data array: Total dynamic read energy/access  (nJ): 4.51531
-	Total leakage read/write power of a bank (mW): 156.927
-	Total energy in H-tree (that includes both address and data transfer) (nJ): 4.32016
-	Output Htree Energy (nJ): 1.38547
-	Decoder (nJ): 0.00253914
-	Wordline (nJ): 0.00160813
+  Data array: Total dynamic read energy/access  (nJ): 1.96746
+	Total leakage read/write power of a bank (mW): 66.6808
+	Total energy in H-tree (that includes both address and data transfer) (nJ): 1.86989
+	Output Htree Energy (nJ): 0.333115
+	Decoder (nJ): 0.00126957
+	Wordline (nJ): 0.000804067
 	Bitline mux & associated drivers (nJ): 0
-	Sense amp mux & associated drivers (nJ): 0.00126446
-	Bitlines (nJ): 0.0476386
-	Sense amplifier energy (nJ): 0.00744881
-	Sub-array output driver (nJ): 0.125512
+	Sense amp mux & associated drivers (nJ): 0.000632232
+	Bitlines (nJ): 0.0238193
+	Sense amplifier energy (nJ): 0.00372441
+	Sub-array output driver (nJ): 0.0627559
 
-  Tag array:  Total dynamic read energy/access (nJ): 0.00636335
-	Total leakage read/write power of a bank (mW): 5.42057
-	Total energy in H-tree (that includes both address and data transfer) (nJ): 0.00195349
-	Output Htree Energy (nJ): 0.000457272
+  Tag array:  Total dynamic read energy/access (nJ): 0.0047384
+	Total leakage read/write power of a bank (mW): 1.87426
+	Total energy in H-tree (that includes both address and data transfer) (nJ): 0.00134611
+	Output Htree Energy (nJ): 8.70979e-05
 	Decoder (nJ): 0.000204985
-	Wordline (nJ): 0.000115807
+	Wordline (nJ): 0.000105536
 	Bitline mux & associated drivers (nJ): 0
-	Sense amp mux & associated drivers (nJ): 0
-	Bitlines (nJ): 0.00154079
-	Sense amplifier energy (nJ): 0.000465551
-	Sub-array output driver (nJ): 0.000285862
+	Sense amp mux & associated drivers (nJ): 8.69871e-05
+	Bitlines (nJ): 0.00134819
+	Sense amplifier energy (nJ): 0.000407357
+	Sub-array output driver (nJ): 0.000127802
 
 
 Area Components:
 
-  Data array: Area (mm2): 27.3574
-	Height (mm): 5.91147
-	Width (mm): 4.62785
-	Area efficiency (Memory cell area/Total area) - 4.58425 %
-		MAT Height (mm): 0.289624
-		MAT Length (mm): 0.107444
+  Data array: Area (mm2): 14.5866
+	Height (mm): 3.5605
+	Width (mm): 4.09678
+	Area efficiency (Memory cell area/Total area) - 8.59785 %
+		MAT Height (mm): 0.291928
+		MAT Length (mm): 0.10744
 		Subarray Height (mm): 0.119603
 		Subarray Length (mm): 0.048
 
-  Tag array: Area (mm2): 0.154755
-	Height (mm): 0.583058
-	Width (mm): 0.26542
-	Area efficiency (Memory cell area/Total area) - 50.6497 %
-		MAT Height (mm): 0.135012
-		MAT Length (mm): 0.0556031
+  Tag array: Area (mm2): 0.127095
+	Height (mm): 0.306918
+	Width (mm): 0.414102
+	Area efficiency (Memory cell area/Total area) - 53.9638 %
+		MAT Height (mm): 0.133747
+		MAT Length (mm): 0.0493307
 		Subarray Height (mm): 0.0598016
-		Subarray Length (mm): 0.024
+		Subarray Length (mm): 0.02088
 
 Wire Properties:
 

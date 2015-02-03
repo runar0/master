@@ -8,14 +8,14 @@ from os import path
 # TODO: Move configuration to a separate file
 profiles = {
 	'l2' : {
-		'128k': {'size': 128, 'tags': 1, 'data': 2},
-		'256k': {'size': 256, 'tags': 1, 'data': 3},
-		'512k': {'size': 512, 'tags': 2, 'data': 4},
-		'1024k': {'size': 1024, 'tags': 2, 'data': 4},
+		'128k':  {'size':  128, 'tags': 1, 'data': 2},
+		'256k':  {'size':  256, 'tags': 1, 'data': 3},
+		'512k':  {'size':  512, 'tags': 1, 'data': 3},
+		'1024k': {'size': 1024, 'tags': 1, 'data': 3},
 	},
 	'l3' : {
-		'4M': {'size': 4*1024, 'tags': 2, 'data': 6},
-		'8M': {'size': 8*1024, 'tags': 3, 'data': 7},
+		'4M':  {'size':  4*1024, 'tags': 2, 'data': 6},
+		'8M':  {'size':  8*1024, 'tags': 3, 'data': 7},
 		'16M': {'size': 16*1024, 'tags': 3, 'data': 9},
 		'32M': {'size': 32*1024, 'tags': 3, 'data': 10},
 	},
