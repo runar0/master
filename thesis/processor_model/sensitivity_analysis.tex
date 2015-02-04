@@ -33,16 +33,26 @@ If we observe a significant performance improvement when changing one of the pro
 \end{figure}
 
 Figure~\ref{fig:processor_model:sensitivity} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status hold registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
-Outstanding loads and stores specify the number of outstanding memory requests the core can manage before it as to block at new requests.
+Outstanding loads and stores specify the number of outstanding memory requests the core can manage before it has to block at new requests.
 The number of L1 MSHRs decide how many outstanding cache misses the cache can handle before it has to block on a new miss.
 The size of the rob and rs together decide how many instructions can be live during execution.  
 Increasing the number of live instructions can increase the amount of instruction-level parallelism (ILP) the processor can extract from the program while possibly increasing the cost of a branch miss prediction.
 
-For all memory related properties; os, ol and mshr, we observe no improvement nor decrease in performance when varying their value.
-When Increasing the size of the rob and the number of rs entries, we do observe a slight increase in performance.
+For two of the memory related properties; os and ol, we observe no improvement nor decrease in performance for the values we explored.
+When we increase the last memory related parameter; MSHR, we do observe a slight effect of increasing. 
+With an increasing number of MSHRs, the cache and hence the core can have more outstanding memory requests. 
+As a result, the core will be able to exploit more ILP, and we expect a slight performance improvement. 
+Unlike the MSHRs, we do not expect the value of os and ol to effect performance. 
+If the core is to gain from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
+Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
+The observed performance gain from increasing the number of MSHRs in the first level caches is less than 1\% at 50\% storage increase. 
+We also observe a standard deviation of more than 3\%. 
+
+When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.
 The numbers show an average performance increase of about 2\% with more rob entries, and about a 3\% increase with more rs entries.
 We also observe that these increases come at the cost of a respectively 75\% and 50\% storage increase.
 In addition, we observe that the standard deviation in both cases is about the same as the average performance increase.
+
 When reviewed, these facts lead us to conclude that the processor model we have presented based on the Nehalem architecture is stable and that we have no obvious performance gains from small adjustments.
 As a result, we decide to continue use of this model for the rest of our experiments without making any adjustments.
 

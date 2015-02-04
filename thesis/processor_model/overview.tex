@@ -52,31 +52,34 @@ As a result, we will correctly observe increasing access latencies with increasi
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{rl}
+\begin{tabular}{rrr}
 \toprule
-\bf{Size}               & 32kB              \\
-\bf{Block size}         & 64B               \\
-\bf{Associativity}      & 16                \\
-\bf{Banks}              & 1                 \\
-\bf{Technology}         & 32nm              \\
-\bf{Access time (Tag)}  & 0.16ns \\
-\bf{Access time (Data)} & 0.62ns \\
-\bf{Access cycles (Tag)}  & 1 \\
-\bf{Access cycles (Data)} & 2 \\
+                          & \bf{Data}     & \bf{Instruction} \\
+\bf{Size}                 & 32kB          & 32kB      \\
+\bf{Block size}           & 64B           & 64B       \\
+\bf{Associativity}        & 8             & 4         \\
+\bf{Banks}                & 1             & 1         \\
+\bf{Technology}           & 32nm          & 32nm      \\
+\bf{Access time (Tag)}    & 0.16ns        & 0.16ns    \\
+\bf{Access time (Data)}   & 0.38ns        & 0.32ns    \\
+\bf{Access cycles (Tag)}  & 1             & 1         \\
+\bf{Access cycles (Data)} & 2             & 1         \\
 \bottomrule
 \end{tabular}
 \caption{L1 cache properties}
 \label{tbl:processor_model:l1}
 \end{table}
 
-As previously noted, first level cache sizes have remained constant between Intel's Nehalem~\cite{Thomadakis2011} and the newer Haswell~\cite{Jain2013} architectures.
+When choosing a first level cache size, we must consider that first level caches are on the critical path of the processor core.
+Having a hit response latency of more than 2-3 cycles in a first level cache will be a limiting factor in the overall processor design.
+We can observe that first level cache sizes have remained constant between Intel's Nehalem~\cite{Thomadakis2011} and the newer Haswell~\cite{Jain2013} architectures.
 We have for this reason opted to simulate only a single size configuration at this cache level.
-Both the first level caches have a size of 32kB; divided into sets of 16 lines where each line is 64-bytes long.
+Both the first level caches have a size of 32kB; divided into sets of 4 and 8 lines for the instruction and data caches respectively. 
+Both caches have 64-bytes long cache lines.
 Table~\ref{tbl:processor_model:l1} summaries these values as well as the optimal bank count\footnote{We defined optimal bank count as the number of banks that provide the lowest access latency for data and tags measured in cycles.} and access latency for the tag directory and data as estimated by CACTI. 
 
-We convert the access latency to cycles assuming a period of 0.3ns, equal to a clock speed of 3GHz .
-A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns equals two cycles.
-
+We convert the access latency to cycles assuming a period of 0.3ns, equal to a clock speed of 3GHz.
+For example, a tag access latency of 0.16ns equals one cycle while a data access latency of 0.38ns equals two cycles.
 \subsection{L2 Cache}
 \begin{table}[ht]
 \centering
@@ -84,13 +87,13 @@ A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns
 \toprule
 \bf{Size}                 & 128kB       & 256kB       & 512kB       & 1024kB            \\
 \bf{Block size}           & 64B         & 64B         & 64B         & 64B               \\
-\bf{Associativity}        & 16          & 16          & 16          & 16                \\
-\bf{Banks}                & 1           & 2           & 4           & 4                 \\
+\bf{Associativity}        & 8           & 8           & 8           & 8                 \\
+\bf{Banks}                & 1           & 2           & 8           & 8                 \\
 \bf{Technology}           & 32nm        & 32nm        & 32nm        & 32nm              \\
-\bf{Access time (Tag)}    & 0.28ns      & 0.29ns      & 0.33ns      & 0.39ns            \\
-\bf{Access time (Data)}   & 0.66ns      & 0.83ns      & 1.18ns      & 1.08ns            \\
-\bf{Access cycles (Tag)}  & 1           & 1           & 2           & 2                 \\
-\bf{Access cycles (Data)} & 3           & 3           & 4           & 4                 \\
+\bf{Access time (Tag)}    & 0.28ns      & 0.29ns      & 0.26ns      & 0.32ns            \\
+\bf{Access time (Data)}   & 0.57ns      & 0.66ns      & 0.88ns      & 0.95ns            \\
+\bf{Access cycles (Tag)}  & 1           & 1           & 1           & 1                 \\
+\bf{Access cycles (Data)} & 2           & 3           & 3           & 3                 \\
 \bottomrule
 \end{tabular}
 \caption{L2 cache properties}
@@ -98,7 +101,7 @@ A tag access time of 0.16ns equals one cycles while a data access time of 0.62ns
 \end{table}
 
 For the unified second level cache we have modelled four different sizes; 128kB, 256kB, 512kB and 1024kB. 
-In all configurations, there are 16 lines in each set and each line is 64-bytes long.
+In all configurations, there are 8 lines in each set and each line is 64-bytes long.
 Using CACTI, we have found the optimal number of banks per size configuration and the corresponding access latencies.
 Table~\ref{tbl:processor_model:l2} summarises these values. 
 Again we have converted access times to cycle assuming a 0.3ns period.
@@ -127,7 +130,8 @@ As expected we observe an access latency increase when the cache size increases.
 Like the previous level we have four different size configurations for the L3 cache; 4MB, 8MB, 16MB, and 32MB.
 Unlike the previous two cache levels, that all use a standard LRU replacement policy, we will vary the replacement policy of the third level.
 The algorithms we are experimenting with in this work all resemble some form of way-partitioning by assigning a number of ways (or cache lines) per cache set to each core.
-For this reason, the third level cache has 32 cache lines per cache set, giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
+For this reason, the third level cache has 32 cache lines per cache set, in contrast to the 16 cache lines per set in the original Nehalem architecture.
+Giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
 The line size is set to be 64-bytes as in the previous level.
 Again using CACTI we find the optimal bank count and the corresponding access latencies.
 Table~\ref{tbl:processor_model:l3} summarises the cache properties for the various cache sizes.
