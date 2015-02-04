@@ -28,30 +28,30 @@ profiles = {
 	},
 
 	'core': {
-		'default' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+		'default' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
 
-		'rob-1' : {'rob': 96, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rob-2' : {'rob': 160, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rob-3' : {'rob': 192, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rob-4' : {'rob': 224, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8},
+		'rob-1' : {'rob': 96, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rob-2' : {'rob': 160, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rob-3' : {'rob': 192, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rob-4' : {'rob': 224, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
 
-		'rs-1' : {'rob': 128, 'rs': 28, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rs-2' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rs-3' : {'rob': 128, 'rs': 40, 'ol': 48, 'os': 32, 'mshr': 8},
-		'rs-4' : {'rob': 128, 'rs': 48, 'ol': 48, 'os': 32, 'mshr': 8},
+		'rs-1' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rs-2' : {'rob': 128, 'rs': 40, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rs-3' : {'rob': 128, 'rs': 44, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'rs-4' : {'rob': 128, 'rs': 48, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
 
-		'ol-1' : {'rob': 128, 'rs': 32, 'ol': 40, 'os': 32, 'mshr': 8},
-		'ol-2' : {'rob': 128, 'rs': 32, 'ol': 52, 'os': 32, 'mshr': 8},
-		'ol-3' : {'rob': 128, 'rs': 32, 'ol': 56, 'os': 32, 'mshr': 8},
+		'ol-1' : {'rob': 128, 'rs': 36, 'ol': 40, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'ol-2' : {'rob': 128, 'rs': 36, 'ol': 52, 'os': 32, 'mshr': 8, 'mshr2': 12},
+		'ol-3' : {'rob': 128, 'rs': 36, 'ol': 56, 'os': 32, 'mshr': 8, 'mshr2': 12},
 
-		'os-1' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 26, 'mshr': 8},
-		'os-2' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 36, 'mshr': 8},
-		'os-3' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 40, 'mshr': 8},
+		'os-1' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 26, 'mshr': 8, 'mshr2': 12},
+		'os-2' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 36, 'mshr': 8, 'mshr2': 12},
+		'os-3' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 40, 'mshr': 8, 'mshr2': 12},
 
-		'mshr-1' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 6},
-		'mshr-2' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 10},
-		'mshr-3' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 12},
-		'mshr-4' : {'rob': 128, 'rs': 32, 'ol': 48, 'os': 32, 'mshr': 14},
+		'mshr-1' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 6, 'mshr2': 12},
+		'mshr-2' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 10, 'mshr2': 20},
+		'mshr-3' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 12, 'mshr2': 24},
+		'mshr-4' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 14, 'mshr2': 28},
 	}
 }
 
