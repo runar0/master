@@ -62,6 +62,8 @@ for subdir, dirs, files in os.walk(rundir):
 			match = True
 
 			for key in profiles['core'][profile]:
+				if (key == 'mshr2'): 
+					continue
 				if profiles['core'][profile][key] != config[key]:
 					match = False
 					break
@@ -77,7 +79,6 @@ for subdir, dirs, files in os.walk(rundir):
 				line = line.split(' = ')
 				if line[0] == 'ipc':
 					ipc = float(line[1])
-
 
 		# Store ipc result for this benchmark for the correct profile
 		results[runprofile][benchmark] = ipc
