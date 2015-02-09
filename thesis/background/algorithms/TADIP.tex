@@ -12,14 +12,13 @@ In contrast to LRU, DIP is a combination of two insertion policies, the standard
 The standard LRU policy is to insert new blocks at the MRU position.
 BIP inserts new blocks either at the LRU position or with a small probability, $p = \frac{1}{32}$, at the MRU position. The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
-By mostly inserting the LRU position the BIP insertion policy can achieve a performance improvement compare to LRU on LRU unfriendly workload. 
+By mostly inserting at the LRU position the BIP insertion policy can achieve a performance improvement compare to LRU on LRU unfriendly workloads. 
 An LRU unfriendly workload is one that breaks with the main assumption of LRU; the most recently accesses cache block will be the first to be re-referenced.
-One example that breaks this assumption is an application that handles a stream of data.
-These will often have recurring accesses to a few cache blocks while only accessing most data once.
-In the worst case scenario for LRU, every access will cause a miss because the streaming data will force the few blocks that are re-referenced out of the cache before the reference occur.
+One example that breaks this assumption is an application has a working set larger than the cache. 
+If the application cycles thought this working set, then LRU will provide no cache hits, as the first block in the working set will be evicted before it is re-referenced.
 In this scenario, BIP could reduce the number of misses.
-Under BIP most inserts occur at the LRU position, these blocks will be replaced by the next miss unless a reference to the block occurs before the miss.
-As a result, references to data that will not be re-referenced will not push data that experience recurring accesses out of the cache.
+As BIP mostly inserts new blocks at the LRU position, it will keep a portion of the working set within the cache.
+This way BIP will be able to provide some cache hits where LRU will provide none.
 
 The authors of DIP present several methods to detect the best replacement algorithm. 
 One is a technique called set-dueling.
