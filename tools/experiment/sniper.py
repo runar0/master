@@ -1,6 +1,6 @@
 
 
-def build_config_string(config):
+def build_config_string(config, cores):
 	""" Build a sniper configuration string based on a config dicitionary """
 
 	variables = []
@@ -10,7 +10,14 @@ def build_config_string(config):
 		variables.append('-g perf_model/%s_cache/tags_access_time=%d' % (cache, config[cache]['tags']))
 		variables.append('-g perf_model/%s_cache/data_access_time=%d' % (cache, config[cache]['data']))
 
+	variables.append('-g perf_model/l3_cache/shared_cores=%d' % cores)
 	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % config['policy']['policy'])
+
+	if config['policy']['policy'] == "ucp":
+		variables.append('-g perf_model/l3_cache/umon/enabled=true')
+	elif config['policy']['policy'] == "pipp": 		
+		variables.append('-g perf_model/l3_cache/umon/enabled=true')
+		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
 
 	# Core model
 	variables.append('-g perf_model/core/interval_timer/window_size=%d' % config['core']['rob'])
@@ -28,7 +35,7 @@ def build_command(traces, config):
 	""" Build a single sniper command given a configuration set and traces """
 
 	cores = len(traces)
-	confstr = build_config_string(config)
+	confstr = build_config_string(config, cores)
 
 	dumpStatsCmd = [];
 	for cpu in range(cores):
