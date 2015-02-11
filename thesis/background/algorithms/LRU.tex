@@ -4,51 +4,51 @@
 
 
 \begin{figure}[ht]
-	\centering
-	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline
-		A & B & C & D \\
-		\hline
-	\end{tabular}
-	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
-		MRU (3) & 2 & 1 & LRU (0) \\
-		    &  &  & \bf{Hit C}
-	\end{tabular}	
+    \centering
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        A & B & C & D \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+        MRU (3) & 2 & 1 & LRU (0) \\
+            &  &  & \bf{Hit C}
+    \end{tabular}    
 
-	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline
-		C & A & B & D \\
-		\hline
-	\end{tabular}
-	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
-		MRU (3) & 2 & 1 & LRU (0) \\
-		    &  &  & \bf{Miss E}
-	\end{tabular}	
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        C & A & B & D \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+        MRU (3) & 2 & 1 & LRU (0) \\
+            &  &  & \bf{Miss E}
+    \end{tabular}    
 
-	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline
-		E & C & A & B \\
-		\hline
-	\end{tabular}
-	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
-		MRU (3) & 2 & 1 & LRU (0) \\
-		    &  &  & \bf{Hit E}
-	\end{tabular}	
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        E & C & A & B \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+        MRU (3) & 2 & 1 & LRU (0) \\
+            &  &  & \bf{Hit E}
+    \end{tabular}    
 
-	\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline
-		E & C & A & B \\
-		\hline
-	\end{tabular}
-	\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
-		MRU (3) & 2 & 1 & LRU (0) \\
-	\end{tabular}	
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        E & C & A & B \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}}
+        MRU (3) & 2 & 1 & LRU (0) \\
+    \end{tabular}    
 
-	\caption{LRU managed 4-way cache set}
-	\label{fig:background:lru_example}
+    \caption{LRU managed 4-way cache set}
+    \label{fig:background:lru_example}
 \end{figure}
 
-Least recently used (LRU) replacement is one of the dominant cache replacement algorithms. \todo{ref!}
+Least recently used (LRU) replacement is one of the dominant cache replacement algorithms in hardware today. \todo{ref!}
 The LRU algorithm relies on the temporal locality of data accesses; it assumes that recently accessed data has a higher reuse frequency that less recently accessed data.
 When a cache miss occurs, and a new cache line is stored in a cache set, the LRU algorithm will evict the least recently used cache block.
 Theoretically one can envision a cache set managed by LRU as a stack, where recently accessed cache blocks are near the top and less recently accessed blocks are near the bottom.
@@ -64,9 +64,63 @@ The LRU algorithm evicts block D at the LRU position and then places block E at 
 Finally, another request is made to block E. Nothing changes since the block already is at the MRU position.
 
 LRU is a simple replacement algorithm that is usable in both private and shared caches.
-In shared caches, LRU will favour access frequency, giving cores that issue many cache requests more cache space then those how issue few requests. 
+In shared caches, LRU will favor access frequency, giving cores that issue many cache requests more cache space then those how issue few requests. 
 In some cases, this might be the an acceptable solution. 
 However, several thread aware replacement algorithms claiming to outperform LRU exists. 
 In this thesis, we will investigate several such algorithms and compare their performance against the simple LRU algorithm.
 
 \todo{Mention Pseudo-LRU}
+
+
+\subsection{Common Memmory Access Patterns}
+In the following sections, we will present various cache partition algorithms that attempt to improve cache performance compared to the commonly used LRU algorithm.
+In order to efficiently explain the strengths of the various partition algorithms, we will first define four different memory access patterns; recency-friendly, trashing, streaming and combined access patterns.
+
+\paragraph{Recency-friendly}
+As explained in Section~\ref{sec:background:algorithms:lru} the LRU algorithm assumes that recent memory accesses have a higher chance of reuse than less recent memory accesses.
+We call this the recency-assumption, and we call memory access patterns that conform to this assumption recency-friendly access patterns.
+Figure~\ref{fig:background:algorithms:rf_pattern} illustrates an example memory access pattern to a single cache set that is said to be recency-friendly.
+Assuming LRU replacement, the cache will provide hits for all accesses every time the pattern repeats.
+
+\begin{figure}[ht]
+\centering
+\begin{equation}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Trashing memory access pattern to a single cache set (k <= number of ways, N > 1)}
+\label{fig:background:algorithms:rf_pattern}
+\end{figure}
+
+\paragraph{Trashing}
+A trashing memory pattern is one that repeats in a similar manner to a recency-friendly pattern, but with more blocks per cycle than the number of cache ways. 
+Figure~\ref{fig:background:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of k.
+In an LRU managed cache, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
+\begin{figure}[ht]
+\centering
+\begin{equation}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Trashing memory access pattern to a single cache set (k > number of ways, N > 1)}
+\label{fig:background:algorithms:tr_pattern}
+\end{figure}
+
+\paragraph{Streaming}
+A streaming memory access pattern is one that has not re-references, or where the period is so large that no pattern is detectable.
+Figure~\ref{fig:background:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
+Neither LRU or any other caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
+
+\begin{figure}[ht]
+\centering
+\begin{equation}
+p_{rf} = (a_0 a_1 ... a_{k-1})
+\end{equation}
+\caption{Streaming memory access  pattern (k = \todo{inf}) }
+\label{fig:background:algorithms:st_pattern}
+\end{figure}
+
+\paragraph{Combined}
+In reality, memory access patterns can more complex than the simple examples shown above.
+A single program might, for instance, behave both in a recency-friendly and streaming fashion. 
+An example would be a program performing a reduction over a large dataset.
+Most accesses would be streaming as the program iterates over the dataset, but some accesses will exhibit recency-friendly behavior as the program storing temporary results to memory during the iteration.
+For shared caches the observed pattern is the union of accesses from all cores, this can result in even more complex patterns.

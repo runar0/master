@@ -12,13 +12,11 @@ In contrast to LRU, DIP is a combination of two insertion policies, the standard
 The standard LRU policy is to insert new blocks at the MRU position.
 BIP inserts new blocks either at the LRU position or with a small probability, $p = \frac{1}{32}$, at the MRU position. The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
-By mostly inserting at the LRU position the BIP insertion policy can achieve a performance improvement compare to LRU on LRU unfriendly workloads. 
-An LRU unfriendly workload is one that breaks with the main assumption of LRU; the most recently accesses cache block will be the first to be re-referenced.
-One example that breaks this assumption is an application has a working set larger than the cache. 
-If the application cycles thought this working set, then LRU will provide no cache hits, as the first block in the working set will be evicted before it is re-referenced.
-In this scenario, BIP could reduce the number of misses.
-As BIP mostly inserts new blocks at the LRU position, it will keep a portion of the working set within the cache.
-This way BIP will be able to provide some cache hits where LRU will provide none.
+By mostly inserting at the LRU position the BIP insertion policy can theoretically handle trashing memory access patterns.
+BIP does this by keeping some of the working set in the upper part of the LRU stack. 
+New inserts happen at the bottom, and a block will only be able to move upward, and hence cause another to evict, on a reference.
+By sometimes inserting at the MRU position, BIP gives blocks that might be re-referenced a chance to stay in the cache.
+It also ensures that stale blocks that reside in the upper part of the LRU stack move toward the LRU position.
 
 The authors of DIP present several methods to detect the best replacement algorithm. 
 One is a technique called set-dueling.
@@ -29,14 +27,14 @@ The MSB of the counter can then be used to select the optimal algorithm.
 If the MSB is one, an overweight of misses in LRU sets are occurring and BIP the optimal algorithm. 
 If the MSB is zero, then an overweight of BIP misses are occurring, and LRU is the optimal choice.
 Another solution is to utilize two Auxilliary Tag Directories (ATDs) which is a structure equal to the Tag directory of the cache itself.
-The two ATDs run one algorithm each, and each to the cache is replicated in the ATDs.
+The two ATDs run one algorithm each, and all cache accesses are also executed on the ATDs.
 Again a counter controlled by misses in either ATD is used to select the optimal algorithm for the main cache.
 
 \paragraph{TADIP}
 
 One issue with DIP is that it does not consider from which core a cache accesses originate.
 In a workload with multiple benchmarks, some might be LRU friendly while others are not. 
-If a shared cache is managed by DIP then the algorithm choice is made based on the sum of the cache accesses and then applied equally to all benchmarks.
+If a shared cache is managed by DIP, then the algorithm choice is made based on the sum of the cache accesses and then applied equally to all benchmarks.
 The authors of TADIP recognized that algorithm choices made per core possibly could improve performance of DIP when utilized on a shared cache.
 
 When selecting the best performing algorithm per core, the ATD technique requires two ATDs per core sharing the cache. 
@@ -45,12 +43,14 @@ Set-dueling in DIP requires a minimum of two sets, one running LRU (1) and one r
 With two cores, the number of combinations rises to four (00, 01, 10, 11).
 When the number of cores continues to increase this also seems to be an impractical solution.
 As a result, the authors of TADIP suggests two selection techniques that reduce the number of sets required. 
-Both solutions have one counter per core sharing the cache that is used to select the optimal policy for that core.
+Both solutions have one counter per core sharing the cache.
+This counter is used to select the optimal policy for that core.
 
 TADIP-Isolated (TADIP-I) has one set per core running BIP for that core and LRU for all others.
 In addition to these N sets, a single set runs LRU for all cores. 
 A miss in the LRU set will increment all the core counters while a miss in the core specific set will decrement the counter for the specific core.
-This solution requires significantly less duel-sets compared to having one per combination, but because it assumes that all other cores run LRU it ignores the effect different cores with different policies can have on each other.
+For a large N, this solution requires significantly less duel-sets compared to having one per combination. 
+Because it assumes that all other cores run LRU, the effect different cores with different policies might have on each other is ignored.
 
 TADIP-Feeback (TADIP-F) attempts to reduce the error caused by the assumption of other cores by having two sets per core, a total of 2N.
 Per core, one set runs LRU the other runs BIP, any inserts from other cores uses the currently best algorithm for that core.
