@@ -1,0 +1,56 @@
+***** PinPoints: START  ***** Tue 10 Feb 13:31:22 CET 2015
+PROGRAM.INPUT leslie3d.
+SLICE_SIZE=250000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d_base.gcc44-64bit  < /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d.in in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//437.leslie3d/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+
+real	7m13.043s
+user	7m13.557s
+sys	0m0.090s
+*** Running isimpoint *** Tue 10 Feb 13:38:35 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 250000000 -o leslie3d. -- 
+*** Running Step2.sh *** Tue 10 Feb 13:57:44 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated leslie3d..T.0.bb
+slicesize=250000000
+inscount=4319480025806
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 leslie3d..pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d..Data/leslie3d..pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 leslie3d..ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d..Data/leslie3d..ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 leslie3d..ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d..Data/leslie3d..ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 leslie3d..ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/437.leslie3d/run/run_base_ref_gcc44-64bit.0000/leslie3d..Data/leslie3d..ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//437.leslie3d/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Tue 10 Feb 13:57:51 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile leslie3d..pintool.1.pp -control_log leslie3d..control.log --
+*** Checking controller output*** Tue 10 Feb 14:40:42 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 3147250000000, 3147250306730, 0, 250000000, 250000022, 0
+***** PinPoints: END  ***** Tue 10 Feb 14:40:42 CET 2015

@@ -1,0 +1,56 @@
+***** PinPoints: START  ***** Wed 11 Feb 16:26:21 CET 2015
+PROGRAM.INPUT tonto.
+SLICE_SIZE=500000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//465.tonto/run/run_base_ref_gcc44-64bit.0000/tonto_base.gcc44-64bit  in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//465.tonto/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+
+real	7m43.888s
+user	7m44.253s
+sys	0m0.180s
+*** Running isimpoint *** Wed 11 Feb 16:34:05 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 500000000 -o tonto. -- 
+*** Running Step2.sh *** Wed 11 Feb 17:26:40 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated tonto..T.0.bb
+slicesize=500000000
+inscount=3584116459831
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 tonto..pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/465.tonto/run/run_base_ref_gcc44-64bit.0000/tonto..Data/tonto..pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 tonto..ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/465.tonto/run/run_base_ref_gcc44-64bit.0000/tonto..Data/tonto..ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 tonto..ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/465.tonto/run/run_base_ref_gcc44-64bit.0000/tonto..Data/tonto..ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 tonto..ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/465.tonto/run/run_base_ref_gcc44-64bit.0000/tonto..Data/tonto..ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//465.tonto/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Wed 11 Feb 17:26:51 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile tonto..pintool.1.pp -control_log tonto..control.log --
+*** Checking controller output*** Wed 11 Feb 17:59:01 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 3357000000000, 3357000074787, 0, 500000000, 500000006, 0
+***** PinPoints: END  ***** Wed 11 Feb 17:59:01 CET 2015

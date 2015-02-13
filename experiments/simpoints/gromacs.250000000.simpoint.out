@@ -1,0 +1,56 @@
+***** PinPoints: START  ***** Tue 10 Feb 12:23:36 CET 2015
+PROGRAM.INPUT gromacs.
+SLICE_SIZE=250000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//435.gromacs/run/run_base_ref_gcc44-64bit.0000/gromacs_base.gcc44-64bit -silent -deffnm gromacs -nice 0 in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//435.gromacs/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+
+real	4m54.889s
+user	4m55.227s
+sys	0m0.057s
+*** Running isimpoint *** Tue 10 Feb 12:28:31 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 250000000 -o gromacs. -- 
+*** Running Step2.sh *** Tue 10 Feb 12:39:11 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated gromacs..T.0.bb
+slicesize=250000000
+inscount=1959515302767
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 gromacs..pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/435.gromacs/run/run_base_ref_gcc44-64bit.0000/gromacs..Data/gromacs..pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 gromacs..ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/435.gromacs/run/run_base_ref_gcc44-64bit.0000/gromacs..Data/gromacs..ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 gromacs..ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/435.gromacs/run/run_base_ref_gcc44-64bit.0000/gromacs..Data/gromacs..ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 gromacs..ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/435.gromacs/run/run_base_ref_gcc44-64bit.0000/gromacs..Data/gromacs..ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//435.gromacs/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Tue 10 Feb 12:39:15 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile gromacs..pintool.1.pp -control_log gromacs..control.log --
+*** Checking controller output*** Tue 10 Feb 12:55:02 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 1209500000000, 1209500138807, 0, 250000000, 250000064, 0
+***** PinPoints: END  ***** Tue 10 Feb 12:55:02 CET 2015

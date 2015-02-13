@@ -1,0 +1,176 @@
+***** PinPoints: START  ***** Tue 10 Feb 01:22:48 CET 2015
+PROGRAM.INPUT astar.BigLakes2048
+SLICE_SIZE=100000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//473.astar/run/run_base_ref_gcc44-64bit.0000/astar_base.gcc44-64bit BigLakes2048.cfg in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//473.astar/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+Small Path Finding Library
+Read configuration file
+Create ways
+BigLakes2048.bin
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 468
+Total way length : 761939
+
+Create reg ways time : 0
+Reg ways quantity : 4603
+Total reg way length : 1417263
+
+Create river ways time : 0
+River ways quantity : 100
+Total river way length : 173223
+Create land ways time : 0
+Land ways quantity : 100
+Total land way length : 148092
+
+Create ways
+Random map
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 236
+Total way length : 252563
+
+Create reg ways time : 0
+Reg ways quantity : 15899
+Total reg way length : 1970873
+
+Create river ways time : 0
+River ways quantity : 0
+Total river way length : 0
+Create land ways time : 0
+Land ways quantity : 0
+Total land way length : 0
+
+
+real	1m52.944s
+user	1m52.963s
+sys	0m0.113s
+*** Running isimpoint *** Tue 10 Feb 01:24:41 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 100000000 -o astar.BigLakes2048 -- 
+Small Path Finding Library
+Read configuration file
+Create ways
+BigLakes2048.bin
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 468
+Total way length : 761939
+
+Create reg ways time : 0
+Reg ways quantity : 4603
+Total reg way length : 1417263
+
+Create river ways time : 0
+River ways quantity : 100
+Total river way length : 173223
+Create land ways time : 0
+Land ways quantity : 100
+Total land way length : 148092
+
+Create ways
+Random map
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 236
+Total way length : 252563
+
+Create reg ways time : 0
+Reg ways quantity : 15899
+Total reg way length : 1970873
+
+Create river ways time : 0
+River ways quantity : 0
+Total river way length : 0
+Create land ways time : 0
+Land ways quantity : 0
+Total land way length : 0
+
+*** Running Step2.sh *** Tue 10 Feb 01:32:54 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated astar.BigLakes2048.T.0.bb
+slicesize=100000000
+inscount=422019715408
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 astar.BigLakes2048.pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/473.astar/run/run_base_ref_gcc44-64bit.0000/astar.BigLakes2048.Data/astar.BigLakes2048.pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 astar.BigLakes2048.ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/473.astar/run/run_base_ref_gcc44-64bit.0000/astar.BigLakes2048.Data/astar.BigLakes2048.ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 astar.BigLakes2048.ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/473.astar/run/run_base_ref_gcc44-64bit.0000/astar.BigLakes2048.Data/astar.BigLakes2048.ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 astar.BigLakes2048.ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/473.astar/run/run_base_ref_gcc44-64bit.0000/astar.BigLakes2048.Data/astar.BigLakes2048.ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//473.astar/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Tue 10 Feb 01:32:55 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile astar.BigLakes2048.pintool.1.pp -control_log astar.BigLakes2048.control.log --
+Small Path Finding Library
+Read configuration file
+Create ways
+BigLakes2048.bin
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 468
+Total way length : 761939
+
+Create reg ways time : 0
+Reg ways quantity : 4603
+Total reg way length : 1417263
+
+Create river ways time : 0
+River ways quantity : 100
+Total river way length : 173223
+Create land ways time : 0
+Land ways quantity : 100
+Total land way length : 148092
+
+Create ways
+Random map
+Create regional map time : 0
+
+Create ways time : 0
+Ways quantity : 236
+Total way length : 252563
+
+Create reg ways time : 0
+Reg ways quantity : 15899
+Total reg way length : 1970873
+
+Create river ways time : 0
+River ways quantity : 0
+Total river way length : 0
+Create land ways time : 0
+Land ways quantity : 0
+Total land way length : 0
+
+*** Checking controller output*** Tue 10 Feb 01:42:35 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 83900000000, 83900003175, 0, 100000000, 100000022, 0
+***** PinPoints: END  ***** Tue 10 Feb 01:42:35 CET 2015

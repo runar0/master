@@ -1,0 +1,269 @@
+***** PinPoints: START  ***** Thu 12 Feb 17:08:55 CET 2015
+PROGRAM.INPUT GemsFDTD.
+SLICE_SIZE=250000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000/GemsFDTD_base.gcc44-64bit  in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+ Welcome to GemsFDTD
+
+ *******PROBLEMSIZE*************************
+ problemsize:         210         210         210
+ *******CELLSIZE****************************
+ dx:  1.00000000000000002E-002
+ dy:  1.00000000000000002E-002
+ dz:  1.00000000000000002E-002
+ *******NSTEP*******************************
+ nstep:        1000
+ *******PLANEWAVE*************************
+ wavedir:   0.0000000000000000        0.0000000000000000        1.0000000000000000     
+ Epol:   1.0000000000000000        0.0000000000000000       -0.0000000000000000     
+ PulseType:           6
+ param:  1.19999999999999999E-009  2.00000000000000007E-010  -1111.0999999999999     
+ X0:   0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ Disttobound:          10
+ ***************PEC*************************
+ Number of components:        28686
+ *******OUTERBOUNDARY***********************
+ #cells:          12
+ R0:   1.00000000000000005E-004
+ proftype:           4
+ *******CFL*********************************
+ CFL:  0.94999999999999996     
+ *******NFTRANS_TD**************************
+ Disttobound:          15
+ Theta_angles_no:           4
+ Theta_interval:   180.00000000000000        360.00000000000000     
+ Phi_angles_no:           1
+ Phi_interval:   0.0000000000000000        0.0000000000000000     
+ Filenamebase: sphere_td
+ *******PROGRESS****************************
+ progress,iteration:   100.00000000000000     
+
+
+ dt*c0 =   5.48482755730144485E-003
+ Number of timesteps to propagate one (x)-cell:  1.82
+ Ret. time arrays allocated in Huygens_mod, bytes used =      7041024
+ Searching for patches in PECinit:
+        7172 X-patches found
+        7172 Y-patches found
+        7172 Z-patches found
+ Fields allocated in UPML_mod, bytes used =    181570800
+
+ pml_cells =           12
+ Using polynomial profile for sigma, with degree           4
+ Arrays allocated in NFT_mod, bytes used =     57126016
+ Size of leading dimension for H-fields = 234
+ Size of leading dimension for E-fields = 235
+ Fields allocated in leapfrog_mod, bytes used =    618978696
+ (   171260352  bytes of this is due to UPML)
+
+ Total amount of Mbytes allocated =   824
+
+ ============================================================
+ Entering timestepping loop
+ Total number of iterations are         1000
+ Starting timer in the beginning of the second time step
+ Iteration no.          100  has been completed
+ Iteration no.          200  has been completed
+ Iteration no.          300  has been completed
+ Iteration no.          400  has been completed
+ Iteration no.          500  has been completed
+ Iteration no.          600  has been completed
+ Iteration no.          700  has been completed
+ Iteration no.          800  has been completed
+ Iteration no.          900  has been completed
+ Iteration no.         1000  has been completed
+ Ending timestepping loop
+ No. of Allocations (         150 )/(         150 ) deallocations.  Ok 
+
+real	7m20.600s
+user	7m19.987s
+sys	0m1.013s
+*** Running isimpoint *** Thu 12 Feb 17:16:16 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 250000000 -o GemsFDTD. -- 
+ Welcome to GemsFDTD
+
+ *******PROBLEMSIZE*************************
+ problemsize:         210         210         210
+ *******CELLSIZE****************************
+ dx:  1.00000000000000002E-002
+ dy:  1.00000000000000002E-002
+ dz:  1.00000000000000002E-002
+ *******NSTEP*******************************
+ nstep:        1000
+ *******PLANEWAVE*************************
+ wavedir:   0.0000000000000000        0.0000000000000000        1.0000000000000000     
+ Epol:   1.0000000000000000        0.0000000000000000       -0.0000000000000000     
+ PulseType:           6
+ param:  1.19999999999999999E-009  2.00000000000000007E-010  -1111.0999999999999     
+ X0:   0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ Disttobound:          10
+ ***************PEC*************************
+ Number of components:        28686
+ *******OUTERBOUNDARY***********************
+ #cells:          12
+ R0:   1.00000000000000005E-004
+ proftype:           4
+ *******CFL*********************************
+ CFL:  0.94999999999999996     
+ *******NFTRANS_TD**************************
+ Disttobound:          15
+ Theta_angles_no:           4
+ Theta_interval:   180.00000000000000        360.00000000000000     
+ Phi_angles_no:           1
+ Phi_interval:   0.0000000000000000        0.0000000000000000     
+ Filenamebase: sphere_td
+ *******PROGRESS****************************
+ progress,iteration:   100.00000000000000     
+
+
+ dt*c0 =   5.48482755730144485E-003
+ Number of timesteps to propagate one (x)-cell:  1.82
+ Ret. time arrays allocated in Huygens_mod, bytes used =      7041024
+ Searching for patches in PECinit:
+        7172 X-patches found
+        7172 Y-patches found
+        7172 Z-patches found
+ Fields allocated in UPML_mod, bytes used =    181570800
+
+ pml_cells =           12
+ Using polynomial profile for sigma, with degree           4
+ Arrays allocated in NFT_mod, bytes used =     57126016
+ Size of leading dimension for H-fields = 234
+ Size of leading dimension for E-fields = 235
+ Fields allocated in leapfrog_mod, bytes used =    618978696
+ (   171260352  bytes of this is due to UPML)
+
+ Total amount of Mbytes allocated =   824
+
+ ============================================================
+ Entering timestepping loop
+ Total number of iterations are         1000
+ Starting timer in the beginning of the second time step
+ Iteration no.          100  has been completed
+ Iteration no.          200  has been completed
+ Iteration no.          300  has been completed
+ Iteration no.          400  has been completed
+ Iteration no.          500  has been completed
+ Iteration no.          600  has been completed
+ Iteration no.          700  has been completed
+ Iteration no.          800  has been completed
+ Iteration no.          900  has been completed
+ Iteration no.         1000  has been completed
+ Ending timestepping loop
+ No. of Allocations (         150 )/(         150 ) deallocations.  Ok 
+*** Running Step2.sh *** Thu 12 Feb 17:30:24 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated GemsFDTD..T.0.bb
+slicesize=250000000
+inscount=2745416766099
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 GemsFDTD..pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000/GemsFDTD..Data/GemsFDTD..pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 GemsFDTD..ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000/GemsFDTD..Data/GemsFDTD..ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 GemsFDTD..ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000/GemsFDTD..Data/GemsFDTD..ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 GemsFDTD..ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000/GemsFDTD..Data/GemsFDTD..ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//459.GemsFDTD/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Thu 12 Feb 17:30:26 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile GemsFDTD..pintool.1.pp -control_log GemsFDTD..control.log --
+ Welcome to GemsFDTD
+
+ *******PROBLEMSIZE*************************
+ problemsize:         210         210         210
+ *******CELLSIZE****************************
+ dx:  1.00000000000000002E-002
+ dy:  1.00000000000000002E-002
+ dz:  1.00000000000000002E-002
+ *******NSTEP*******************************
+ nstep:        1000
+ *******PLANEWAVE*************************
+ wavedir:   0.0000000000000000        0.0000000000000000        1.0000000000000000     
+ Epol:   1.0000000000000000        0.0000000000000000       -0.0000000000000000     
+ PulseType:           6
+ param:  1.19999999999999999E-009  2.00000000000000007E-010  -1111.0999999999999     
+ X0:   0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ Disttobound:          10
+ ***************PEC*************************
+ Number of components:        28686
+ *******OUTERBOUNDARY***********************
+ #cells:          12
+ R0:   1.00000000000000005E-004
+ proftype:           4
+ *******CFL*********************************
+ CFL:  0.94999999999999996     
+ *******NFTRANS_TD**************************
+ Disttobound:          15
+ Theta_angles_no:           4
+ Theta_interval:   180.00000000000000        360.00000000000000     
+ Phi_angles_no:           1
+ Phi_interval:   0.0000000000000000        0.0000000000000000     
+ Filenamebase: sphere_td
+ *******PROGRESS****************************
+ progress,iteration:   100.00000000000000     
+
+
+ dt*c0 =   5.48482755730144485E-003
+ Number of timesteps to propagate one (x)-cell:  1.82
+ Ret. time arrays allocated in Huygens_mod, bytes used =      7041024
+ Searching for patches in PECinit:
+        7172 X-patches found
+        7172 Y-patches found
+        7172 Z-patches found
+ Fields allocated in UPML_mod, bytes used =    181570800
+
+ pml_cells =           12
+ Using polynomial profile for sigma, with degree           4
+ Arrays allocated in NFT_mod, bytes used =     57126016
+ Size of leading dimension for H-fields = 234
+ Size of leading dimension for E-fields = 235
+ Fields allocated in leapfrog_mod, bytes used =    618978696
+ (   171260352  bytes of this is due to UPML)
+
+ Total amount of Mbytes allocated =   824
+
+ ============================================================
+ Entering timestepping loop
+ Total number of iterations are         1000
+ Starting timer in the beginning of the second time step
+ Iteration no.          100  has been completed
+ Iteration no.          200  has been completed
+ Iteration no.          300  has been completed
+ Iteration no.          400  has been completed
+ Iteration no.          500  has been completed
+ Iteration no.          600  has been completed
+ Iteration no.          700  has been completed
+ Iteration no.          800  has been completed
+ Iteration no.          900  has been completed
+ Iteration no.         1000  has been completed
+ Ending timestepping loop
+ No. of Allocations (         150 )/(         150 ) deallocations.  Ok 
+*** Checking controller output*** Thu 12 Feb 17:40:49 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 500000000, 500000006, 0, 250000000, 250000002, 0
+***** PinPoints: END  ***** Thu 12 Feb 17:40:49 CET 2015

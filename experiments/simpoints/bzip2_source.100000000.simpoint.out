@@ -1,0 +1,122 @@
+***** PinPoints: START  ***** Sat  7 Feb 01:11:52 CET 2015
+PROGRAM.INPUT bzip2.source
+SLICE_SIZE=100000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//401.bzip2/run/run_base_ref_gcc44-64bit.0000/bzip2_base.gcc44-64bit /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//401.bzip2/run/run_base_ref_gcc44-64bit.0000/input.source 280 in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//401.bzip2/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+spec_init
+Loading Input Data
+Duplicating 51763200 bytes
+Duplicating 103526400 bytes
+Duplicating 86548480 bytes
+Input data 293601280 bytes in length
+Compressing Input Data, level 5
+Compressed data 54403299 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 7
+Compressed data 53599136 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 9
+Compressed data 52960821 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Tested 280MB buffer: OK!
+
+real	1m12.560s
+user	1m12.610s
+sys	0m0.053s
+*** Running isimpoint *** Sat  7 Feb 01:13:05 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 100000000 -o bzip2.source -- 
+spec_init
+Loading Input Data
+Duplicating 51763200 bytes
+Duplicating 103526400 bytes
+Duplicating 86548480 bytes
+Input data 293601280 bytes in length
+Compressing Input Data, level 5
+Compressed data 54403299 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 7
+Compressed data 53599136 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 9
+Compressed data 52960821 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Tested 280MB buffer: OK!
+*** Running Step2.sh *** Sat  7 Feb 01:20:00 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated bzip2.source.T.0.bb
+slicesize=100000000
+inscount=421150767051
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 bzip2.source.pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/401.bzip2/run/run_base_ref_gcc44-64bit.0000/bzip2.source.Data/bzip2.source.pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 bzip2.source.ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/401.bzip2/run/run_base_ref_gcc44-64bit.0000/bzip2.source.Data/bzip2.source.ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 bzip2.source.ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/401.bzip2/run/run_base_ref_gcc44-64bit.0000/bzip2.source.Data/bzip2.source.ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 bzip2.source.ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/401.bzip2/run/run_base_ref_gcc44-64bit.0000/bzip2.source.Data/bzip2.source.ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//401.bzip2/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Sat  7 Feb 01:20:01 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile bzip2.source.pintool.1.pp -control_log bzip2.source.control.log --
+spec_init
+Loading Input Data
+Duplicating 51763200 bytes
+Duplicating 103526400 bytes
+Duplicating 86548480 bytes
+Input data 293601280 bytes in length
+Compressing Input Data, level 5
+Compressed data 54403299 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 7
+Compressed data 53599136 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Compressing Input Data, level 9
+Compressed data 52960821 bytes in length
+Uncompressing Data
+Uncompressed data 293601280 bytes in length
+Uncompressed data compared correctly
+Tested 280MB buffer: OK!
+*** Checking controller output*** Sat  7 Feb 01:25:44 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 56300000000, 56300004003, 0, 100000000, 100000013, 0
+***** PinPoints: END  ***** Sat  7 Feb 01:25:45 CET 2015

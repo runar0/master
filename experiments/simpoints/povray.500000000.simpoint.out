@@ -1,0 +1,56 @@
+***** PinPoints: START  ***** Mon  9 Feb 11:05:52 CET 2015
+PROGRAM.INPUT povray.
+SLICE_SIZE=500000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//453.povray/run/run_base_ref_gcc44-64bit.0000/povray_base.gcc44-64bit /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//453.povray/run/run_base_ref_gcc44-64bit.0000/SPEC-benchmark-ref.ini in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//453.povray/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+
+real	2m10.393s
+user	2m10.423s
+sys	0m0.077s
+*** Running isimpoint *** Mon  9 Feb 11:08:02 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 500000000 -o povray. -- 
+*** Running Step2.sh *** Mon  9 Feb 11:24:30 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated povray..T.0.bb
+slicesize=500000000
+inscount=995170302997
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 povray..pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/453.povray/run/run_base_ref_gcc44-64bit.0000/povray..Data/povray..pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 povray..ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/453.povray/run/run_base_ref_gcc44-64bit.0000/povray..Data/povray..ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 povray..ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/453.povray/run/run_base_ref_gcc44-64bit.0000/povray..Data/povray..ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 povray..ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/453.povray/run/run_base_ref_gcc44-64bit.0000/povray..Data/povray..ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//453.povray/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Mon  9 Feb 11:24:33 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile povray..pintool.1.pp -control_log povray..control.log --
+*** Checking controller output*** Mon  9 Feb 11:49:27 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 792000000000, 792000013492, 0, 500000000, 500000016, 0
+***** PinPoints: END  ***** Mon  9 Feb 11:49:27 CET 2015

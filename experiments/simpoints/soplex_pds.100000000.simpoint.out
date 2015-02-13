@@ -1,0 +1,158 @@
+***** PinPoints: START  ***** Sat  7 Feb 11:56:12 CET 2015
+PROGRAM.INPUT soplex.pds
+SLICE_SIZE=100000000
+CUTOFF=.99
+Running /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000/soplex_base.gcc44-64bit -s1 -e -m45000 /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000/pds-50.mps in /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000
+PIN_PREFIX=
+Delta   =     1.000000e-06
+Epsilon =     1.000000e-17
+Leaving algorithm
+Column representation
+Forest-Tomlin update
+Steep pricing
+Fast ratiotest
+No scaling
+General simplifier
+Weight starter
+loading LP file /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000/pds-50.mps
+LP has 83060	rows and
+       270095	columns
+solving LP
+SPxRem1SM:	removed 1237 row(s)
+SPxRem1SM:	removed 1014 column(s)
+SPxRem1SM:	removed 290 row(s)
+SPxRem1SM:	removed 132 column(s)
+SPxRem1SM:	removed 99 row(s)
+SPxRem1SM:	removed 99 column(s)
+SPxAggregateSM:	removed 11543 row(s) and column(s)
+SPxAggregateSM:	delta = -9.870000e+07
+SPxRedundantSM: removed 803 column(s)
+SPxRedundantSM:	removed 292 row(s)
+SPxAggregateSM:	removed 29828 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+SPxAggregateSM:	removed 861 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+removed 44150 rows
+removed 44280 columns
+Finished solving (status=-6)
+aborted due to iteration limit
+solution value is: 1.5022603e+10
+
+
+real	1m57.929s
+user	1m57.650s
+sys	0m0.433s
+*** Running isimpoint *** Sat  7 Feb 11:58:10 CET 2015
+PIN_PREFIX= pin  -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/isimpoint.so  -slice_size 100000000 -o soplex.pds -- 
+Delta   =     1.000000e-06
+Epsilon =     1.000000e-17
+Leaving algorithm
+Column representation
+Forest-Tomlin update
+Steep pricing
+Fast ratiotest
+No scaling
+General simplifier
+Weight starter
+loading LP file /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000/pds-50.mps
+LP has 83060	rows and
+       270095	columns
+solving LP
+SPxRem1SM:	removed 1237 row(s)
+SPxRem1SM:	removed 1014 column(s)
+SPxRem1SM:	removed 290 row(s)
+SPxRem1SM:	removed 132 column(s)
+SPxRem1SM:	removed 99 row(s)
+SPxRem1SM:	removed 99 column(s)
+SPxAggregateSM:	removed 11543 row(s) and column(s)
+SPxAggregateSM:	delta = -9.870000e+07
+SPxRedundantSM: removed 803 column(s)
+SPxRedundantSM:	removed 292 row(s)
+SPxAggregateSM:	removed 29828 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+SPxAggregateSM:	removed 861 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+removed 44150 rows
+removed 44280 columns
+Finished solving (status=-6)
+aborted due to iteration limit
+solution value is: 1.5022603e+10
+
+*** Running Step2.sh *** Sat  7 Feb 12:06:10 CET 2015
+WARMUP FACTOR = 0
+CUTOFF = .99
+Filtered CUTOFF = 0.99
+CUTOFF_SUFFIX = .lpt0.99
+Welcome to Step 2 : Generating pinpoints file
+This step is almost completely automated.
+/home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin/simpoint
+PATH set correctly.
+ Name the profile file generated in Step1:
+Concatenated soplex.pds.T.0.bb
+slicesize=100000000
+inscount=379850639046
+Ran UCSD Cluster Analysis Successfully
+
+Creating pinpoints file : version1:
+      What is the prefix for the file (short name of your program)?
+Creating pinpoints file for PIN tools:
+ppgen.3 soplex.pds.pintool t.bb t.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/450.soplex/run/run_base_ref_gcc44-64bit.0000/soplex.pds.Data/soplex.pds.pintool.1.pp.
+Creating pinpoints file #2 for PIN tools:
+pick_alternate_simpoints.sh 2 t.simpoints.lpt0.99 t.labels > t.2.simpoints.lpt0.99
+ppgen.3 soplex.pds.ALT2.pintool t.bb t.2.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/450.soplex/run/run_base_ref_gcc44-64bit.0000/soplex.pds.Data/soplex.pds.ALT2.pintool.1.pp.
+Creating pinpoints file #3 for PIN tools:
+pick_alternate_simpoints.sh 3 t.simpoints.lpt0.99 t.labels > t.3.simpoints.lpt0.99
+ppgen.3 soplex.pds.ALT3.pintool t.bb t.3.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/450.soplex/run/run_base_ref_gcc44-64bit.0000/soplex.pds.Data/soplex.pds.ALT3.pintool.1.pp.
+Creating pinpoints file #4 for PIN tools:
+pick_alternate_simpoints.sh 4 t.simpoints.lpt0.99 t.labels > t.4.simpoints.lpt0.99
+ppgen.3 soplex.pds.ALT4.pintool t.bb t.4.simpoints.lpt0.99 t.weights.lpt0.99 t.labels 0 >& ppgen.out
+
+Generated alternate pinpoints file /home/runar/workspace/master/benchmark/spec2006/benchspec/CPU2006/450.soplex/run/run_base_ref_gcc44-64bit.0000/soplex.pds.Data/soplex.pds.ALT4.pintool.1.pp.
+Step2:  Done 
+*** Changing dir to /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000 ***
+*** Running controller *** Sat  7 Feb 12:06:13 CET 2015
+PIN_PREFIX= pin -t /home/runar/workspace/master/tools/simpoint/pintools/source/tools/PinPoints/bin-ia32e/controller.so -ppfile soplex.pds.pintool.1.pp -control_log soplex.pds.control.log --
+Delta   =     1.000000e-06
+Epsilon =     1.000000e-17
+Leaving algorithm
+Column representation
+Forest-Tomlin update
+Steep pricing
+Fast ratiotest
+No scaling
+General simplifier
+Weight starter
+loading LP file /home/runar/workspace/master//benchmark/spec2006/benchspec/CPU2006//450.soplex/run/run_base_ref_gcc44-64bit.0000/pds-50.mps
+LP has 83060	rows and
+       270095	columns
+solving LP
+SPxRem1SM:	removed 1237 row(s)
+SPxRem1SM:	removed 1014 column(s)
+SPxRem1SM:	removed 290 row(s)
+SPxRem1SM:	removed 132 column(s)
+SPxRem1SM:	removed 99 row(s)
+SPxRem1SM:	removed 99 column(s)
+SPxAggregateSM:	removed 11543 row(s) and column(s)
+SPxAggregateSM:	delta = -9.870000e+07
+SPxRedundantSM: removed 803 column(s)
+SPxRedundantSM:	removed 292 row(s)
+SPxAggregateSM:	removed 29828 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+SPxAggregateSM:	removed 861 row(s) and column(s)
+SPxAggregateSM:	delta = -5.289000e+08
+removed 44150 rows
+removed 44280 columns
+Finished solving (status=-6)
+aborted due to iteration limit
+solution value is: 1.5022603e+10
+
+*** Checking controller output*** Sat  7 Feb 12:28:29 CET 2015
+Pinpoint, Start, Actual_Start, %delta_start, Length, Actual_length, %delta_start
+1, 201000000000, 200754100176, -.122, 100000000, 100000001, 0
+***** PinPoints: END  ***** Sat  7 Feb 12:28:29 CET 2015
