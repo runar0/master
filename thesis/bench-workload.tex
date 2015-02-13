@@ -1,8 +1,60 @@
 
 \chapter{Bechmarks and Workloads}
 
+In this chapter, we will present the benchmarks used to evaluate cache partition algorithms.
+We explain how the we extracted simulation traces from benchmarks and how we created 4-, 8-, and 16-core workloads based on those traces.
+
+\section{Benchmarks}
+
+In all our experiments, we are utilizing benchmarks from the SPEC CPU2006\todo{site} benchmark suite. 
+We choose suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test performance of various computer architecture using workloads based on real user applications.
+Unless otherwise stated we always use the first reference data input set for each benchmark.
+
+Simulating an entire benchmark run can in some cases take hours.
+For this reason, it is common practice to only simulate parts of a benchmark and use the results of the partial run as the benchmark results.
+A naive approach to this is to specify constant limits, such as fast-forward 500M instruction and then simulate 100M. 
+By first fast-forwarding a number of instructions one hope to complete the program startup phase.
+During this phase, the program does initial allocations and various preparations, not representative for the overall runtime.
+However, there is no guarantee that the selected limit is enough for the benchmark to complete this phase.
+In our work, we employ a more sophisticated solution using the SimPoint\todo{cite} tool.
+
+\subsection{SimPoint} \todo{Move this section to the background chapter, also bring along some of the text above}
+SimPoint\todo{cite} is a tool based on Pin\todo{cite} that analyzes a running program and attempts to extract intervals from the instruction stream that are representative for the entire program.
+Put simply it does this by first analyzing the program and dividing it into basic blocks.
+A basic block is a group of instructions with only single entry point, at the first instruction, and a single exit point, at the last.
+It will then analyze the instruction stream of the program while running, dividing it into intervals of a requested size. 
+For each interval is classified using a Basic Block Vector (BBV).
+The BBV contains an entry for each basic block in the program and a counter indicating how many times the interval executed this block.
+Figure~\todo{create,ref} shows an example of a program divided into basic blocks and an instruction stream divided into intervals.
+
+After classifying all intervals, SimPoint uses K-means clustering to create K clusters of intervals. 
+Within each cluster, the interval closest to the cluster center is selected to represent the cluster. 
+The output of SimPoint is the start and length of each cluster's representative interval, along with a weight indicating how much of the entire program execution this cluster represents.
+
+Previous work by X\todo{cite} has compared the simulation results of SimPoint selected intervals and the naive solution to those of simulating the entire program. 
+When using SimPoint selected intervals, each interval is simulated independently and a weighted sum of simulation results is created using the SimPoint generated weights.
+X show that using SimPoint selected intervals can improve the accuracy of the simulation results. They also show that the value of K, the number of intervals returned, and the length of the interval effect the accuracy of the solution.
+
+\subsection{Trace Generation} \todo{No need for a sub-section once the above text has moved}
+In this work, we choose to extract only a single interval from each SimPoint run.
+By doing so we are willingly increasing the error between simulating our interval and the results obtained by simulating the entire benchmark.
+Because we are investigating performance changes due to various architectural choices, we find that this increased error will not affect our results in a negative manner.
+Having only one interval per benchmark greatly simplifies the process of simulation.
+We only have to do one simulation per benchmark, and the results of this simulation are equal to the weighted results as the weight will always equal one.
+
+The length chosen for our intervals may also affect the final results.
+First, as caches are empty when simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results.
+Additionally, as we are experimenting with cache partitioning algorithms, we believe that a certain number of instructions are needed for our results to stabilize.
+Based on these observations we choose to run SimPoint with three different interval sizes per benchmark, 100M, 250M and 500M instructions.
+For each SimPoint extracted interval, a trace file, containing the instruction stream within the interval, is generated using Sniper.
+We use this trace files for all later experiments.
+
 \section{Benchmark Classification}
-\todo{Formalize classification experiment from project, and re-examin the data}
+\todo{Formalize classification experiment from project and re-examine the data}
+
+Cache L3 - 256kB, 512kB, 1MB, 2MB, 4MB
+Mem bus - 1.6, 3.2, 6.4, 12.8
+
 
 \section{Workloads}
 \todo{Generate new workloads, this time 4, 8, 16 core workloads}
