@@ -3,12 +3,20 @@
 import sys
 from os import path
 
-def convert_to_traces(tracedir, benchmarks):
+def convert_to_traces(tracedir, benchmarks, length):
 	parsed = []
+
+	if length == '100M':
+		length = 100000000
+	elif length == '250M':
+		length = 250000000
+	else:
+		length = 500000000
+
 	for run in benchmarks:
 		item = []
 		for benchmark in run:
-			name = path.realpath('%s/%s' % (tracedir, benchmark))
+			name = path.realpath('%s/%s.%d' % (tracedir, benchmark, length))
 			if not path.exists(name + '.sift'):
 				sys.exit('Missing trace for %s (%s.sift)' % (benchmark, name))
 
@@ -21,7 +29,7 @@ def convert_to_traces(tracedir, benchmarks):
 		parsed.append(run)
 	return parsed
 
-def get_benchmarks(tracedir, benchmarks):
+def get_benchmarks(tracedir, benchmarks, length):
 	"""  """
 
 	if not type(benchmarks) is list:
@@ -36,7 +44,7 @@ def get_benchmarks(tracedir, benchmarks):
 			parsed.append(benchmark.split('-'))
 
 
-	return convert_to_traces(tracedir, parsed)
+	return convert_to_traces(tracedir, parsed, length)
 
 
 

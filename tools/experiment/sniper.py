@@ -28,6 +28,9 @@ def build_config_string(config, cores):
 	variables.append('-g perf_model/l1_dcache/outstanding_misses=%d' % config['core']['mshr'])
 	variables.append('-g perf_model/l2_cache/outstanding_misses=%d' % (config['core']['mshr2']))
 
+	# Membus
+	variables.append('-g perf_model/dram/per_controller_bandwidth=%f' % (config['membus']['bw']))
+
 	return ' '.join(variables)
 
 
