@@ -15,27 +15,27 @@ profiles = {
 	},
 	'l3' : {
 		# Classify experiment profiles
-		'C-0.25':  {'size':  0.25*1024, 'tags': 2, 'data': 6},
-		'C-0.50':  {'size':  0.50*1024, 'tags': 2, 'data': 6},
-		'C-1.00':  {'size':  1.00*1024, 'tags': 2, 'data': 6},
-		'C-2.00':  {'size':  2.00*1024, 'tags': 2, 'data': 6},
-		'C-4.00':  {'size':  4.00*1024, 'tags': 2, 'data': 6},
+		'C-0_25':  {'size':  0.25*1024, 'tags': 2, 'data': 6, 'ways': 2},
+		'C-0_50':  {'size':  0.50*1024, 'tags': 2, 'data': 6, 'ways': 4},
+		'C-1_00':  {'size':  1.00*1024, 'tags': 2, 'data': 6, 'ways': 8},
+		'C-2_00':  {'size':  2.00*1024, 'tags': 2, 'data': 6, 'ways': 16},
+		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
 
 		# General profiles
-		'4M':  {'size':  4*1024, 'tags': 2, 'data': 6},
-		'8M':  {'size':  8*1024, 'tags': 3, 'data': 7},
-		'16M': {'size': 16*1024, 'tags': 3, 'data': 9},
-		'32M': {'size': 32*1024, 'tags': 3, 'data': 10},
+		'4M':  {'size':  4*1024, 'tags': 2, 'data': 6, 'ways': 32},
+		'8M':  {'size':  8*1024, 'tags': 3, 'data': 7, 'ways': 32},
+		'16M': {'size': 16*1024, 'tags': 3, 'data': 9, 'ways': 32},
+		'32M': {'size': 32*1024, 'tags': 3, 'data': 10, 'ways': 32},
 	},
 	'membus': {
 		# Classify experiment profiles
-		'C-12.8': { 'bw': 12.8 },
-		'C-06.4':  { 'bw':  6.4 },
-		'C-03.2':  { 'bw':  3.2 },
-		'C-01.6':  { 'bw':  1.6 },
+		'C-12_8': { 'bw': 12.8 },
+		'C-06_4':  { 'bw':  6.4 },
+		'C-03_2':  { 'bw':  3.2 },
+		'C-01_6':  { 'bw':  1.6 },
 
 
-		'12.8': { 'bw': 12.8 },
+		'12_8': { 'bw': 12.8 },
 	},
 	'replacement': {
 		'lru': {'policy': 'lru'},

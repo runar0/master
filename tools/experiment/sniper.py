@@ -9,6 +9,8 @@ def build_config_string(config, cores):
 		variables.append('-g perf_model/%s_cache/cache_size=%d' % (cache, config[cache]['size']))
 		variables.append('-g perf_model/%s_cache/tags_access_time=%d' % (cache, config[cache]['tags']))
 		variables.append('-g perf_model/%s_cache/data_access_time=%d' % (cache, config[cache]['data']))
+		if 'ways' in config[cache]:
+			variables.append('-g perf_model/%s_cache/associativity=%d' % (cache, config[cache]['ways']))
 
 	variables.append('-g perf_model/l3_cache/shared_cores=%d' % cores)
 	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % config['policy']['policy'])
