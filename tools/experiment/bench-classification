@@ -1,0 +1,188 @@
+#!/usr/bin/env python
+
+# Automatic benchmark classification based on a --experiement-classification run
+
+import argparse
+import os
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib import cm
+import scipy.interpolate as interpolate
+import re
+
+from os import path
+from sys import exit
+import collections
+
+from build import profiles
+from benchmarks import benchmark_sets
+
+CLASSIFY_LIMIT = 0.85
+
+def extract_ipc(filename):
+	ipc = None
+	with open(filename) as f:
+		for line in f:
+			line = line.split(' = ')
+			if line[0] == 'ipc':
+				ipc = float(line[1])
+	return ipc
+
+
+parser = argparse.ArgumentParser(description='Perform a automatic benchmark classification')
+parser.add_argument('--dir', default='.', help='Experiment run directory')
+parser.add_argument('--figout', default='_figures/speedup/', help='Figure output directory')
+parser.add_argument('--pyout', default='_gen/', help='Generated python script output directory')
+
+args = parser.parse_args()
+
+if not path.exists(args.dir):
+	exit('Run directory %s does not exist!' % args.dir)
+
+if not path.exists(args.figout):
+	os.makedirs(args.figout)
+	print 'Created output directory %s' % args.figout
+
+if not path.exists(args.pyout):
+	os.makedirs(args.pyout)
+	print 'Created output directory %s' % args.pyout
+
+rundir = path.realpath(args.dir)
+
+benchmarks = {}
+
+for subdir, dirs, files in os.walk(rundir):
+	for dirname in dirs:		
+		# TODO: For now we only handle 100M runs, we should handle them all and report any differences!
+		if dirname.find('.100M.') == -1:
+			continue
+
+		# NOTE: Due to a bug in build, early sensitivity runs will use . both to separate variables and in floats, newer versions use _ to separate floats, we fix this here
+		name = re.sub('-(\d+)\.(\d+)', '-\g<1>_\g<2>', dirname)
+
+		parts = name.split('.')
+
+		if parts[0].find('-') != -1:
+			exit("Expected only benchmark runs in classification experiment, found workload run %s" % parts[0])
+
+		if parts[0] not in benchmarks:
+			benchmarks[parts[0]] = {}
+
+
+		membus = l3 = None
+		for part in parts:
+			config = part.replace('_', '.').split('-')
+			if config[0] == "membus":
+				if config[1] != "C":
+					exit('Expecting all runs to be with classification profiles, unexpected membus profile %s' % part)
+				membus = config[2]
+
+			if config[0] == "l3":
+				if config[1] != "C":
+					exit('Expecting all runs to be with classification profiles, unexpected l3 profile %s' % part)
+				l3 = config[2]
+
+		if membus not in benchmarks[parts[0]]:
+			benchmarks[parts[0]][membus] = {}
+		benchmarks[parts[0]][membus][l3] = extract_ipc(path.join(rundir, dirname, 'stats-benchmark-0.txt'))
+
+
+# Sort data
+for benchmark in benchmarks:
+	for membus in benchmarks[benchmark]:
+		benchmarks[benchmark][membus] = collections.OrderedDict(sorted(benchmarks[benchmark][membus].items(), reverse=True))
+	benchmarks[benchmark] = collections.OrderedDict(sorted(benchmarks[benchmark].items(), reverse=True))
+
+# Create surface plots showing relative IPC difference
+for benchmark in benchmarks:
+	continue
+	x = []
+	y = []
+	z = []
+
+	base = float(benchmarks[benchmark]['12.8']['4.00'])
+	for membus in benchmarks[benchmark]:
+		for cache in benchmarks[benchmark][membus]:
+			x.append(float(membus))
+			y.append(float(cache))
+			z.append(float(benchmarks[benchmark][membus][cache])/base)
+
+	x = np.array(x, dtype=np.float)
+	y = np.array(y, dtype=np.float)
+	z = np.array(z, dtype=np.float)
+
+	from mpl_toolkits.mplot3d import axes3d
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+
+	X,Y = np.meshgrid(x,y)
+	Z = interpolate.griddata((x, y), z, (X, Y), method='nearest')
+
+	ax.plot_surface(X, Y, Z, rstride=1, cstride=1)
+
+	plt.xticks(np.array(benchmarks[benchmark].keys(), dtype=np.float))
+	plt.yticks(np.array(benchmarks[benchmark]['12.8'].keys(), dtype=np.float))
+
+
+	plt.suptitle('Sensitivity analysis of %s' % benchmark)
+	ax.set_xlabel('Membus speed (GB/s)')
+	ax.set_ylabel('L3 Cache size (MB)')
+	ax.set_zlabel('IPC (Relative to 12.8GB/s 4MB)')
+
+	ax.set_zlim3d(0.4, 1.1)
+
+	ax.view_init(elev=10., azim=45+180)
+
+	plt.savefig(path.join(args.figout, '%s.png' % (benchmark)), frameon=False, bbox_inches='tight')
+	plt.clf()
+
+classified = { 'co': [], 'bw': [], 'ca': [], 'ca-bw': []}
+# Classify benchmarks
+for benchmark in benchmarks:
+	print "Benchmark: %s" % benchmark
+
+	values = []
+	for membus in benchmarks[benchmark]:
+		prev = None
+		for l3size in benchmarks[benchmark][membus]:
+			if prev != None:
+				values.append(benchmarks[benchmark][membus][l3size]/benchmarks[benchmark][membus][prev])
+			prev = l3size
+
+	meanCacheDiff = np.mean(values)
+	stdCacheDiff = np.std(values)
+	cacheSense = meanCacheDiff <= CLASSIFY_LIMIT
+
+	print "\tCache%s\t: MEAN: %.3f STD: %.3f" % ("*" if cacheSense else " ", meanCacheDiff, stdCacheDiff)
+
+	values = []
+	for l3size in benchmarks[benchmark]['12.8']:
+		prev = None
+		for membus in benchmarks[benchmark]:
+			if prev != None:
+				values.append(benchmarks[benchmark][membus][l3size]/benchmarks[benchmark][prev][l3size])
+			prev = membus
+
+	meanMemDiff = np.mean(values)
+	stdMemDiff = np.std(values)
+	memSense = meanMemDiff <= CLASSIFY_LIMIT
+
+	print "\tMemory%s\t: MEAN: %.3f STD: %.3f" % ("*" if memSense else " ", meanMemDiff, stdMemDiff)
+
+	if cacheSense:
+		if memSense:
+			classified['ca-bw'].append(benchmark)
+		else:
+			classified['ca'].append(benchmark)
+	else:
+		if memSense:
+			classified['bw'].append(benchmark)
+		else:
+			classified['co'].append(benchmark)		
+
+
+for group in classified:
+	print "%s:" % group
+	for benchmark in classified[group]:
+		print "\t%s" % benchmark
