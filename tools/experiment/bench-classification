@@ -7,6 +7,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
+from mpl_toolkits.mplot3d import axes3d
 import scipy.interpolate as interpolate
 
 from os import path
@@ -16,7 +17,7 @@ import collections
 from build import profiles
 from benchmarks import benchmark_sets
 
-CLASSIFY_LIMIT = 0.85
+CLASSIFY_LIMIT = 0.94
 
 def extract_ipc(filename):
 	ipc = None
@@ -91,6 +92,7 @@ for benchmark in benchmarks:
 
 # Create surface plots showing relative IPC difference
 for benchmark in benchmarks:
+	continue
 	x = []
 	y = []
 	z = []
@@ -98,7 +100,6 @@ for benchmark in benchmarks:
 	base = float(benchmarks[benchmark]['12.8']['4.00'])
 	for membus in benchmarks[benchmark]:
 		for cache in benchmarks[benchmark][membus]:
-			print (membus,cache)
 			x.append(float(membus))
 			y.append(float(cache))
 			z.append(float(benchmarks[benchmark][membus][cache])/base)
@@ -106,8 +107,6 @@ for benchmark in benchmarks:
 	x = np.array(x, dtype=np.float)
 	y = np.array(y, dtype=np.float)
 	z = np.array(z, dtype=np.float)
-
-	from mpl_toolkits.mplot3d import axes3d
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
@@ -146,9 +145,9 @@ for benchmark in benchmarks:
 				values.append(benchmarks[benchmark][membus][l3size]/benchmarks[benchmark][membus][prev])
 			prev = l3size
 
-	meanCacheDiff = np.mean(values)
+	meanCacheDiff = np.average(values)
 	stdCacheDiff = np.std(values)
-	cacheSense = meanCacheDiff <= CLASSIFY_LIMIT
+	cacheSense = meanCacheDiff <= 0.965 if stdCacheDiff < 0.114 else meanCacheDiff <= 0.87
 
 	print "\tCache%s\t: MEAN: %.3f STD: %.3f" % ("*" if cacheSense else " ", meanCacheDiff, stdCacheDiff)
 
@@ -160,9 +159,9 @@ for benchmark in benchmarks:
 				values.append(benchmarks[benchmark][membus][l3size]/benchmarks[benchmark][prev][l3size])
 			prev = membus
 
-	meanMemDiff = np.mean(values)
+	meanMemDiff = np.average(values)
 	stdMemDiff = np.std(values)
-	memSense = meanMemDiff <= CLASSIFY_LIMIT
+	memSense = meanMemDiff <= 0.925 if stdMemDiff < 0.114 else meanMemDiff <= 0.8
 
 	print "\tMemory%s\t: MEAN: %.3f STD: %.3f" % ("*" if memSense else " ", meanMemDiff, stdMemDiff)
 
@@ -182,3 +181,4 @@ for group in classified:
 	print "%s:" % group
 	for benchmark in classified[group]:
 		print "\t%s" % benchmark
+

@@ -54,7 +54,7 @@ for subdir, dirs, files in os.walk(rundir):
 			continue;
 
 		benchmarks = run_name.split('-')
-		algorithm = run[1]
+		algorithm = run[2]
 
 		if len(benchmarks) == 1:
 			benchmark_results[algorithm][run_name] = extract_ipc('%s/%s/stats-benchmark-0.txt' % (rundir, name))
