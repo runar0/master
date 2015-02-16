@@ -82,7 +82,7 @@ if __name__ == '__main__':
 	parser.add_argument('--l3-profile', choices=profiles['l3'].keys(), default=['4M'], nargs='*')
 	parser.add_argument('--replacement-profile', choices=profiles['replacement'].keys(), default=['lru'], nargs='*')
 	parser.add_argument('--core-profile', choices=profiles['core'].keys(), default=['default'], nargs='*')
-	parser.add_argument('--membus-profile', choices=profiles['membus'].keys(), default=['12.8'], nargs='*')
+	parser.add_argument('--membus-profile', choices=profiles['membus'].keys(), default=['12_8'], nargs='*')
 
 	# Trace length
 	parser.add_argument('--trace-length', choices=['100M', '250M', '500M'], default='100M')

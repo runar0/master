@@ -8,7 +8,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 import scipy.interpolate as interpolate
-import re
 
 from os import path
 from sys import exit
@@ -52,13 +51,10 @@ rundir = path.realpath(args.dir)
 benchmarks = {}
 
 for subdir, dirs, files in os.walk(rundir):
-	for dirname in dirs:		
+	for name in dirs:		
 		# TODO: For now we only handle 100M runs, we should handle them all and report any differences!
-		if dirname.find('.100M.') == -1:
+		if name.find('.100M.') == -1:
 			continue
-
-		# NOTE: Due to a bug in build, early sensitivity runs will use . both to separate variables and in floats, newer versions use _ to separate floats, we fix this here
-		name = re.sub('-(\d+)\.(\d+)', '-\g<1>_\g<2>', dirname)
 
 		parts = name.split('.')
 
@@ -84,7 +80,7 @@ for subdir, dirs, files in os.walk(rundir):
 
 		if membus not in benchmarks[parts[0]]:
 			benchmarks[parts[0]][membus] = {}
-		benchmarks[parts[0]][membus][l3] = extract_ipc(path.join(rundir, dirname, 'stats-benchmark-0.txt'))
+		benchmarks[parts[0]][membus][l3] = extract_ipc(path.join(rundir, name, 'stats-benchmark-0.txt'))
 
 
 # Sort data
@@ -95,7 +91,6 @@ for benchmark in benchmarks:
 
 # Create surface plots showing relative IPC difference
 for benchmark in benchmarks:
-	continue
 	x = []
 	y = []
 	z = []
@@ -103,6 +98,7 @@ for benchmark in benchmarks:
 	base = float(benchmarks[benchmark]['12.8']['4.00'])
 	for membus in benchmarks[benchmark]:
 		for cache in benchmarks[benchmark][membus]:
+			print (membus,cache)
 			x.append(float(membus))
 			y.append(float(cache))
 			z.append(float(benchmarks[benchmark][membus][cache])/base)
