@@ -31,21 +31,17 @@ def extract_ipc(filename):
 
 parser = argparse.ArgumentParser(description='Perform a automatic benchmark classification')
 parser.add_argument('--dir', default='.', help='Experiment run directory')
-parser.add_argument('--figout', default='_figures/speedup/', help='Figure output directory')
-parser.add_argument('--pyout', default='_gen/', help='Generated python script output directory')
+parser.add_argument('--out', default='_figures/speedup/', help='Figure output directory')
 
 args = parser.parse_args()
 
 if not path.exists(args.dir):
 	exit('Run directory %s does not exist!' % args.dir)
 
-if not path.exists(args.figout):
-	os.makedirs(args.figout)
-	print 'Created output directory %s' % args.figout
+if not path.exists(args.out):
+	os.makedirs(args.out)
+	print 'Created output directory %s' % args.out
 
-if not path.exists(args.pyout):
-	os.makedirs(args.pyout)
-	print 'Created output directory %s' % args.pyout
 
 rundir = path.realpath(args.dir)
 
@@ -129,7 +125,7 @@ for benchmark in benchmarks:
 
 	ax.view_init(elev=10., azim=45+180)
 
-	plt.savefig(path.join(args.figout, '%s.png' % (benchmark)), frameon=False, bbox_inches='tight')
+	plt.savefig(path.join(args.out, '%s.png' % (benchmark)), frameon=False, bbox_inches='tight')
 	plt.clf()
 
 classified = { 'co': [], 'bw': [], 'ca': [], 'ca-bw': []}
@@ -177,8 +173,45 @@ for benchmark in benchmarks:
 			classified['co'].append(benchmark)		
 
 
+# TODO Dump to file 
 for group in classified:
 	print "%s:" % group
+	classified[group].sort()
 	for benchmark in classified[group]:
 		print "\t%s" % benchmark
 
+import random
+from itertools import permutations
+
+print ""
+print "Workloads:"
+random.seed("deadbeef")
+
+# Generate benchmarks:
+for group in ['ca', 'bw', 'ca-bw', 'co', 'ra']:
+	count = 10
+	if group == 'ra':
+		pool = list(permutations(classified['ca']+classified['bw']+classified['ca-bw']+classified['co'], 4))
+		count = 20
+	else:
+		pool = list(permutations(classified[group], 4))
+
+	workloads = []
+	done = False
+
+	while not done:
+		workloads = []
+		cover = []
+		for i in range(count):
+			permuation = pool[random.randint(0,len(pool))]
+			workloads.append(permuation)
+			for workload in permuation:
+				cover.append(workload)
+
+		if group == 'ra' or len(set(classified[group])) == len(set(cover)):
+			done = True
+
+
+	print "Group: %s" % group
+	for workload in workloads:
+		print "\t%s" % '-'.join(workload)
