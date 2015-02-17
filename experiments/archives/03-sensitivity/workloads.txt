@@ -1,0 +1,187 @@
+Benchmark: GemsFDTD
+	Cache*	: MEAN: 0.918 STD: 0.113
+	Memory*	: MEAN: 0.837 STD: 0.074
+Benchmark: hmmer
+	Cache*	: MEAN: 0.910 STD: 0.076
+	Memory 	: MEAN: 0.947 STD: 0.043
+Benchmark: sphinx3
+	Cache*	: MEAN: 0.867 STD: 0.194
+	Memory*	: MEAN: 0.837 STD: 0.071
+Benchmark: gobmk
+	Cache*	: MEAN: 0.939 STD: 0.058
+	Memory 	: MEAN: 0.972 STD: 0.025
+Benchmark: cactusADM
+	Cache 	: MEAN: 0.986 STD: 0.013
+	Memory*	: MEAN: 0.914 STD: 0.046
+Benchmark: tonto
+	Cache*	: MEAN: 0.962 STD: 0.063
+	Memory 	: MEAN: 0.988 STD: 0.018
+Benchmark: bwaves
+	Cache 	: MEAN: 0.998 STD: 0.005
+	Memory*	: MEAN: 0.743 STD: 0.089
+Benchmark: lbm
+	Cache 	: MEAN: 0.966 STD: 0.067
+	Memory*	: MEAN: 0.880 STD: 0.054
+Benchmark: wrf
+	Cache 	: MEAN: 0.983 STD: 0.031
+	Memory 	: MEAN: 0.955 STD: 0.025
+Benchmark: bzip2
+	Cache*	: MEAN: 0.841 STD: 0.075
+	Memory 	: MEAN: 0.929 STD: 0.058
+Benchmark: leslie3d
+	Cache 	: MEAN: 0.999 STD: 0.017
+	Memory*	: MEAN: 0.851 STD: 0.078
+Benchmark: gromacs
+	Cache*	: MEAN: 0.963 STD: 0.029
+	Memory 	: MEAN: 0.962 STD: 0.026
+Benchmark: sjeng
+	Cache 	: MEAN: 0.989 STD: 0.019
+	Memory 	: MEAN: 0.988 STD: 0.009
+Benchmark: calculix
+	Cache 	: MEAN: 1.000 STD: 0.000
+	Memory 	: MEAN: 0.999 STD: 0.000
+Benchmark: astar
+	Cache 	: MEAN: 0.972 STD: 0.011
+	Memory*	: MEAN: 0.855 STD: 0.066
+Benchmark: zeusmp
+	Cache 	: MEAN: 0.972 STD: 0.012
+	Memory*	: MEAN: 0.922 STD: 0.053
+Benchmark: povray
+	Cache 	: MEAN: 0.910 STD: 0.154
+	Memory 	: MEAN: 0.982 STD: 0.036
+Benchmark: omnetpp
+	Cache*	: MEAN: 0.915 STD: 0.023
+	Memory*	: MEAN: 0.843 STD: 0.067
+Benchmark: mcf
+	Cache*	: MEAN: 0.925 STD: 0.016
+	Memory*	: MEAN: 0.826 STD: 0.071
+Benchmark: gcc
+	Cache*	: MEAN: 0.910 STD: 0.054
+	Memory*	: MEAN: 0.889 STD: 0.057
+Benchmark: h264ref
+	Cache*	: MEAN: 0.942 STD: 0.031
+	Memory 	: MEAN: 0.965 STD: 0.026
+Benchmark: perlbench
+	Cache*	: MEAN: 0.941 STD: 0.063
+	Memory 	: MEAN: 0.939 STD: 0.035
+Benchmark: xalancbmk
+	Cache*	: MEAN: 0.964 STD: 0.036
+	Memory*	: MEAN: 0.849 STD: 0.059
+Benchmark: dealII
+	Cache*	: MEAN: 0.898 STD: 0.091
+	Memory 	: MEAN: 0.941 STD: 0.056
+Benchmark: namd
+	Cache 	: MEAN: 1.000 STD: 0.000
+	Memory 	: MEAN: 0.998 STD: 0.001
+Benchmark: libquantum
+	Cache 	: MEAN: 1.000 STD: 0.001
+	Memory*	: MEAN: 0.811 STD: 0.107
+Benchmark: gamess
+	Cache 	: MEAN: 0.965 STD: 0.055
+	Memory 	: MEAN: 0.991 STD: 0.015
+Benchmark: soplex
+	Cache*	: MEAN: 0.904 STD: 0.050
+	Memory*	: MEAN: 0.814 STD: 0.078
+Benchmark: milc
+	Cache 	: MEAN: 1.003 STD: 0.005
+	Memory*	: MEAN: 0.818 STD: 0.090
+ca:
+	hmmer
+	gobmk
+	tonto
+	bzip2
+	gromacs
+	h264ref
+	perlbench
+	dealII
+bw:
+	cactusADM
+	bwaves
+	lbm
+	leslie3d
+	astar
+	zeusmp
+	libquantum
+	milc
+co:
+	wrf
+	sjeng
+	calculix
+	povray
+	namd
+	gamess
+ca-bw:
+	GemsFDTD
+	sphinx3
+	omnetpp
+	mcf
+	gcc
+	xalancbmk
+	soplex
+
+Workloads:
+Group: ca
+	dealII-hmmer-gromacs-gobmk
+	hmmer-gobmk-perlbench-tonto
+	perlbench-dealII-hmmer-h264ref
+	perlbench-hmmer-h264ref-gromacs
+	gromacs-h264ref-bzip2-hmmer
+	h264ref-dealII-hmmer-perlbench
+	bzip2-gobmk-hmmer-h264ref
+	bzip2-perlbench-hmmer-h264ref
+	perlbench-bzip2-hmmer-tonto
+	dealII-h264ref-gobmk-hmmer
+Group: bw
+	lbm-leslie3d-libquantum-cactusADM
+	bwaves-libquantum-zeusmp-lbm
+	cactusADM-lbm-libquantum-bwaves
+	libquantum-bwaves-lbm-leslie3d
+	astar-leslie3d-zeusmp-milc
+	zeusmp-bwaves-cactusADM-astar
+	astar-bwaves-milc-lbm
+	milc-leslie3d-cactusADM-lbm
+	zeusmp-libquantum-milc-cactusADM
+	zeusmp-cactusADM-bwaves-lbm
+Group: ca-bw
+	xalancbmk-soplex-mcf-GemsFDTD
+	omnetpp-gcc-soplex-sphinx3
+	omnetpp-mcf-sphinx3-GemsFDTD
+	mcf-omnetpp-sphinx3-GemsFDTD
+	omnetpp-gcc-soplex-GemsFDTD
+	mcf-omnetpp-xalancbmk-soplex
+	xalancbmk-sphinx3-gcc-GemsFDTD
+	xalancbmk-sphinx3-soplex-mcf
+	xalancbmk-omnetpp-gcc-GemsFDTD
+	sphinx3-omnetpp-xalancbmk-GemsFDTD
+Group: co
+	povray-wrf-calculix-sjeng
+	wrf-gamess-povray-calculix
+	namd-calculix-gamess-sjeng
+	povray-namd-calculix-gamess
+	povray-wrf-namd-calculix
+	gamess-sjeng-povray-calculix
+	gamess-namd-sjeng-wrf
+	namd-calculix-povray-sjeng
+	wrf-calculix-gamess-sjeng
+	calculix-gamess-wrf-namd
+Group: ra
+	tonto-leslie3d-mcf-gobmk
+	astar-perlbench-sphinx3-libquantum
+	gcc-lbm-soplex-gromacs
+	gcc-gobmk-hmmer-povray
+	soplex-namd-zeusmp-bwaves
+	povray-h264ref-xalancbmk-zeusmp
+	h264ref-wrf-xalancbmk-cactusADM
+	xalancbmk-milc-gobmk-gcc
+	GemsFDTD-namd-gromacs-libquantum
+	lbm-leslie3d-perlbench-xalancbmk
+	omnetpp-gamess-wrf-lbm
+	zeusmp-wrf-gromacs-omnetpp
+	lbm-mcf-namd-leslie3d
+	mcf-xalancbmk-zeusmp-bzip2
+	gobmk-sjeng-dealII-soplex
+	hmmer-astar-cactusADM-gamess
+	namd-xalancbmk-astar-mcf
+	sphinx3-gcc-xalancbmk-dealII
+	h264ref-tonto-lbm-dealII
+	sjeng-wrf-omnetpp-bwaves
