@@ -86,102 +86,102 @@ Benchmark: milc
 	Cache 	: MEAN: 1.003 STD: 0.005
 	Memory*	: MEAN: 0.818 STD: 0.090
 ca:
-	hmmer
-	gobmk
-	tonto
 	bzip2
+	dealII
+	gobmk
 	gromacs
 	h264ref
+	hmmer
 	perlbench
-	dealII
+	tonto
 bw:
-	cactusADM
+	astar
 	bwaves
+	cactusADM
 	lbm
 	leslie3d
-	astar
-	zeusmp
 	libquantum
 	milc
+	zeusmp
 co:
-	wrf
-	sjeng
 	calculix
-	povray
-	namd
 	gamess
+	namd
+	povray
+	sjeng
+	wrf
 ca-bw:
 	GemsFDTD
-	sphinx3
-	omnetpp
-	mcf
 	gcc
-	xalancbmk
+	mcf
+	omnetpp
 	soplex
+	sphinx3
+	xalancbmk
 
 Workloads:
 Group: ca
-	dealII-hmmer-gromacs-gobmk
-	hmmer-gobmk-perlbench-tonto
-	perlbench-dealII-hmmer-h264ref
-	perlbench-hmmer-h264ref-gromacs
-	gromacs-h264ref-bzip2-hmmer
-	h264ref-dealII-hmmer-perlbench
-	bzip2-gobmk-hmmer-h264ref
-	bzip2-perlbench-hmmer-h264ref
-	perlbench-bzip2-hmmer-tonto
-	dealII-h264ref-gobmk-hmmer
+	tonto-bzip2-h264ref-dealII
+	bzip2-dealII-perlbench-gobmk
+	perlbench-tonto-bzip2-hmmer
+	perlbench-bzip2-hmmer-h264ref
+	h264ref-hmmer-gromacs-bzip2
+	hmmer-tonto-bzip2-perlbench
+	gromacs-dealII-bzip2-hmmer
+	gromacs-perlbench-bzip2-hmmer
+	perlbench-gromacs-bzip2-gobmk
+	tonto-hmmer-dealII-bzip2
 Group: bw
-	lbm-leslie3d-libquantum-cactusADM
-	bwaves-libquantum-zeusmp-lbm
-	cactusADM-lbm-libquantum-bwaves
-	libquantum-bwaves-lbm-leslie3d
-	astar-leslie3d-zeusmp-milc
-	zeusmp-bwaves-cactusADM-astar
-	astar-bwaves-milc-lbm
-	milc-leslie3d-cactusADM-lbm
-	zeusmp-libquantum-milc-cactusADM
-	zeusmp-cactusADM-bwaves-lbm
+	cactusADM-lbm-milc-astar
+	bwaves-milc-libquantum-cactusADM
+	astar-cactusADM-milc-bwaves
+	milc-bwaves-cactusADM-lbm
+	leslie3d-lbm-libquantum-zeusmp
+	libquantum-bwaves-astar-leslie3d
+	leslie3d-bwaves-zeusmp-cactusADM
+	zeusmp-lbm-astar-cactusADM
+	libquantum-milc-zeusmp-astar
+	libquantum-astar-bwaves-cactusADM
 Group: ca-bw
-	xalancbmk-soplex-mcf-GemsFDTD
-	omnetpp-gcc-soplex-sphinx3
-	omnetpp-mcf-sphinx3-GemsFDTD
-	mcf-omnetpp-sphinx3-GemsFDTD
-	omnetpp-gcc-soplex-GemsFDTD
-	mcf-omnetpp-xalancbmk-soplex
-	xalancbmk-sphinx3-gcc-GemsFDTD
-	xalancbmk-sphinx3-soplex-mcf
-	xalancbmk-omnetpp-gcc-GemsFDTD
-	sphinx3-omnetpp-xalancbmk-GemsFDTD
+	sphinx3-xalancbmk-omnetpp-GemsFDTD
+	mcf-soplex-xalancbmk-gcc
+	mcf-omnetpp-gcc-GemsFDTD
+	omnetpp-mcf-gcc-GemsFDTD
+	mcf-soplex-xalancbmk-GemsFDTD
+	omnetpp-mcf-sphinx3-xalancbmk
+	sphinx3-gcc-soplex-GemsFDTD
+	sphinx3-gcc-xalancbmk-omnetpp
+	sphinx3-mcf-soplex-GemsFDTD
+	gcc-mcf-sphinx3-GemsFDTD
 Group: co
-	povray-wrf-calculix-sjeng
-	wrf-gamess-povray-calculix
-	namd-calculix-gamess-sjeng
-	povray-namd-calculix-gamess
-	povray-wrf-namd-calculix
-	gamess-sjeng-povray-calculix
-	gamess-namd-sjeng-wrf
-	namd-calculix-povray-sjeng
-	wrf-calculix-gamess-sjeng
-	calculix-gamess-wrf-namd
+	povray-calculix-namd-gamess
+	calculix-wrf-povray-namd
+	sjeng-namd-wrf-gamess
+	povray-sjeng-namd-wrf
+	povray-calculix-sjeng-namd
+	wrf-gamess-povray-namd
+	wrf-sjeng-gamess-calculix
+	sjeng-namd-povray-gamess
+	calculix-namd-wrf-gamess
+	namd-wrf-calculix-sjeng
 Group: ra
-	tonto-leslie3d-mcf-gobmk
-	astar-perlbench-sphinx3-libquantum
-	gcc-lbm-soplex-gromacs
-	gcc-gobmk-hmmer-povray
-	soplex-namd-zeusmp-bwaves
-	povray-h264ref-xalancbmk-zeusmp
-	h264ref-wrf-xalancbmk-cactusADM
-	xalancbmk-milc-gobmk-gcc
-	GemsFDTD-namd-gromacs-libquantum
-	lbm-leslie3d-perlbench-xalancbmk
-	omnetpp-gamess-wrf-lbm
-	zeusmp-wrf-gromacs-omnetpp
-	lbm-mcf-namd-leslie3d
-	mcf-xalancbmk-zeusmp-bzip2
-	gobmk-sjeng-dealII-soplex
-	hmmer-astar-cactusADM-gamess
-	namd-xalancbmk-astar-mcf
-	sphinx3-gcc-xalancbmk-dealII
-	h264ref-tonto-lbm-dealII
-	sjeng-wrf-omnetpp-bwaves
+	gobmk-lbm-omnetpp-dealII
+	leslie3d-perlbench-gcc-milc
+	soplex-cactusADM-xalancbmk-h264ref
+	soplex-dealII-bzip2-povray
+	xalancbmk-sjeng-libquantum-bwaves
+	povray-hmmer-sphinx3-libquantum
+	hmmer-calculix-sphinx3-astar
+	sphinx3-zeusmp-dealII-soplex
+	GemsFDTD-sjeng-h264ref-milc
+	cactusADM-lbm-perlbench-sphinx3
+	mcf-wrf-calculix-cactusADM
+	libquantum-calculix-h264ref-mcf
+	cactusADM-omnetpp-sjeng-lbm
+	omnetpp-sphinx3-libquantum-gromacs
+	dealII-gamess-tonto-xalancbmk
+	bzip2-leslie3d-astar-wrf
+	sjeng-sphinx3-leslie3d-omnetpp
+	gcc-soplex-sphinx3-tonto
+	hmmer-gobmk-cactusADM-tonto
+	gamess-calculix-mcf-bwaves
