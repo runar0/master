@@ -2,62 +2,80 @@
 \chapter{Bechmarks and Workloads}
 \label{cpt:benchmarks_workloads}
 
-In this chapter, we will present the benchmarks used to evaluate cache partition algorithms.
+In this chapter, we will present the benchmarks we use to evaluate cache partitioning algorithms.
 We explain how the we extracted simulation traces from benchmarks and how we created 4-, 8-, and 16-core workloads based on those traces.
 
 \section{Benchmarks}
 
 In all our experiments, we are utilizing benchmarks from the SPEC CPU2006\todo{cite} benchmark suite. 
-We choose suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test performance of various computer architecture using workloads based on real user applications.
-Unless otherwise stated we always use the first reference data input set for each benchmark.
-
-Simulating an entire benchmark run can in some cases take hours.
-For this reason, it is common practice to only simulate parts of a benchmark and use the results of the partial run as the benchmark results.
-A naive approach to this is to specify constant limits, such as fast-forward 500M instruction and then simulate 100M. 
-By first fast-forwarding a number of instructions one hope to complete the program startup phase.
-During this phase, the program does initial allocations and various preparations, not representative for the overall runtime.
-However, there is no guarantee that the selected limit is enough for the benchmark to complete this phase.
-In our work, we employ a more sophisticated solution using the SimPoint\todo{cite} tool.
-
-\subsection{SimPoint} \todo{Move this section to the background chapter, also bring along some of the text above}
-SimPoint\todo{cite} is a tool based on Pin\todo{cite} that analyzes a running program and attempts to extract intervals from the instruction stream that are representative for the entire program.
-Put simply it does this by first analyzing the program and dividing it into basic blocks.
-A basic block is a group of instructions with only single entry point, at the first instruction, and a single exit point, at the last.
-It will then analyze the instruction stream of the program while running, dividing it into intervals of a requested size. 
-For each interval is classified using a Basic Block Vector (BBV).
-The BBV contains an entry for each basic block in the program and a counter indicating how many times the interval executed this block.
-Figure~\todo{create,ref} shows an example of a program divided into basic blocks and an instruction stream divided into intervals.
-
-After classifying all intervals, SimPoint uses K-means clustering to create K clusters of intervals. 
-Within each cluster, the interval closest to the cluster center is selected to represent the cluster. 
-The output of SimPoint is the start and length of each cluster's representative interval, along with a weight indicating how much of the entire program execution this cluster represents.
-
-Previous work by X\todo{cite} has compared the simulation results of SimPoint selected intervals and the naive solution to those of simulating the entire program. 
-When using SimPoint selected intervals, each interval is simulated independently and a weighted sum of simulation results is created using the SimPoint generated weights.
-X show that using SimPoint selected intervals can improve the accuracy of the simulation results. They also show that the value of K, the number of intervals returned, and the length of the interval effect the accuracy of the solution.
-
-\subsection{Trace Generation} \todo{No need for a sub-section once the above text has moved}
-In this work, we choose to extract only a single interval from each SimPoint run.
-By doing so we are willingly increasing the error between simulating our interval and the results obtained by simulating the entire benchmark.
+We choose this suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test performance of various computer architectures using workloads based on real user applications.
+Unless otherwise stated all benchmarks use the first reference input set.
+For each benchmark, we use SimPoint\todo{cite} (Section~\ref{sec:background:simpoint}) to extract intervals that we use to represent the entire benchmark.
+In this work, we choose to extract only a single interval from each benchmark.
+By doing this, we are willingly increasing the error\todo{cite} between simulating our interval and the results obtained by simulating the entire benchmark.
 Because we are investigating performance changes due to various architectural choices, we find that this increased error will not affect our results in a negative manner.
 Having only one interval per benchmark greatly simplifies the process of simulation.
 We only have to do one simulation per benchmark, and the results of this simulation are equal to the weighted results as the weight will always equal one.
 
 The length chosen for our intervals may also affect the final results.
-First, as caches are empty when simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results.
+First, as caches are empty when simulation starts the cold cache effect\todo{cite from paper}, caused by compulsory misses at simulation start, may skew our results.
 Additionally, as we are experimenting with cache partitioning algorithms, we believe that a certain number of instructions are needed for our results to stabilize.
-Based on these observations we choose to run SimPoint with three different interval sizes per benchmark, 100M, 250M and 500M instructions.
+Finally, by increasing the number of instructions we are also increasing the time required to simulate a benchmark.
+Based on these observations we choose to run SimPoint with an interval size of 250M instructions.
+This number of instructions should make the cold cache effect negishable\todo{paper cite} while we keep the simulation time relatively low.
 For each SimPoint extracted interval, a trace file, containing the instruction stream within the interval, is generated using Sniper.
 We use this trace files for all later experiments.
 
 \section{Benchmark Classification}
-\todo{Formalize classification experiment from project and re-examine the data}
+
+In order to better understand our simulation results, we perform a benchmark classification experiment on each of the previously generated traces.
+This experiment is intended to detect various properties in each trace that may affect how they behave on our simulated architecture with various cache partitioning algorithms.
+We choose to categorize traces based on their sensitivity to the size of the LLC and the speed of the bus connecting the LLC and the DRAM.
+
+The system model used in this experiment is as shown in Table~\ref{tbl:processor_model:properties} with the smallest of the L2 configurations, 128KB.
+The size of the L3 cache and the speed of the memory bus is varied as shown in Table~\ref{tbl:benchmarks_workloads:classification_model}.
+By reducing the size of the L3 cache, and the speed of the memory bus we intend to simulate a situation where the benchmark has access to reduced resources due to contention. 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rl}
+\toprule
+\bf{L3 Cache size} & 256kB, 512kB, 1024kB, 2048kB, 4096kB \\
+\bf{Memory Bus Speed}   & 1.6GB/s, 3.2GB/s, 6.4GB/s, 12.8GB/s \\
+\bottomrule                             
+\end{tabular}
+\caption{Model properties}
+\label{tbl:processor_model:properties}
+\end{table}
+
+Each benchmark is simulated for each combination of L3 size and memory bus speed, in total 20 simulations per benchmark.
+We then evaluate how changes to the architecture affected the benchmarks performance using the reported IPC.
+This is done by calculating an average IPC difference between each configuration pair.
+For the cache, we find the IPC drop between the 4MB and 2MB configuration, the 2MB and 1MB configuration, etc.
+We repeat the process for each memory configuration.
+This results in an average IPC drop due to a cache size reduction, as well as a standard deviation.
+Numbers of reductions in memory bandwidth are found using the same methodology.
+
+Based on the average IPC drop and the standard deviation we classify each trace into one of four categories:
+\begin{enumerate}
+
+\item \textbf{Cache sensitive} (ca) benchmarks have an average performance drop of at least 4\% if the standard deviation is less than 11\% or a performance drop of at least 13\% otherwise. These are in general benchmarks with memory access patterns that are recency-friendly.
+
+\item \textbf{Bandwidth sensitive} (bw) benchmarks have an average performance drop of at least 8\% if the standard deviation is less than 11\% or a performance drop of at least 20\% otherwise. These are in general benchmarks that have memory access patterns with no or little temporal locality, often streaming patterns.
+
+\item \textbf{Cache- and Bandwidth sensitive} (cabw) benchmarks are benchmarks that fit in both of the above classes. These are often benchmarks with trashing memory access patterns, that will benefit from more cache (i.e. less trashing) and more bandwidth (faster loading of previously trashed data)
+
+\item \textbf{Compute sensitive} (co) benchmarks are those that fit into none of the above categories. These are benchmarks limited by the computational power of the processor model and not the shared memory system.
+
+\end{enumerate}
+
+We set the classification limits based on manual observation of benchmark behavior. 
+We noted that benchmarks that are bandwidth dependant in general had a higher performance loss when we halved the available bandwidth compared to cache sensitive when we halved the cache size.
+We also noted that the average performance drop for some benchmarks were dominated by one sample point, in these cases the standard deviation also rose. 
+As a result, we applied higher cutoff limits when the standard deviation was high compared to the general case.
+Table~\ref{tbl:benchmarks_workloads:benchmark_classification} lists all benchmarks and their classification according to the above rules.
 
 \input{figures/workloads/benchmarks.tex}
-
-Cache L3 - 256kB, 512kB, 1MB, 2MB, 4MB
-Mem bus - 1.6, 3.2, 6.4, 12.8
-
 
 \section{Workloads}
 
