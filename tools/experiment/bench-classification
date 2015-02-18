@@ -31,7 +31,7 @@ def extract_ipc(filename):
 
 parser = argparse.ArgumentParser(description='Perform a automatic benchmark classification')
 parser.add_argument('--dir', default='.', help='Experiment run directory')
-parser.add_argument('--out', default='_figures/speedup/', help='Figure output directory')
+parser.add_argument('--out', default='_figures/', help='Figure output directory')
 
 args = parser.parse_args()
 
@@ -50,7 +50,7 @@ benchmarks = {}
 for subdir, dirs, files in os.walk(rundir):
 	for name in dirs:		
 		# TODO: For now we only handle 100M runs, we should handle them all and report any differences!
-		if name.find('.100M.') == -1:
+		if name.find('.250M.') == -1:
 			continue
 
 		parts = name.split('.')
@@ -88,7 +88,6 @@ for benchmark in benchmarks:
 
 # Create surface plots showing relative IPC difference
 for benchmark in benchmarks:
-	continue
 	x = []
 	y = []
 	z = []
@@ -173,45 +172,125 @@ for benchmark in benchmarks:
 			classified['co'].append(benchmark)		
 
 
-# TODO Dump to file 
+# Sort classifications and dump to console
 for group in classified:
 	print "%s:" % group
 	classified[group].sort()
 	for benchmark in classified[group]:
 		print "\t%s" % benchmark
 
+# Write benchmarks to latex table
+f = open(path.join(args.out, 'benchmarks.tex'), 'w')
+f.write("\\begin{table}[ht]\n")
+f.write("\\centering\n")
+f.write("\\begin{tabular}{llll}\n")
+f.write("\\toprule\n")
+f.write("\\bf{Cache} & \\bf{Bandwidth} & \\bf{Cache \\& Bandwidth} & \\bf{Compute} \\\\ \\hline\n")
+
+for i in range(0, max([len(classified[group]) for group in classified])):
+	ca = classified["ca"][i] if i < len(classified["ca"]) else "\t"
+	bw = classified["bw"][i] if i < len(classified["bw"]) else "\t"
+	cabw = classified["ca-bw"][i] if i < len(classified["ca-bw"]) else "\t"
+	co = classified["co"][i] if i < len(classified["co"]) else "\t"
+
+	f.write("%s\t& %s\t& %s\t& %s\t\\\\ \n" % (ca, bw, cabw, co))
+
+f.write("\\bottomrule\n")
+f.write("\\end{tabular}\n")
+f.write("\\caption{Benchmark Classifications}\n")
+f.write("\\label{tbl:benchmarks_workloads:benchmark_classification}\n")
+f.write("\\end{table}\n")
+f.close()
+
 import random
+import math
 from itertools import permutations
 
 print ""
 print "Workloads:"
 random.seed("deadbeef")
 
-# Generate benchmarks:
-for group in ['ca', 'bw', 'ca-bw', 'co', 'ra']:
-	count = 10
-	if group == 'ra':
-		pool = list(permutations(classified['ca']+classified['bw']+classified['ca-bw']+classified['co'], 4))
-		count = 20
-	else:
-		pool = list(permutations(classified[group], 4))
+def randomWorkload(pool, size):
+	workload = []
 
-	workloads = []
-	done = False
+	while len(workload) < size:
+		benchmark = pool[random.randint(0, len(pool)-1)]
+		if benchmark not in workload:
+			workload.append(benchmark)
 
-	while not done:
+	return workload
+
+def createWorkloads(size):
+	tex = open(path.join(args.out, "workloads-%d.tex" % size), 'w')
+	tex.write("\\begin{table}[ht]\n")
+	tex.write("\\centering\n")
+	tex.write("\\tiny\n")
+	tex.write("\\resizebox{\columnwidth}{!}{%\n")
+	tex.write("\\begin{tabular}{|r|l%s|}\n" % ("l"*size))
+	tex.write("\\hline\n")
+	tex.write("Group & Workload & Benchmarks %s \\\\ \\hline\n" % (" & "*(size-1)))
+
+
+	# Generate benchmarks:
+	result = {}
+	groups = ['ca', 'bw', 'ca-bw', 'co', 'ra'] if size == 4 else [ 'ra' ]
+	print groups
+	for group in groups:
+
+		count = 10
+		if group == 'ra':
+			pool = classified['ca']+classified['bw']+classified['ca-bw']+classified['co']
+			count = 20 if size == 4 else 10
+		else:
+			pool = classified[group]
+
 		workloads = []
-		cover = []
-		for i in range(count):
-			permuation = pool[random.randint(0,len(pool))]
-			workloads.append(permuation)
-			for workload in permuation:
-				cover.append(workload)
+		done = False
 
-		if group == 'ra' or len(set(classified[group])) == len(set(cover)):
-			done = True
+		while not done:
+			workloads = []
+			cover = []
+			while len(workloads) < count:				
+				permuation = randomWorkload(pool, size)
+
+				# Check if the workload already exists
+				found = False
+				for workload in workloads:
+					if len(set(workload) & set(permuation)) == len(workload):
+						found = True
+
+				if not found:
+					workloads.append(permuation)					
+					for workload in permuation:
+						cover.append(workload)
+
+			if group == 'ra' or len(set(classified[group])) == len(set(cover)):
+				done = True
+
+		first = True
+		number = 0
+
+		print "Group: %s" % group
+		for workload in workloads:
+			print "\t%s" % '-'.join(workload)
+
+			header = "\t\t\t" if not first else "\\textbf{%s}\t" % group
+			name = "%s%d-%d" % (group.replace('-', ''), size, number)
+
+			tex.write("%s & %s\t & %s \\\\ \n" % (header, name, ' & '.join(workload)))
+
+			number += 1
+			first = False
+
+	tex.write("\\hline\n")
+	tex.write("\\end{tabular}%\n")
+	tex.write("} \n")
+	tex.write("\\caption{%d-core workloads}\n" % size)
+	tex.write("\\label{tbl:benchmark_workloads:%d-workloads}\n" % size)
+	tex.write("\\end{table}\n")
+	tex.close()
 
 
-	print "Group: %s" % group
-	for workload in workloads:
-		print "\t%s" % '-'.join(workload)
+createWorkloads(4)
+createWorkloads(8)
+createWorkloads(16)
