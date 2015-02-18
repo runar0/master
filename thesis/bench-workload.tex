@@ -1,12 +1,13 @@
 
 \chapter{Bechmarks and Workloads}
+\label{cpt:benchmarks_workloads}
 
 In this chapter, we will present the benchmarks used to evaluate cache partition algorithms.
 We explain how the we extracted simulation traces from benchmarks and how we created 4-, 8-, and 16-core workloads based on those traces.
 
 \section{Benchmarks}
 
-In all our experiments, we are utilizing benchmarks from the SPEC CPU2006\todo{site} benchmark suite. 
+In all our experiments, we are utilizing benchmarks from the SPEC CPU2006\todo{cite} benchmark suite. 
 We choose suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test performance of various computer architecture using workloads based on real user applications.
 Unless otherwise stated we always use the first reference data input set for each benchmark.
 
@@ -52,10 +53,15 @@ We use this trace files for all later experiments.
 \section{Benchmark Classification}
 \todo{Formalize classification experiment from project and re-examine the data}
 
+\input{figures/workloads/benchmarks.tex}
+
 Cache L3 - 256kB, 512kB, 1MB, 2MB, 4MB
 Mem bus - 1.6, 3.2, 6.4, 12.8
 
 
 \section{Workloads}
+
+\input{figures/workloads/workloads.tex}
+
 \todo{Generate new workloads, this time 4, 8, 16 core workloads}
 \todo{How do we handle 8 and 16 if there are less than that in a group?}
