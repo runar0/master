@@ -3,7 +3,7 @@
 \label{cpt:benchmarks_workloads}
 
 In this chapter, we will present the benchmarks we use to evaluate cache partitioning algorithms.
-We explain how the we extracted simulation traces from benchmarks and how we created 4-, 8-, and 16-core workloads based on those traces.
+We explain how the we extracted simulation traces from benchmarks and how we classified those traces based on their memory and cache dependencies. Finally, we explain how we created 4-, 8-, and 16-core workloads based on those benchmark traces.
 
 \section{Benchmarks}
 
@@ -23,8 +23,8 @@ Additionally, as we are experimenting with cache partitioning algorithms, we bel
 Finally, by increasing the number of instructions we are also increasing the time required to simulate a benchmark.
 Based on these observations we choose to run SimPoint with an interval size of 250M instructions.
 This number of instructions will make the cold cache effect neglishable~\cite{Hamerly2005,Hamerly2004,Olsen2014} while we keep the simulation time relatively low.
-For each SimPoint extracted interval a trace file, containing the instruction stream within the interval, is generated using Sniper.
-We use this trace files for all later experiments.
+We generate an instruction trace using Sniper for each SimPoint extracted interval.
+All later experiments utilize these traces in place of the actual benchmark executable.
 
 \section{Benchmark Classification}
 
@@ -36,7 +36,7 @@ We choose to categorize traces based on their sensitivity to the size of the LLC
 
 The system model used in this experiment is as shown in Table~\ref{tbl:processor_model:properties} with the smallest of the L2 configurations, 128KB.
 The size of the L3 cache and the speed of the memory bus is varied as shown in Table~\ref{tbl:benchmarks_workloads:classification_model}.
-By reducing the size of the L3 cache, and the speed of the memory bus we intend to simulate a situation where the benchmark has access to reduced resources due to contention. 
+By reducing the size of the L3 cache and the speed of the memory bus, we intend to simulate a situation where the benchmark has reduced access to resources due to contention.
 
 \begin{table}[ht]
 \centering
@@ -47,7 +47,7 @@ By reducing the size of the L3 cache, and the speed of the memory bus we intend 
 \bottomrule                             
 \end{tabular}
 \caption{Model properties}
-\label{tbl:processor_model:properties}
+\label{tbl:benchmarks_workloads:classification_model}
 \end{table}
 
 We simulate each benchmark for each combination of L3 size and memory bus speed, in total 20 simulations per benchmark.
@@ -89,12 +89,12 @@ The 4 core workloads come in five classes.
 One class per benchmark group, these contain workloads only from that particular group.
 Also, one class with benchmarks picked from all groups.
 Each workload class contains 10 workloads.
-Table~\todo{ref} contains an overview of all 4 core workloads and their short names used throughout the report.
+Table~\ref{tbl:benchmark_workloads:4-workloads} contains an overview of all 4 core workloads and their short names used throughout the report.
 There is only a single class of 8 and 16 core workloads, as there are not enough benchmarks per group to make workloads of this size. 
 The ten 8 and 16 core workloads contains benchmarks from across all benchmark groups.
-Table~\todo{ref} and~\todo{ref} contains an overview of the 8 and 16 core workloads.
+Table~\ref{tbl:benchmark_workloads:8-workloads} and~\ref{tbl:benchmark_workloads:16-workloads} contains an overview of the 8 and 16 core workloads.
 
 All workloads are generated randomly, but with a few predefined rules.
 No benchmark can occur twice within the same workload.
 This because we suspect that running two instances of the same benchmark, issuing the same memory operations in lock step, might cause unwanted interference that could skew our results. 
-In addition, we require that all benchmarks be present at least once in the workload set.
+In addition, we require that all benchmarks eligible for a workload set be present in at least one workload in that set.

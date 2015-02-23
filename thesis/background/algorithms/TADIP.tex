@@ -6,20 +6,20 @@ In the following paragraphs, we will first present DIP and then present the addi
 
 \paragraph{DIP}
 
-The DIP algorithm views the cache set as a stack as in LRU.
-As in LRU, on a cache miss the cache evicts the block at the LRU position. 
-In contrast to LRU, DIP is a combination of two insertion policies, the standard LRU insertion policy and Binominal Insertion Policy (BIP).
-The standard LRU policy is to insert new blocks at the MRU position.
+The DIP algorithm views the cache set as a stack, as in LRU.
+On a cache miss, DIP evicts the block at the LRU position. 
+In contrast to LRU, DIP is a combination of two insertion policies, the standard LRU insertion policy (LIP) and Binominal Insertion Policy (BIP).
+LIP inserts new blocks at the MRU position.
 BIP inserts new blocks either at the LRU position or with a small probability, $p = \frac{1}{32}$, at the MRU position. The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
 By mostly inserting at the LRU position the BIP insertion policy can theoretically handle trashing memory access patterns.
-BIP does this by keeping some of the working set in the upper part of the LRU stack. 
-New inserts happen at the bottom, and a block will only be able to move upward, and hence cause another to evict, on a reference.
-By sometimes inserting at the MRU position, BIP gives blocks that might be re-referenced a chance to stay in the cache.
-It also ensures that stale blocks that reside in the upper part of the LRU stack move toward the LRU position.
+BIP inserts most of the new blocks in the LRU position, and the upper part of the LRU stack is reserved for blocks that have been re-referenced.
+In a trashing access pattern, this results in part of the working set residing in the upper part of the stack while rest is inserted at the LRU position and evicted at the next miss.
+By sometimes inserting at the MRU position BIP will give blocks not referenced by the next miss a chance to stay in the cache. 
+This will also force stale cache blocks in the upper part of the stack to move towards the LRU position.
 
 The authors of DIP present several methods to detect the best replacement algorithm. 
-One is a technique called set-dueling.
+One such technique is called set-dueling.
 Set-dueling is implemented by having some sets of the cache use either BIP or LRU. 
 A counter tracks the performance of the dueling sets.
 Misses in LRU sets will increment the counter and misses in BIP sets will decrement the counter.
@@ -33,9 +33,9 @@ Again a counter controlled by misses in either ATD is used to select the optimal
 \paragraph{TADIP}
 
 One issue with DIP is that it does not consider from which core a cache accesses originate.
-In a workload with multiple benchmarks, some might be LRU friendly while others are not. 
+In a workload with multiple benchmarks, some might be recency-friendly while others are not. 
 If a shared cache is managed by DIP, then the algorithm choice is made based on the sum of the cache accesses and then applied equally to all benchmarks.
-The authors of TADIP recognized that algorithm choices made per core possibly could improve performance of DIP when utilized on a shared cache.
+The authors of TADIP recognized that improvements in performance could be achieved by selecting DIP algorithm on a per core basis when utilized on a shared cache.
 
 When selecting the best performing algorithm per core, the ATD technique requires two ATDs per core sharing the cache. 
 This quickly becomes too expensive to be practical.
@@ -63,5 +63,22 @@ As is shown the duel-sets effect a set of counters, these counters give the opti
 The remaining sets use the set of current optimal replacement policies.
 From this point on when we refer to TADIP in this report we assume TADIP-F unless otherwise stated.
 
+When detailing their implementation, the authors of TADIP show a simple hash function used to select dueling sets.
+On their 4096 set cache, they use the formulas shown below.
+Here set index is a number from 0-4095, core\_id is the zero-indexed id of the requester core and cores is the total number of cores sharing the cache.
+If BIP or LIP is true, then the set is a duel set for the given core, and the policy forced to either BIP or LIP.
+If both BIP and LIP is false, then the set is a normal follower set and utilized the current best algorithm for the given core.
+From the algorithm, it is clear that the original paper use a total of 32 groups of duel sets spread evenly throughout the cache.
+\begin{figure*}[ht]
+\begin{equation}
+LIP = set\_no[11:7] + core\_id == set\_no[6:0]
+\end{equation}
+\begin{equation}
+BIP = set\_no[11:7] + core\_id + cores == set\_no[6:0]
+\end{equation}
+\begin{equation}
+FOLLOWER = !LIP + !BIP
+\end{equation}
+\end{figure*}
 
-\todo{We should run an experiment finding the best binomial parameter for our workloads. The original paper chooses 1/32, compare this to our result. How is this experiment best executed? Does using only 4-benchmark workloads approximate or should we also use 8- and 16-benchmakr workloads? If so we have to create them.}
+\todo{We should run an experiment finding the best binomial parameter for our workloads, also we need to find the optimal number of duel sets. The original paper chooses 1/32, compare this to our result. How is this experiment best executed? Does using only 4-benchmark workloads approximate or should we also use 8- and 16-benchmakr workloads? If so we have to create them.}

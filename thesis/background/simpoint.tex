@@ -3,7 +3,8 @@
 
 When performing experiments via simulation, it is common practice to use excerpts of benchmarks to represent the entire benchmark.
 Using excerpts is often a required simplification because simulating an entire benchmark can in many cases take hours or days.
-When performing multiple experiments, this delay adds up and can easily become a limiting factor.
+When performing multiple experiments, this delay adds up and can quickly become the factor limiting the size and number of experiments.
+
 A naive approach for extracting excerpts from benchmarks is to specify a number of cycles into the execution where the excerpt starts, in addition to the length of the excerpt.
 The reason an excerpt does not usually start at the first executed instruction is because of the startup effect.
 When an application starts, it usually performs some initialization tasks before the main routines of the application starts.
@@ -14,13 +15,13 @@ The problem with the naive approach is that it is hard to define an offset and t
 More sophisticated approaches to this problem include tools that analyze the instruction stream of a benchmark.
 Based on this analysis the tool will attempt to locate one or more intervals that are common during the execution and hence deemed to be representative for the total execution.
 SimPoint\cite{Hamerly2005} is one such tool, based on Pin~\cite{Luk2005}.
-Put simply, SimPoint will analyse the benchmark code and divide it into basic blocks.
-A basic block is a group of instructions with only a single entry point, at the first instruction, and a single exit point, at the last instruction.
+Put simply, SimPoint will analyze the benchmark code and divide it into basic blocks.
+A basic block is a group of instructions with only a single entry point, the first instruction, and a single exit point, at the last instruction.
 It will then analyze the instruction stream of the program while running, dividing it into intervals of a requested size. 
 Each interval is classified using a Basic Block Vector (BBV).
 The BBV contains an entry for each basic block in the program and a counter indicating how many times the interval executed this block.
 Figure~\todo{create,ref} shows an example of a program divided into basic blocks and an instruction stream divided into intervals.
-After classifying all intervals, SimPoint uses K-means clustering to create K clusters of intervals. 
+After classifying all intervals, SimPoint uses K-means clustering to create K groups of intervals that have  similar BBVs.
 Within each cluster, the interval closest to the cluster center is selected to represent the cluster. 
 The output of SimPoint is the start and length of each cluster's representative interval, along with a weight indicating how much of the entire program execution this cluster represents.
 

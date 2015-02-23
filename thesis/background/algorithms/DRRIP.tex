@@ -1,0 +1,91 @@
+\subsection{DRRIP}
+\label{sec:background:algorithms:drrip}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        A & B & C & D \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+        & 2 & 1 & 1 & 0 & \bf{Hit C} \\
+        &   &   &   &   &
+    \end{tabular}    
+
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        A & B & C & D \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+        & 2 & 1 & 0 & 0 & \bf{Miss E} \\
+        &   &   &   &   &
+    \end{tabular}     
+
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        E & C & A & B \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+        & 2 & 2 & 1 & 1 & \bf{Hit E} \\
+        &   &   &   &   &
+    \end{tabular}    
+
+    \begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        E & C & A & B \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+        & 1 & 2 & 1 & 1 & 
+    \end{tabular} 
+
+    \caption{DRRIP managed 4-way cache set (M=2, static insertion)}
+    \label{fig:background:drrip_example}
+\end{figure}
+
+Dynamic Re-Reference Interval Prediction (DRRIP) was first proposed by A. Jaleel et al.~\cite{Jaleel2010} in 2010.
+DRRIP uses the concept of a re-reference chain (RRC).
+This chain represents the order in which the algorithm expects cache blocks in the cache set to be re-referenced.
+This chain is theoretically no different from the LRU stack envisioned in both LRU and TADIP. 
+Both LRU and DRRIP has the same replacement policy, the element at the end of the re-reference chain or in the bottom of the LRU stack is replaced when a new block is inserted.
+The assumption in both algorithms is that blocks higher up in the chain or the stack, has a higher probability of a re-reference.
+
+While the elements in the LRU stack are strictly ordered, from the MRU to the LRU position, elements in the RRC are more loosely ordered.
+All blocks have a re-reference interval between 0 and $2^M - 1$ with M being a configurable parameter.
+There may be multiple blocks with the same re-reference interval, and the end of the chain is the block with the lowest re-reference interval.
+If multiple blocks have the same value the original authors selects the first block found when scanning the cache blocks from left to right as the smallest.
+On a miss, the algorithm will scan the cache set looking for a block with a distant re-reference interval ($2^M - 1$). 
+If no block has this value the re-reference interval of all blocks is incremented by one. 
+This process is repeated until a victim block is selected.
+
+Unlike LRU, a cache block is not promoted to a near-immediate position on access under DRRIP. 
+The DRRIP promotion policy is to promote a block by one position each reference unless it already is at a near re-reference interval (0).
+The assumption here is that frequently used data is often reused, unlike LRU that assumes that recently used data is often reused.
+
+Like TADIP, DRRIP has two different insertion policies Static RRIP (SRRIP) and Binominal RRIP (BRRIP).
+SRRIP inserts new blocks with a long re-reference interval $2^M - 2$.
+BRRIP, on the other hand, is analog to BIP in TADIP. 
+It will in most cases insert new blocks with a distant re-reference interval $2^M - 1$ and only sometimes insert at the long re-reference interval as SRRIP.
+The goal of BRRIP is the same as for BIP.
+When mostly inserting new blocks near the end, trashing workloads will have a limited effect on the overall cache set.
+This policy allows parts of the working set to stay in the cache while most new blocks get evicted early.
+
+Selecting between the two insertion policies can be done in multiple ways, like covered in the description of TADIP.
+The authors opted for using set-dueling in their original paper, and we opt to do this in our implementation as well.
+Since there is lacking information regarding selection of duel sets in the original paper, we utilize the hashing function that we presented for TADIP in our implementation.
+
+Figure~\ref{fig:background:drrip_example} shows an example cache managed by DRRIP.
+In the example, M is set to 2, making the distant re-reference interval 3 and the long re-reference interval 2. 
+In addition, we assume static insertion.
+Initially, there are four blocks A, B, C and D with respectively re-reference intervals 2, 1, 1 and 0.
+First an access hits the C block, and its value is decremented to 0.
+Next a miss to block E occurs, and as no block has a re-reference interval of 3 the value of all blocks is incremented by one. 
+A then has a value of 3 and is evicted, E in inserted in its place with a value of 2.
+Finally, an access to E occurs causing its value to decrease.
+
+\todo{Cover trash and stream resistance, there are some formulas in the original paper we might want to include}
+
+\todo{We need to run an experiment evaluating how many duel-sets to use, the value of M and the binomial parameter}
