@@ -16,16 +16,19 @@ from build import profiles
 from benchmarks import benchmark_sets
 
 def extract_ipc(filename, coreno = 0):
-	instructions = 0
-	cycles = 0
+	instructions = extract_property('performance_model.instruction_count', filename, coreno)
+	cycles = extract_property('performance_model.cycle_count', filename, coreno)
+	return instructions/cycles
+
+def extract_cycles(filename, coreno = 0):
+	return extract_property('performance_model.cycle_count', filename, coreno)
+
+def extract_property(property, filename, coreno = 0):
 	with open(filename) as f:
 		for line in f:
 			line = line.split(' = ')
-			if line[0] == 'performance_model.instruction_count':
-				instructions = float(line[1].split(',')[coreno])
-			if line[0] == 'performance_model.cycle_count':
-				cycles = float(line[1].split(',')[coreno])
-	return instructions/cycles
+			if line[0] == property:
+				return float(line[1].split(',')[coreno])
 
 #print profiles
 
@@ -62,12 +65,12 @@ for subdir, dirs, files in os.walk(rundir):
 		algorithm = run[2]
 
 		if len(benchmarks) == 1:
-			benchmark_results[algorithm][run_name] = extract_ipc('%s/%s/stats-benchmark-0.txt' % (rundir, name))
+			benchmark_results[algorithm][run_name] = extract_cycles('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
 			results = {}
 			i = 0
 			for benchmark in benchmarks:
-				results[benchmark] = extract_ipc('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
+				results[benchmark] = extract_cycles('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
 				i = i + 1
 			workload_results[algorithm][run_name] = results
 
@@ -80,9 +83,9 @@ for algorithm, runs in workload_results.items():
 		stp = 0
 		antt = 0
 
-		for benchmark, ipc in results.items():
-			antt = antt + benchmark_results['lru'][benchmark]/ipc
-			stp = stp + ipc/benchmark_results['lru'][benchmark]
+		for benchmark, cycles in results.items():
+			antt = antt + cycles/benchmark_results['lru'][benchmark]
+			stp = stp + benchmark_results['lru'][benchmark]/cycles
 
 		antt = antt / len(results)
 
@@ -122,7 +125,8 @@ aliases = [
 ]
 renamed_results = {}
 
-for algorithm, runs in normalized_results.items():
+#for algorithm, runs in normalized_results.items():
+for algorithm, runs in speedup_results.items():
 	renamed_results[algorithm] = {}
 
 	for run_name, results in runs.items():
@@ -148,19 +152,20 @@ for metric in ['stp', 'antt']:
 		
 		N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
 		ind = np.arange(N)
-		width = .20
+		width = .15
 
 		rects = []
 		i = 0
-		for algorithm in ['tadip', 'drrip', 'ucp', 'pipp']:
+		for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp']:
 			values = [value[metric] for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
 			rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
 			i = i + 1
 
-		ax.set_ylabel("%s relative to LRU" % metric)
+		#ax.set_ylabel("%s relative to LRU" % metric)
+		ax.set_ylabel("%s" % metric)
 		ax.set_xticks(ind+width*2.5)
 		ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")], rotation=45)
-		ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0]), ('tadip', 'drrip', 'ucp', 'pipp'), fontsize='small', ncol=2)
+		ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp'), fontsize='small', ncol=2)
 
 		plt.suptitle(title)
 
