@@ -7,13 +7,14 @@ In the following paragraphs, we will first present DIP and then present the addi
 \paragraph{DIP}
 
 The DIP algorithm views the cache set as a stack, as in LRU.
-On a cache miss, DIP evicts the block at the LRU position. 
+Insertion and replacement are equal to LRU, DIP evicts the block at the LRU position, and following a cache hit a block moves to the MRU position.
 In contrast to LRU, DIP is a combination of two insertion policies, the standard LRU insertion policy (LIP) and Binominal Insertion Policy (BIP).
 LIP inserts new blocks at the MRU position.
-BIP inserts new blocks either at the LRU position or with a small probability, $p = \frac{1}{32}$, at the MRU position. The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
+BIP inserts new blocks either at the LRU position or with a small probability, $p = \frac{1}{32}$, at the MRU position. 
+The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
 By mostly inserting at the LRU position the BIP insertion policy can theoretically handle trashing memory access patterns.
-BIP inserts most of the new blocks in the LRU position, and the upper part of the LRU stack is reserved for blocks that have been re-referenced.
+BIP inserts most of the new blocks in the LRU position, and the upper part of the LRU stack can contain blocks that have been re-referenced.
 In a trashing access pattern, this results in part of the working set residing in the upper part of the stack while rest is inserted at the LRU position and evicted at the next miss.
 By sometimes inserting at the MRU position BIP will give blocks not referenced by the next miss a chance to stay in the cache. 
 This will also force stale cache blocks in the upper part of the stack to move towards the LRU position.
@@ -24,8 +25,8 @@ Set-dueling is implemented by having some sets of the cache use either BIP or LR
 A counter tracks the performance of the dueling sets.
 Misses in LRU sets will increment the counter and misses in BIP sets will decrement the counter.
 The MSB of the counter can then be used to select the optimal algorithm.
-If the MSB is one, an overweight of misses in LRU sets are occurring and BIP the optimal algorithm. 
-If the MSB is zero, then an overweight of BIP misses are occurring, and LRU is the optimal choice.
+If the MSB is one, an overweight of misses in LRU sets are occurring, and BIP is the optimal algorithm. 
+If the MSB is zero, then an overweight of BIP misses are occurring, and LRU is the optimal algorithm.
 Another solution is to utilize two Auxilliary Tag Directories (ATDs) which is a structure equal to the Tag directory of the cache itself.
 The two ATDs run one algorithm each, and all cache accesses are also executed on the ATDs.
 Again a counter controlled by misses in either ATD is used to select the optimal algorithm for the main cache.
@@ -38,7 +39,7 @@ If a shared cache is managed by DIP, then the algorithm choice is made based on 
 The authors of TADIP recognized that improvements in performance could be achieved by selecting DIP algorithm on a per core basis when utilized on a shared cache.
 
 When selecting the best performing algorithm per core, the ATD technique requires two ATDs per core sharing the cache. 
-This quickly becomes too expensive to be practical.
+This can quickly become too expensive to be practical.
 Set-dueling in DIP requires a minimum of two sets, one running LRU (1) and one running BIP (0). 
 With two cores, the number of combinations rises to four (00, 01, 10, 11).
 When the number of cores continues to increase this also seems to be an impractical solution.
@@ -81,4 +82,4 @@ FOLLOWER = !LIP + !BIP
 \end{equation}
 \end{figure*}
 
-\todo{We should run an experiment finding the best binomial parameter for our workloads, also we need to find the optimal number of duel sets. The original paper chooses 1/32, compare this to our result. How is this experiment best executed? Does using only 4-benchmark workloads approximate or should we also use 8- and 16-benchmakr workloads? If so we have to create them.}
+\todo{We should run an experiment finding the best binomial parameter for our workloads. Also, we need to find the optimal number of duel sets. The original paper chooses 1/32, compare this to our result. How is this experiment best executed? Does using only 4-benchmark workloads approximate or should we also use 8- and 16-benchmakr workloads? If so we have to create them.}

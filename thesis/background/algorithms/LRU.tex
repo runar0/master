@@ -50,11 +50,13 @@
 
 Least recently used (LRU) replacement, or some simplification of LRU, is one of the dominant cache replacement algorithms in hardware today. 
 Normally when presenting a new cache partitioning algorithm, LRU is used as the baseline for comparions~\cite{Jaleel2010,Qureshi2006,Qureshi2007}.
+
 The LRU algorithm relies on the temporal locality of data accesses; it assumes that recently accessed data has a higher reuse frequency then less recently accessed data.
-When a cache miss occurs, and a new cache line is stored in a cache set, the LRU algorithm will evict the least recently used cache block.
 Theoretically one can envision a cache set managed by LRU as a stack, where recently accessed cache blocks are near the top and less recently accessed blocks are near the bottom.
-The bottom position of the stack is the LRU position, and the top position is the most recently used (MRU) position. 
+The bottom position of the stack is the LRU position, and the top position is the most recently used (MRU) position.
 In a hardware implementation, the blocks are not stored in a sorted fashion, but additional storage bits are used to keep track of LRU positions.
+The replacement policy of LRU is to evict the least recently used cache block, the one on the bottom of the LRU stack.
+The insertion and promotion policy of LRU is the same; a inserted or accessed block is always moved to the MRU position unless it is already there.
 
 Figure~\ref{fig:background:lru_example} shows how a 4-way cache set managed by LRU replacement handles three requests. 
 Initially, the set contains four blocks; A, B, C and D. 

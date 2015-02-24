@@ -1,8 +1,20 @@
 
-\section{Cache Allocation Algorithms}
+\section{Cache Partition Algorithms}
 \label{sec:background:algorithms}
 
 \todo{Document shared caches and the various algorithms proposed to manage usage}
+
+A cache partition algorithm divides the blocks in a cache set between cores that access the cache.
+Some algorithms are thread-aware and geared towards shared caches.
+Others are thread-agnostic and work both for share and private caches.
+In the following sections, we will present various algorithms proposed to manage shared caches.
+We will also present LRU, a caching algorithm that is thread-agnostic but still widely used both in private and shared caches in hardware today.
+
+Each cache partition algorithm can be said to have three different policies.
+The replacement policy specifies which block the cache set evicts when a new block needs space in the set.
+The insertion policy specifies the state of new blocks after insertion into  the cache set.
+Finally, the promotion policy specifies what happens when a block in the cache set is accessed by a core.
+In our description of the algorithms below we will use this division to explain the various parts of the algorithm.
 
 \input{background/algorithms/LRU.tex}
 \input{background/algorithms/TADIP.tex}
