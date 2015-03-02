@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib import cm
+import matplotlib
+#matplotlib.rcParams.update({'font.size': 20})
+
+from os import path
+from sys import exit
+import collections
+
+from build import profiles
+from benchmarks import benchmark_sets
+
+def extract_misses(filename, coreno = 0):
+	return extract_property('L3.load-misses', filename, coreno) + extract_property('L3.store-misses', filename, coreno)
+
+def extract_property(property, filename, coreno = 0):
+	try:
+		with open(filename) as f:
+			for line in f:
+				line = line.split(' = ')
+				if line[0] == property:
+					return float(line[1].split(',')[coreno])
+	except:
+		return 0
+	return 0
+
+#print profiles
+
+parser = argparse.ArgumentParser(description='Workload L3 miss grapher')
+parser.add_argument('--dir', default='.', help='Experiment run directory')
+parser.add_argument('--out', default='_figures/misses/', help='Figure output directory')
+
+args = parser.parse_args()
+
+if not path.exists(args.dir):
+	exit('Run directory %s does not exist!' % args.dir)
+
+if not path.exists(args.out):
+	os.makedirs(args.out)
+	print 'Created output directory %s' % args.out
+
+rundir = path.realpath(args.dir)
+
+benchmark_results = { 'lru': {} }
+workload_results = { 'lru': {}, 'tadip': {}, 'drrip': {}, 'ucp': {}, 'pipp': {} }
+
+for subdir, dirs, files in os.walk(rundir):
+	for name in dirs:
+		run = name.split('.')
+		run_name = run[0]
+
+		# Filter out invalid folders
+		if run_name.startswith('_') or len(run) == 1:
+			continue;
+
+		benchmarks = run_name.split('-')
+		algorithm = run[2]
+
+		if len(benchmarks) == 1:
+			benchmark_results[algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
+		else:
+			results = 0
+			i = 0
+			for benchmark in benchmarks:
+				results += extract_misses('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
+				i = i + 1
+			workload_results[algorithm][run_name] = results
+
+
+# convert run names to group names
+aliases = [
+	('workload-cache', 'ca', 'Cache'),
+	('workload-cache-bw', 'cabw', 'Cache-Bandwidth'),
+	('workload-bw', 'bw', 'Bandwidth'),
+	('workload-compute', 'co', 'Compute'),
+	#('workload-random', 'ra', 'Random'),
+]
+renamed_results = {}
+
+for algorithm, runs in workload_results.items():
+	renamed_results[algorithm] = {}
+
+	for run_name, results in runs.items():
+		found = False
+		for name, alias, title in aliases:
+			i = 0
+			for benchmarks in benchmark_sets[name]:
+				if '-'.join(benchmarks) == run_name:
+					renamed_results[algorithm]["%s-%02d" % (alias, i)] = results
+					found = True
+					break
+				i = i + 1
+
+			if found:
+				break
+
+	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
+
+
+for name, alias, title in aliases:
+	fig,ax = plt.subplots()
+	
+	N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
+	ind = np.arange(N)
+	width = .15
+
+	rects = []
+	i = 0
+	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp']:
+		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
+		rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
+		i = i + 1
+
+	#ax.set_ylabel("%s relative to LRU" % metric)
+	ax.set_ylabel("L3 Misses")
+	ax.set_xticks(ind+width*2.5)
+	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")], rotation=45)
+	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp'), fontsize='small', ncol=2)
+
+	plt.suptitle(title)
+
+	plt.savefig('%s/%s.png' % (args.out, alias), frameon=False, bbox_inches='tight')
+	plt.clf()
+
