@@ -2,15 +2,23 @@
 \section{Cache Partition Algorithms}
 \label{sec:background:algorithms}
 
-\todo{Document shared caches and the various algorithms proposed to manage usage}
-
-A cache partition algorithm divides the blocks in a cache set between cores that access the cache.
+A cache partition algorithm divides a cache between the cores that share that cache.
+Algorithms often enforce the division via policies that define how to insert new data and how and when old data is replaced.
 Some algorithms are thread-aware and geared towards shared caches.
 Others are thread-agnostic and work both for share and private caches.
-In the following sections, we will present various algorithms proposed to manage shared caches.
+Some have advanced optimization goals such as quality of service while others use simpler metrics like miss minimization.
+In the following sections, we will present various algorithms primarily proposed to manage shared caches.
 We will also present LRU, a caching algorithm that is thread-agnostic but still widely used both in private and shared caches in hardware today.
 
-Each cache partition algorithm can be said to have three different policies.
+There exists a large number of works regarding cache partitioning. 
+In this thesis, we select a few based on some characteristics and compare their performance.
+Firstly we select only algorithms that attempt to reduce the number of cache misses.
+This is a metric that is easy to measure and also makes it easy to compare the various algorithms.
+We also focus on algorithms that target conventional caches as they are designed in CMPs today.
+This again makes the results easy to compare across algorithms.
+Also, we avoid having to extend our simulator with a new cache type, which would be a hard task given the time constraints of this thesis.
+
+Each cache partition algorithm can be said to contain three different policies.
 The replacement policy specifies which block the cache set evicts when a new block needs space in the set.
 The insertion policy specifies the state of new blocks after insertion into  the cache set.
 Finally, the promotion policy specifies what happens when a block in the cache set is accessed by a core.
