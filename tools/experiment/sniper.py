@@ -5,21 +5,33 @@ def build_config_string(config, cores):
 
 	variables = []
 
-	for cache in ['l2', 'l3']:
-		variables.append('-g perf_model/%s_cache/cache_size=%d' % (cache, config[cache]['size']))
-		variables.append('-g perf_model/%s_cache/tags_access_time=%d' % (cache, config[cache]['tags']))
-		variables.append('-g perf_model/%s_cache/data_access_time=%d' % (cache, config[cache]['data']))
-		if 'ways' in config[cache]:
-			variables.append('-g perf_model/%s_cache/associativity=%d' % (cache, config[cache]['ways']))
+	llc = "l3"
+	if not config['only-l2']:
+		for cache in ['l2', 'l3']:
+			variables.append('-g perf_model/%s_cache/cache_size=%d' % (cache, config[cache]['size']))
+			variables.append('-g perf_model/%s_cache/tags_access_time=%d' % (cache, config[cache]['tags']))
+			variables.append('-g perf_model/%s_cache/data_access_time=%d' % (cache, config[cache]['data']))
+			if 'ways' in config[cache]:
+				variables.append('-g perf_model/%s_cache/associativity=%d' % (cache, config[cache]['ways']))
+	else:
+		llc = "l2"
+		variables.append('-g perf_model/%s_cache/cache_size=%d' % ("l2", config["l3"]['size']))
+		variables.append('-g perf_model/%s_cache/tags_access_time=%d' % ("l2", config["l3"]['tags']))
+		variables.append('-g perf_model/%s_cache/data_access_time=%d' % ("l2", config["l3"]['data']))
+		if 'ways' in config["l3"]:
+			variables.append('-g perf_model/%s_cache/associativity=%d' % ("l2", config["l3"]['ways']))
 
-	variables.append('-g perf_model/l3_cache/shared_cores=%d' % cores)
-	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % config['policy']['policy'])
+		variables.append('-g perf_model/cache/levels=2')
+
+
+	variables.append('-g perf_model/%s_cache/shared_cores=%d' % (llc, cores))
+	variables.append('-g perf_model/%s_cache/replacement_policy=%s' % (llc, config['policy']['policy']))
 
 	if config['policy']['policy'] == "ucp":
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
+		variables.append('-g perf_model/%s_cache/umon/enabled=true' % llc)
 	elif config['policy']['policy'] == "pipp": 		
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
-		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
+		variables.append('-g perf_model/%s_cache/umon/enabled=true' % llc)
+		variables.append('-g perf_model/%s_cache/umon/enable_stream_detection=true' % llc)
 
 	# Core model
 	variables.append('-g perf_model/core/interval_timer/window_size=%d' % config['core']['rob'])
