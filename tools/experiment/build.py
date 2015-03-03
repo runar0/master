@@ -44,6 +44,7 @@ profiles = {
 		'tadip': {'policy': 'tadip'},
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
+		'pipp-nostream':  {'policy': 'pipp-nostream'},
 		'drrip': {'policy': 'drrip'},
 	},
 
@@ -97,14 +98,12 @@ if __name__ == '__main__':
 	parser.add_argument('--force-output', default=True, action='store_true')
 
 	# Various other options
-	parser.add_argument('--max-sim-cores', type=int, default=16, help='Max number of simulated cores active at the time (16 for a 4-core simulation gives 4 simulations in parallel)')
+	parser.add_argument('--max-sim-cores', type=int, default=32, help='Max number of simulated cores active at the time (16 for a 4-core simulation gives 4 simulations in parallel)')
 	parser.add_argument('--qbs', action='store_true', default=False)
 	parser.add_argument('--submit', action='store_true', default=False)
 
 	# Experiment pre-configurations
 	parser.add_argument('--experiment-classification', default=False, action='store_true', help='Enable classification experiement, overrides l3-profile and membus-profile')
-
-	parser.add_argument('--reduced-caches', default=False, action='store_true', help='Remove the private second level cache')
 
 	# Collect all benchmarks
 	parser.add_argument('benchmarks', nargs="+");
@@ -152,8 +151,7 @@ if __name__ == '__main__':
 							'policy': profiles['replacement'][replacement], 
 							'core': core,
 							'membus': profiles['membus'][membus],
-							'name': name,
-							'only-l2': args.reduced_caches
+							'name': name
 						})
 
 
@@ -161,4 +159,4 @@ if __name__ == '__main__':
 	runs = benchmarks.get_benchmarks(args.traces, args.benchmarks, args.trace_length) 
 
 	import sniper
-	print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations)
+	print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations, args.max_sim_cores)
