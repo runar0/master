@@ -44,7 +44,10 @@ profiles = {
 		'tadip': {'policy': 'tadip'},
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
+		# PIPP without stream detection added
 		'pipp-nostream':  {'policy': 'pipp-nostream'},
+		# PIPP without miss count limit and increased miss rate limit
+		'pipp-custom':  {'policy': 'pipp-custom'},
 		'drrip': {'policy': 'drrip'},
 	},
 
