@@ -30,14 +30,14 @@ profiles = {
 	},
 	'membus': {
 		# Classify experiment profiles
-		'C-12_8': { 'bw': 12.8 },
-		'C-06_4': { 'bw':  6.4 },
-		'C-03_2': { 'bw':  3.2 },
-		'C-01_6': { 'bw':  1.6 },
+		'C-12_8': { 'bw': 12.8, 'latency': 45 },
+		'C-06_4': { 'bw':  6.4, 'latency': 45 },
+		'C-03_2': { 'bw':  3.2, 'latency': 45 },
+		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
 
-		'03_2': { 'bw':  3.2 },
-		'12_8': { 'bw': 12.8 },
+		'03_2': { 'bw':  1.6, 'latency': 150 },
+		'12_8': { 'bw': 12.8, 'latency': 45 },
 	},
 	'replacement': {
 		'lru':   {'policy': 'lru'},

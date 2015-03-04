@@ -37,6 +37,7 @@ def build_config_string(config, cores):
 
 	# Membus
 	variables.append('-g perf_model/dram/per_controller_bandwidth=%f' % (config['membus']['bw']))
+	variables.append('-g perf_model/dram/latency=%f' % (config['membus']['latency']))
 
 	return ' '.join(variables)
 

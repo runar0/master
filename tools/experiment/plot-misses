@@ -78,8 +78,8 @@ aliases = [
 	('workload-cache-bw', 'cabw4', 'Cache-Bandwidth'),
 	('workload-bw', 'bw4', 'Bandwidth'),
 	('workload-compute', 'co4', 'Compute'),
-	#('workload-random', 'ra4', 'Random'),
-	#('workload-8', 'ra8', 'Random 8'),
+	('workload-random', 'ra4', 'Random'),
+	('workload-8', 'ra8', 'Random 8'),
 	#('workload-16', 'ra16', 'Random 16'),
 ]
 renamed_results = {}
@@ -107,7 +107,7 @@ for name, alias, title in aliases:
 	fig,ax = plt.subplots()
 	
 	N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
-	ind = np.arange(N)
+	ind = np.arange(N+1)
 	width = .11
 
 	rects = []
@@ -115,17 +115,21 @@ for name, alias, title in aliases:
 	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream']:
 		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
 		if len(values) != N:
-			values = [0] * N
+			values = [0] * (N+1)
+		else:
+			values.append(np.mean(values))
 		rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
 		i = i + 1
 
 	#ax.set_ylabel("%s relative to LRU" % metric)
 	ax.set_ylabel("L3 Misses")
 	ax.set_xticks(ind+width*2.5)
-	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")], rotation=45)
-	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream'), fontsize='small', ncol=2)
+	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream'), fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
 
-	plt.suptitle(title)
+	#plt.suptitle(title)
+	fig.set_size_inches((5*np.floor(N/10), 2.5))
+	ax.set_xlim([0,N+1])
 
 	plt.savefig('%s/%s.png' % (args.out, alias), frameon=False, bbox_inches='tight')
 	plt.clf()
