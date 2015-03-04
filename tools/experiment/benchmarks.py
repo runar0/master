@@ -154,7 +154,7 @@ benchmark_sets = {
 
 	'workload-8': [
 		['sjeng', 'wrf', 'omnetpp', 'namd', 'perlbench', 'leslie3d', 'tonto', 'GemsFDTD'],
-		['milc', 'gamess', 'bzip2', 'cactusADM ', 'libquantum', 'omnetpp', 'sphinx3', 'sjeng'],
+		['milc', 'gamess', 'bzip2', 'cactusADM', 'libquantum', 'omnetpp', 'sphinx3', 'sjeng'],
 		['perlbench', 'mcf', 'cactusADM', 'soplex', 'dealII', 'sjeng', 'zeusmp', 'gamess'],
 		['zeusmp', 'bwaves', 'soplex', 'bzip2', 'sphinx3', 'perlbench', 'calculix', 'libquantum'],
 		['leslie3d', 'milc', 'gcc', 'sjeng', 'gamess', 'perlbench', 'povray', 'zeusmp'],

@@ -103,7 +103,6 @@ for algorithm, runs in workload_results.items():
 
 	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
 
-print renamed_results
 for name, alias, title in aliases:
 	fig,ax = plt.subplots()
 	
