@@ -151,4 +151,29 @@ benchmark_sets = {
 		['leslie3d', 'perlbench', 'mcf', 'povray'],
 		['sjeng', 'gobmk', 'hmmer', 'tonto'],
 	],
+
+	'workload-8': [
+		['sjeng', 'wrf', 'omnetpp', 'namd', 'perlbench', 'leslie3d', 'tonto', 'GemsFDTD'],
+		['milc', 'gamess', 'bzip2', 'cactusADM ', 'libquantum', 'omnetpp', 'sphinx3', 'sjeng'],
+		['perlbench', 'mcf', 'cactusADM', 'soplex', 'dealII', 'sjeng', 'zeusmp', 'gamess'],
+		['zeusmp', 'bwaves', 'soplex', 'bzip2', 'sphinx3', 'perlbench', 'calculix', 'libquantum'],
+		['leslie3d', 'milc', 'gcc', 'sjeng', 'gamess', 'perlbench', 'povray', 'zeusmp'],
+		['milc', 'namd', 'soplex', 'sjeng', 'gromacs', 'astar', 'dealII', 'zeusmp'],
+		['wrf', 'cactusADM', 'lbm', 'calculix', 'sphinx3', 'gamess', 'gromacs', 'povray'],
+		['sphinx3', 'gobmk', 'hmmer', 'cactusADM', 'tonto', 'GemsFDTD', 'zeusmp', 'lbm'],
+		['hmmer', 'povray', 'astar', 'cactusADM', 'gcc', 'zeusmp', 'lbm', 'gobmk'],
+		['milc', 'astar', 'gobmk', 'xalancbmk', 'lbm', 'calculix', 'tonto', 'cactusADM'],
+	],
+	'workload-16': [
+		['gcc', 'perlbench', 'soplex', 'sphinx3', 'astar', 'povray', 'dealII', 'cactusADM', 'bzip2', 'namd', 'GemsFDTD', 'lbm', 'tonto', 'milc', 'gamess', 'leslie3d'],
+		['povray', 'calculix', 'gamess', 'omnetpp', 'mcf', 'bzip2', 'sjeng', 'gromacs', 'gobmk', 'lbm', 'gcc', 'zeusmp', 'wrf', 'sphinx3', 'bwaves', 'libquantum'],
+		['omnetpp', 'lbm', 'namd', 'xalancbmk', 'bzip2', 'bwaves', 'gobmk', 'mcf', 'leslie3d', 'calculix', 'povray', 'perlbench', 'sjeng', 'cactusADM', 'gcc', 'milc'],
+		['calculix', 'zeusmp', 'namd', 'GemsFDTD', 'hmmer', 'mcf', 'h264ref', 'cactusADM', 'astar', 'sphinx3', 'bzip2', 'omnetpp', 'povray', 'soplex', 'gromacs', 'gamess'],
+		['bwaves', 'wrf', 'xalancbmk', 'soplex', 'sjeng', 'sphinx3', 'zeusmp', 'calculix', 'lbm', 'cactusADM', 'astar', 'hmmer', 'milc', 'libquantum', 'namd', 'mcf'],
+		['gromacs', 'GemsFDTD', 'h264ref', 'sphinx3', 'bzip2', 'xalancbmk', 'lbm', 'tonto', 'gobmk', 'povray', 'omnetpp', 'gcc', 'bwaves', 'libquantum', 'zeusmp', 'calculix'],
+		['wrf', 'calculix', 'sphinx3', 'mcf', 'dealII', 'h264ref', 'astar', 'hmmer', 'bwaves', 'leslie3d', 'omnetpp', 'GemsFDTD', 'povray', 'lbm', 'gamess', 'perlbench'],
+		['sjeng', 'soplex', 'GemsFDTD', 'mcf', 'milc', 'gobmk', 'sphinx3', 'xalancbmk', 'hmmer', 'bzip2', 'cactusADM', 'gromacs', 'dealII', 'tonto', 'zeusmp', 'perlbench'],
+		['mcf', 'omnetpp', 'gobmk', 'wrf', 'gamess', 'sphinx3', 'lbm', 'libquantum', 'cactusADM', 'milc', 'gromacs', 'sjeng', 'bzip2', 'soplex', 'hmmer', 'perlbench'],
+		['sjeng', 'perlbench', 'omnetpp', 'h264ref', 'GemsFDTD', 'bzip2', 'bwaves', 'dealII', 'gobmk', 'zeusmp', 'hmmer', 'xalancbmk', 'milc', 'gromacs', 'povray', 'sphinx3'],
+	]
 }

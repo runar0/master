@@ -74,11 +74,13 @@ for subdir, dirs, files in os.walk(rundir):
 
 # convert run names to group names
 aliases = [
-	#('workload-cache', 'ca', 'Cache'),
-	('workload-cache-bw', 'cabw', 'Cache-Bandwidth'),
-	#('workload-bw', 'bw', 'Bandwidth'),
-	#('workload-compute', 'co', 'Compute'),
-	#('workload-random', 'ra', 'Random'),
+	('workload-cache', 'ca4', 'Cache'),
+	#('workload-cache-bw', 'cabw4', 'Cache-Bandwidth'),
+	#('workload-bw', 'bw4', 'Bandwidth'),
+	#('workload-compute', 'co4', 'Compute'),
+	#('workload-random', 'ra4', 'Random'),
+	#('workload-8', 'ra8', 'Random 8'),
+	#('workload-16', 'ra16', 'Random 16'),
 ]
 renamed_results = {}
 
@@ -107,12 +109,14 @@ for name, alias, title in aliases:
 	
 	N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
 	ind = np.arange(N)
-	width = .15
+	width = .11
 
 	rects = []
 	i = 0
 	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream']:
 		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
+		if len(values) != N:
+			values = [0] * N
 		rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
 		i = i + 1
 

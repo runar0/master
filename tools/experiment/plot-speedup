@@ -121,12 +121,14 @@ for algorithm, runs in workload_results.items():
 #		normalized_results[algorithm][run_name] = res
 
 # convert run names to group names
-aliases = [
-	('workload-cache', 'ca', 'Cache'),
-	('workload-cache-bw', 'cabw', 'Cache-Bandwidth'),
-	('workload-bw', 'bw', 'Bandwidth'),
-	('workload-compute', 'co', 'Compute'),
-	#('workload-random', 'ra', 'Random'),
+aliases = [	
+	('workload-cache', 'ca4', 'Cache'),
+	#('workload-cache-bw', 'cabw4', 'Cache-Bandwidth'),
+	#('workload-bw', 'bw4', 'Bandwidth'),
+	#('workload-compute', 'co4', 'Compute'),
+	#('workload-random', 'ra4', 'Random'),
+	#('workload-8', 'ra8', 'Random 8'),
+	#('workload-16', 'ra16', 'Random 16'),
 ]
 renamed_results = {}
 
@@ -150,6 +152,7 @@ for algorithm, runs in speedup_results.items():
 
 	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
 
+print renamed_results
 
 for metric in ['stp', 'antt']:
 	for name, alias, title in aliases:
@@ -157,14 +160,17 @@ for metric in ['stp', 'antt']:
 		
 		N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
 		ind = np.arange(N)
-		width = .15
+		width = .11
 
 		rects = []
 		i = 0
 		for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream']:
 			values = [value[metric] for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
+			if len(values) != N:
+				values = [0] * N
 			rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
 			i = i + 1
+
 
 		#ax.set_ylabel("%s relative to LRU" % metric)
 		ax.set_ylabel("%s" % metric)
