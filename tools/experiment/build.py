@@ -36,7 +36,7 @@ profiles = {
 		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
 
-		'03_2': { 'bw':  1.6, 'latency': 150 },
+		'01_6': { 'bw':  1.6, 'latency': 150 },
 		'12_8': { 'bw': 12.8, 'latency': 45 },
 	},
 	'replacement': {
