@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+
+import os
+import argparse
+from os import path
+from sys import exit
+
+import subprocess
+import numpy as np
+import matplotlib.pyplot as plt
+
+parser = argparse.ArgumentParser(description='Memory bus overutilization grapher')
+parser.add_argument('--dir', default='.', help='Experiment run directory')
+parser.add_argument('--out', default='_figures/overutilization/', help='Figure output directory')
+
+args = parser.parse_args()
+
+if not path.exists(args.dir):
+	exit('Run directory %s does not exist!' % args.dir)
+
+if not path.exists(args.out):
+	os.makedirs(args.out)
+	print 'Created output directory %s' % args.out
+
+rundir = path.realpath(args.dir)
+
+# Extract periodic samples of one or more properties from the given result directory
+def extract_periodic_stats(dumpstats, result_dir, properties):
+	output = subprocess.check_output([dumpstats, '-d', result_dir, '--tt', ','.join(properties)]).split('\n')
+	
+	values = {}
+	series = []
+	property = None
+
+	for line in output:
+		if line.startswith('== '):
+			if property != None:
+				values[property] = series
+				series = []
+			property = line.split(' ')[1]
+		elif line.startswith("periodic-"):
+			series.append(float(line.split('=')[1]))
+
+	if property != None:
+		values[property] = series
+
+	return values
+
+# 
+def extract_mem_ooo(dumpstats, result_dir):
+	data = extract_periodic_stats(dumpstats, result_dir, ['dram-queue.requests-out-of-order', 'dram-queue.num-requests', 'barrier.global_time'])
+
+	odelta = [a - b for a,b in zip(data['dram-queue.requests-out-of-order'] + [0], [0] + data['dram-queue.requests-out-of-order'])][0:-1]
+	rdelta = [a - b for a,b in zip(data['dram-queue.num-requests'] + [0], [0] + data['dram-queue.num-requests'])][0:-1]
+
+	res = [a / b if b > 0 else 0 for a,b in zip(odelta, rdelta)]
+
+
+	end = max(data['barrier.global_time'])
+	time = [a/end for a in data['barrier.global_time']]
+
+	return (time, res)
+
+
+data = extract_mem_ooo('tools/dumpstats.py', '.')
+
+
+
+
+fig,ax = plt.subplots()
+
+ax.plot(data[0], data[1])
+
+ax.plot([0, 1], [np.mean(data[1])]*2)
+
+ax.set_ylabel("Out of order requests")
+ax.set_xlabel("Runtime")
+
+fig.set_size_inches((5*np.floor(N/10), 2.5))
+#plt.savefig('%s/%s.png' % (args.out, metric, alias), frameon=False, bbox_inches='tight')
+#plt.clf()
+
+plt.show()
