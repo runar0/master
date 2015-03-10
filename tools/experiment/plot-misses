@@ -47,7 +47,7 @@ if not path.exists(args.out):
 rundir = path.realpath(args.dir)
 
 benchmark_results = { 'lru': {} }
-workload_results = { 'lru': {}, 'tadip': {}, 'drrip': {}, 'ucp': {}, 'pipp': {}, 'pipp-nostream': {} }
+workload_results = { 'lru': {}, 'tadip': {}, 'drrip': {}, 'ucp': {}, 'pipp': {}, 'pipp-nostream': {}, 'pipp-custom': {} }
 
 for subdir, dirs, files in os.walk(rundir):
 	for name in dirs:
@@ -71,7 +71,6 @@ for subdir, dirs, files in os.walk(rundir):
 				i = i + 1
 			workload_results[algorithm][run_name] = results
 
-
 # convert run names to group names
 aliases = [
 	('workload-cache', 'ca4', 'Cache'),
@@ -79,7 +78,7 @@ aliases = [
 	('workload-bw', 'bw4', 'Bandwidth'),
 	('workload-compute', 'co4', 'Compute'),
 	('workload-random', 'ra4', 'Random'),
-	('workload-8', 'ra8', 'Random 8'),
+	#('workload-8', 'ra8', 'Random 8'),
 	#('workload-16', 'ra16', 'Random 16'),
 ]
 renamed_results = {}
@@ -112,7 +111,7 @@ for name, alias, title in aliases:
 
 	rects = []
 	i = 0
-	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream']:
+	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream', 'pipp-custom']:
 		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
 		if len(values) != N:
 			values = [0] * (N+1)
@@ -125,7 +124,7 @@ for name, alias, title in aliases:
 	ax.set_ylabel("L3 Misses")
 	ax.set_xticks(ind+width*2.5)
 	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
-	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream'), fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
+	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0], rects[6][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream', 'pipp-custom'), fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
 
 	#plt.suptitle(title)
 	fig.set_size_inches((5*np.floor(N/10), 2.5))
