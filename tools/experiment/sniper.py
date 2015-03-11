@@ -61,13 +61,15 @@ def build_command(traces, config):
 		dumpStatsCmd.append('$SNIPER_DUMP_STATS --partial roi-begin:benchmark-%d-done > stats-benchmark-%d.txt' % (cpu,cpu))
 	dumpStatsCmd = ' && '.join(dumpStatsCmd)
 
-	command = "{ $SNIPER_EXECUTABLE -c cachepartiton -n %d --traces=%s -d . -sappeventsstats --sim-end last-restart %s; %s; }" % (cores, ','.join(traces), confstr, dumpStatsCmd)
+	output_pipe = '2> sim.stderr.log 1> sim.stdout.log'
+	command = "{ $SNIPER_EXECUTABLE -c cachepartiton -n %d --traces=%s -d . -sappeventsstats --sim-end last-restart %s %s; %s; }" % (cores, ','.join(traces), confstr, output_pipe, dumpStatsCmd)
 
 	return command
 
 def wrap_command(run_name, config_name, cmd):
 	folder = '%s.%s' % (run_name,config_name)
-	return '{ if [ ! -f "%s/.sift_done" ]; then { rm -rf "%s"; mkdir "%s" ; pushd "%s" ; %s; popd ; } fi }' % (folder, folder, folder, folder, cmd)
+	start = 'echo "Starting %s"' % folder
+	return '{ if [ ! -f "%s/.sift_done" ]; then { rm -rf "%s"; mkdir "%s" ; pushd "%s" > /dev/null ; %s; %s; popd > /dev/null ; } fi }' % (folder, folder, folder, folder, start, cmd)
 
 
 def build_commands(runs, configs):
