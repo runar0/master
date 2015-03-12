@@ -156,7 +156,7 @@ for metric in ['stp', 'hms']:
 		ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
 		ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0], rects[6][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'pipp-nostream', 'pipp-custom'), fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
 		
-		if metric == 'stp': ax.set_ylim([2.5,4.5])		
+		if metric == 'stp': ax.set_ylim([0,4.5])		
 		if metric == 'hms': ax.set_ylim([0,1.2])
 		ax.set_xlim([0,N+1])
 

@@ -50,7 +50,7 @@ def build_config_string(config, cores):
 	return ' '.join(variables)
 
 
-def build_command(traces, config):
+def build_command(traces, config, periodic_stats):
 	""" Build a single sniper command given a configuration set and traces """
 
 	cores = len(traces)
@@ -62,7 +62,7 @@ def build_command(traces, config):
 	dumpStatsCmd = ' && '.join(dumpStatsCmd)
 
 	output_pipe = '2> sim.stderr.log 1> sim.stdout.log'
-	command = "{ $SNIPER_EXECUTABLE -c cachepartiton -n %d --traces=%s -d . -sappeventsstats --sim-end last-restart %s %s; %s; }" % (cores, ','.join(traces), confstr, output_pipe, dumpStatsCmd)
+	command = "{ $SNIPER_EXECUTABLE -c cachepartiton -n %d --traces=%s -d . -sappeventsstats%s --sim-end last-restart %s %s; %s; }" % (cores, ','.join(traces), ":periodic" if periodic_stats else "", confstr, output_pipe, dumpStatsCmd)
 
 	return command
 
@@ -72,20 +72,24 @@ def wrap_command(run_name, config_name, cmd):
 	return '{ if [ ! -f "%s/.sift_done" ]; then { rm -rf "%s"; mkdir "%s" ; pushd "%s" > /dev/null ; %s; %s; popd > /dev/null ; } fi }' % (folder, folder, folder, folder, start, cmd)
 
 
-def build_commands(runs, configs):
+def build_commands(runs, configs, periodic_stats):
 	""" Build a list of sniper commands given a set of runs and a set of configurations """
 	cmds = []
 	for config in configs:
 		for run in runs:
-			cmd = build_command(run['traces'], config)
+			cmd = build_command(run['traces'], config, periodic_stats)
 			cmd = wrap_command(run['name'], config['name'], cmd)
 
 			cmds.append(cmd)
 
 	return cmds
 
-def build_bash_script(output_dir, sniper_dir, runs, configs, max_sim_cores):
+def build_bash_script(args, runs, configs):
 	script = []
+
+	output_dir = args.output_dir
+	sniper_dir = args.sniper_dir
+	max_sim_cores = args.max_sim_cores
 
 	script.append('#!/usr/bin/env bash')
 
@@ -108,7 +112,7 @@ def build_bash_script(output_dir, sniper_dir, runs, configs, max_sim_cores):
 	# Generate all commands
 	script.append('COMMANDS=(');
 	import pipes
-	for cmd in build_commands(runs, configs):
+	for cmd in build_commands(runs, configs, args.periodic_stats):
 		script.append('    %s' % pipes.quote(cmd))
 	script.append(')')
 

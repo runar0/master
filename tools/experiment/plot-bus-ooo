@@ -61,23 +61,29 @@ def extract_mem_ooo(dumpstats, result_dir):
 
 	return (time, res)
 
+script = os.path.dirname(os.path.realpath(__file__)) + '/../../simulator/sniper/tools/dumpstats.py'
 
-data = extract_mem_ooo('tools/dumpstats.py', '.')
+for subdir, dirs, files in os.walk(rundir):
+	for name in dirs:
+		run = name.split('.')
+		run_name = run[0]
 
+		# Filter out invalid folders
+		if run_name.startswith('_') or len(run) == 1:
+			continue;
 
+		data = extract_mem_ooo(script, '%s/%s' % (rundir, name))
 
+		fig,ax = plt.subplots()
 
-fig,ax = plt.subplots()
+		ax.plot(data[0], data[1])
 
-ax.plot(data[0], data[1])
+		ax.plot([0, 1], [np.mean(data[1])]*2)
 
-ax.plot([0, 1], [np.mean(data[1])]*2)
+		ax.set_ylabel("Out of order requests")
+		ax.set_xlabel("Runtime")
+		ax.set_ylim([0,1])
 
-ax.set_ylabel("Out of order requests")
-ax.set_xlabel("Runtime")
-
-fig.set_size_inches((5*np.floor(N/10), 2.5))
-#plt.savefig('%s/%s.png' % (args.out, metric, alias), frameon=False, bbox_inches='tight')
-#plt.clf()
-
-plt.show()
+		fig.set_size_inches((5,5))
+		plt.savefig('%s/%s.png' % (args.out, name), frameon=False, bbox_inches='tight')
+		plt.clf()

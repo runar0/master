@@ -105,6 +105,8 @@ if __name__ == '__main__':
 	parser.add_argument('--qbs', action='store_true', default=False)
 	parser.add_argument('--submit', action='store_true', default=False)
 
+	parser.add_argument('--periodic-stats', action='store_true', default=False, help='Enable periodic statistics dump')
+
 	# Experiment pre-configurations
 	parser.add_argument('--experiment-classification', default=False, action='store_true', help='Enable classification experiement, overrides l3-profile and membus-profile')
 
@@ -162,4 +164,4 @@ if __name__ == '__main__':
 	runs = benchmarks.get_benchmarks(args.traces, args.benchmarks, args.trace_length) 
 
 	import sniper
-	print sniper.build_bash_script(args.output_dir, args.sniper_dir, runs, configurations, args.max_sim_cores)
+	print sniper.build_bash_script(args, runs, configurations)
