@@ -49,6 +49,7 @@ profiles = {
 		# PIPP without miss count limit and increased miss rate limit
 		'pipp-custom':  {'policy': 'pipp-custom'},
 		'drrip': {'policy': 'drrip'},
+		'prism': {'policy': 'prism'},
 	},
 
 	'core': {

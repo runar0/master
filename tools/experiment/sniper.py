@@ -16,23 +16,18 @@ def build_config_string(config, cores):
 	variables.append('-g perf_model/l3_cache/shared_cores=%d' % (cores))
 	variables.append('-g perf_model/l3_cache/replacement_policy=%s' % (config['policy']['policy']))
 
-	if config['policy']['policy'] == "ucp":
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
-	elif config['policy']['policy'] == "pipp": 		
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
+	if config['policy']['policy'] == "pipp": 		
 		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
 	elif config['policy']['policy'] == "pipp-nostream": 		
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
 		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=false')
 		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
 	elif config['policy']['policy'] == "pipp-custom": 		
-		variables.append('-g perf_model/l3_cache/umon/enabled=true')
 		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
 		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
 
 		variables.append('-g perf_model/l3_cache/umon/stream_miss_count_limit=0')
 		variables.append('-g perf_model/l3_cache/umon/stream_miss_fraction_limit=0.25')
-		variables.append('-g perf_model/l3_cache/umon/sampling=full')
+		variables.append('-g perf_model/l3_cache/st/sampling=full')
 
 	# Core model
 	variables.append('-g perf_model/core/interval_timer/window_size=%d' % config['core']['rob'])
