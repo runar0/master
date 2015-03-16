@@ -15,11 +15,11 @@ profiles = {
 	},
 	'l3' : {
 		# Classify experiment profiles
-		'C-0_25':  {'size':  0.25*1024, 'tags': 2, 'data': 6, 'ways': 16},
-		'C-0_50':  {'size':  0.50*1024, 'tags': 2, 'data': 6, 'ways': 16},
-		'C-1_00':  {'size':  1.00*1024, 'tags': 2, 'data': 6, 'ways': 16},
-		'C-2_00':  {'size':  2.00*1024, 'tags': 2, 'data': 6, 'ways': 16},
-		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 16},
+		'C-0_25':  {'size':  0.25*1024, 'tags': 2, 'data': 6, 'ways': 32},
+		'C-0_50':  {'size':  0.50*1024, 'tags': 2, 'data': 6, 'ways': 32},
+		'C-1_00':  {'size':  1.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
+		'C-2_00':  {'size':  2.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
+		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
 
 		# General profiles
 		'2M':  {'size':  2*1024, 'tags': 2, 'data': 6, 'ways': 32},
@@ -35,8 +35,6 @@ profiles = {
 		'C-03_2': { 'bw':  3.2, 'latency': 45 },
 		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
-
-		'04_0': { 'bw':  4.0, 'latency': 100 },
 		'12_8': { 'bw': 12.8, 'latency': 45 },
 	},
 	'replacement': {
@@ -44,10 +42,7 @@ profiles = {
 		'tadip': {'policy': 'tadip'},
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
-		# PIPP without stream detection added
-		'pipp-nostream':  {'policy': 'pipp-nostream'},
-		# PIPP without miss count limit and increased miss rate limit
-		'pipp-custom':  {'policy': 'pipp-custom'},
+		'pipp-min8':  {'policy': 'pipp-min8'}
 		'drrip': {'policy': 'drrip'},
 		'prism': {'policy': 'prism'},
 	},
