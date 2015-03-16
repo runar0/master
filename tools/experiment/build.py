@@ -42,8 +42,9 @@ profiles = {
 		'tadip': {'policy': 'tadip'},
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
-		'pipp-min8':  {'policy': 'pipp-min8'}
-		'drrip': {'policy': 'drrip'},
+		'pipp-min8':  {'policy': 'pipp-min8'},
+		'drrip-3': {'policy': 'drrip-3'},
+		'drrip-4': {'policy': 'drrip-4'},
 		'prism': {'policy': 'prism'},
 	},
 
