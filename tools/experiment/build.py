@@ -35,6 +35,7 @@ profiles = {
 		'C-03_2': { 'bw':  3.2, 'latency': 45 },
 		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
+		'06_4': { 'bw':  6.4, 'latency': 100 },
 		'12_8': { 'bw': 12.8, 'latency': 45 },
 	},
 	'replacement': {
@@ -85,7 +86,7 @@ if __name__ == '__main__':
 	parser.add_argument('--l3-profile', choices=profiles['l3'].keys(), default=['4M'], nargs='*')
 	parser.add_argument('--replacement-profile', choices=profiles['replacement'].keys(), default=['lru'], nargs='*')
 	parser.add_argument('--core-profile', choices=profiles['core'].keys(), default=['default'], nargs='*')
-	parser.add_argument('--membus-profile', choices=profiles['membus'].keys(), default=['12_8'], nargs='*')
+	parser.add_argument('--membus-profile', choices=profiles['membus'].keys(), default=['06_4'], nargs='*')
 
 	# Trace length
 	parser.add_argument('--trace-length', choices=['100M', '250M', '500M'], default='250M')
