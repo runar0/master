@@ -1,0 +1,63 @@
+\begin{table}[ht]
+\centering
+\tiny
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|r|r|llll|}
+\hline
+Group & Workload & Benchmarks & & & \\ \hline
+\textbf{ca}	 & ca4-0	 & perlbench & h264ref & gobmk & hmmer \\ 
+			 & ca4-1	 & perlbench & gobmk & astar & h264ref \\ 
+			 & ca4-2	 & perlbench & hmmer & h264ref & astar \\ 
+			 & ca4-3	 & perlbench & astar & gobmk & hmmer \\ 
+			 & ca4-4	 & h264ref & gobmk & hmmer & astar \\ 
+\textbf{bw}	 & bw4-0	 & wrf & gcc & milc & libquantum \\ 
+			 & bw4-1	 & libquantum & milc & gcc & xalancbmk \\ 
+			 & bw4-2	 & libquantum & cactusADM & milc & zeusmp \\ 
+			 & bw4-3	 & xalancbmk & libquantum & lbm & milc \\ 
+			 & bw4-4	 & bwaves & gcc & lbm & xalancbmk \\ 
+			 & bw4-5	 & xalancbmk & wrf & cactusADM & libquantum \\ 
+			 & bw4-6	 & libquantum & gcc & xalancbmk & bwaves \\ 
+			 & bw4-7	 & cactusADM & milc & zeusmp & gcc \\ 
+			 & bw4-8	 & wrf & gcc & bwaves & cactusADM \\ 
+			 & bw4-9	 & libquantum & gcc & milc & lbm \\ 
+\textbf{ca-bw}	 & cabw4-0	 & omnetpp & sphinx3 & soplex & bzip2 \\ 
+			 & cabw4-1	 & sphinx3 & mcf & soplex & omnetpp \\ 
+			 & cabw4-2	 & sphinx3 & mcf & soplex & bzip2 \\ 
+			 & cabw4-3	 & bzip2 & sphinx3 & omnetpp & mcf \\ 
+			 & cabw4-4	 & soplex & bzip2 & omnetpp & mcf \\ 
+\textbf{co}	 & co4-0	 & sjeng & calculix & namd & dealII \\ 
+			 & co4-1	 & namd & GemsFDTD & sjeng & tonto \\ 
+			 & co4-2	 & povray & gamess & calculix & namd \\ 
+			 & co4-3	 & calculix & tonto & gromacs & povray \\ 
+			 & co4-4	 & gromacs & namd & leslie3d & calculix \\ 
+			 & co4-5	 & namd & dealII & sjeng & tonto \\ 
+			 & co4-6	 & sjeng & povray & gromacs & dealII \\ 
+			 & co4-7	 & leslie3d & gromacs & povray & dealII \\ 
+			 & co4-8	 & GemsFDTD & dealII & calculix & povray \\ 
+			 & co4-9	 & dealII & namd & calculix & gromacs \\ 
+\textbf{ra}	 & ra4-0	 & libquantum & namd & perlbench & gcc \\ 
+			 & ra4-1	 & calculix & gobmk & GemsFDTD & cactusADM \\ 
+			 & ra4-2	 & astar & mcf & omnetpp & gcc \\ 
+			 & ra4-3	 & lbm & povray & sphinx3 & gamess \\ 
+			 & ra4-4	 & calculix & dealII & lbm & perlbench \\ 
+			 & ra4-5	 & libquantum & h264ref & GemsFDTD & gamess \\ 
+			 & ra4-6	 & astar & sphinx3 & lbm & libquantum \\ 
+			 & ra4-7	 & sphinx3 & soplex & povray & perlbench \\ 
+			 & ra4-8	 & sphinx3 & bwaves & gobmk & bzip2 \\ 
+			 & ra4-9	 & milc & calculix & astar & povray \\ 
+			 & ra4-10	 & lbm & hmmer & calculix & gamess \\ 
+			 & ra4-11	 & bwaves & soplex & GemsFDTD & milc \\ 
+			 & ra4-12	 & mcf & hmmer & cactusADM & wrf \\ 
+			 & ra4-13	 & sphinx3 & leslie3d & namd & tonto \\ 
+			 & ra4-14	 & sphinx3 & libquantum & calculix & povray \\ 
+			 & ra4-15	 & cactusADM & perlbench & povray & gromacs \\ 
+			 & ra4-16	 & astar & libquantum & calculix & soplex \\ 
+			 & ra4-17	 & tonto & povray & libquantum & cactusADM \\ 
+			 & ra4-18	 & xalancbmk & mcf & cactusADM & sjeng \\ 
+			 & ra4-19	 & h264ref & soplex & astar & libquantum \\ 
+\hline
+\end{tabular}%
+} 
+\caption{4-core workloads}
+\label{tbl:benchmark_workloads:4-workloads}
+\end{table}
