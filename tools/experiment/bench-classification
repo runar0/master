@@ -154,7 +154,7 @@ for benchmark in benchmarks:
 
 	meanMemDiff = np.average(values)
 	stdMemDiff = np.std(values)
-	memSense = meanMemDiff <= 0.925 if stdMemDiff < 0.114 else meanMemDiff <= 0.8
+	memSense = meanMemDiff <= 0.925 if stdMemDiff < 0.1 else meanMemDiff <= 0.8
 
 	print "\tMemory%s\t: MEAN: %.3f STD: %.3f" % ("*" if memSense else " ", meanMemDiff, stdMemDiff)
 
@@ -206,7 +206,6 @@ from itertools import permutations
 
 print ""
 print "Workloads:"
-random.seed("deadbeef")
 
 def randomWorkload(pool, size):
 	workload = []
@@ -235,7 +234,7 @@ def createWorkloads(size):
 	print groups
 	for group in groups:
 
-		count = 10
+		count = 5 if group in ['ca', 'ca-bw'] else 10
 		if group == 'ra':
 			pool = classified['ca']+classified['bw']+classified['ca-bw']+classified['co']
 			count = 20 if size == 4 else 10
@@ -294,7 +293,12 @@ def createWorkloads(size):
 	tex.write("\\end{table}\n")
 	tex.close()
 
-
+# Seed rng before each generate, that way if we change the number of workloads grenerated in one group it will not effect the next group(s)
+random.seed("deadbeef01")
 createWorkloads(4)
+
+random.seed("deadbeef02")
 createWorkloads(8)
+
+random.seed("deadbeef03")
 createWorkloads(16)
