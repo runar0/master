@@ -39,17 +39,17 @@ It is unclear from their paper why the original authors did this, but in our cas
 \caption{UMON Lookahead Algorithm}
 \label{alg:background:algorithms:ucp}
 \begin{algorithmic}[1]
-\State $balance\gets N$ /* Number of cores */
+\State $balance\gets N$ /* Number of ways */
 \State $allocations[i]\gets 0$  /* for each core $i$ */
 \While {$balance$}
-    \ForAll {$application\ i$}
+    \ForAll {$cores\ i$}
         \State $alloc\gets allocatations[i]$
         \State $max\_mu[i]\gets \Call{get\_max\_mu}{i, alloc, balance}$
         \State $blocks\_req[i]\gets$ min blocks to get max\_mu[i] for i
     \EndFor
     \State $winner\gets$ application with the maximum value of max\_mu
-    \State $allocations[winner] += blocks_req[winner]$
-    \State $balance -= blocks_req[winner]$
+    \State $allocations[winner] += blocks\_req[winner]$
+    \State $balance -= blocks\_req[winner]$
 \EndWhile
 \State \Return alloactions
 \State

@@ -3,7 +3,7 @@
 
 Probabilistic Shared Cache Management (PriSM) was first presented by R. Manikantan~et~al.~\cite{Manikantan2012} in 2012.
 PriSM is a framework for cache management with optimization algorithms targetting multiple performance goals.
-The original paper presents a hit maximization, fairness and quality of service optimization goals.
+The original paper presents hit maximization, fairness and quality of service optimization goals.
 In our thesis, as we focus solely on algorithms targetting miss minimization, we will only focus on the hit maximization performance goal.
 PriSM utilizes shadow tag directories to estimate private cache performance for each of the cores.
 The shadow tag directory will keep track of total misses and hits.
@@ -29,7 +29,24 @@ Here $M_i * W$ is the number of blocks inserted during the interval, and N is th
 If the core has a non-zero eviction probability, then this formula extends into $T_i = C_i + (M_i - E_i) * W/N$.
 As noted PriSM defines three optimization targets, each of these is responsible for calculating the optimal $T_i$ that will fulfill the target.
 Rearranging the above formula for $E_i$ yields: $E_i = (C_i - T_i) * N/W + M_i$.
-The values of $T_i$ is calculated by Algorithm~\todo{ref}; it is a relatively simple algorithm that will adjust the target occupancy based on current occupancy and the potential for gaining more hits.
+The values of $T_i$ is calculated by Algorithm~\ref{alg:background:algorithms:prism}; it is a relatively simple algorithm that will adjust the target occupancy based on current occupancy and the potential for gaining more hits.
+
+\begin{algorithm}[ht]
+\caption{PriSM Hit Maximization}
+\label{alg:background:algorithms:prism}
+\begin{algorithmic}[1]
+\State $N$ /* Number of cores */
+\ForAll{$cores\ i$}
+	\State $PotentialGain[i]\gets StandAloneHits[i] - SharedHits[i]$
+\EndFor
+\State $TotalGain\gets \sum{PotentialGain}$
+
+\ForAll{$cores\ i$}
+	\State $T_i\gets C_i * (1 + \frac{PotentialGain[i]}{TotalGain})$
+\EndFor
+\State $T_i = \frac{T_i}{\sum{T}}$ /* Normalize target occupancy */
+\end{algorithmic}
+\end{algorithm}
 
 While we have presented PriSM based on LRU replacement, as the original authors do in their paper, it should be noted that PriSM is not dependent on this underlying replacement algorithm.
 Any algorithm is usable, as long as it is augmented to prioritize the selected victim during replacement.
