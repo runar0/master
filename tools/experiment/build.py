@@ -22,7 +22,6 @@ profiles = {
 		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
 
 		# General profiles
-		'2M':  {'size':  2*1024, 'tags': 2, 'data': 6, 'ways': 16},
 		'4M':  {'size':  4*1024, 'tags': 2, 'data': 6, 'ways': 32},
 		'8M':  {'size':  8*1024, 'tags': 3, 'data': 7, 'ways': 32},
 		'16M': {'size': 16*1024, 'tags': 3, 'data': 9, 'ways': 32},
