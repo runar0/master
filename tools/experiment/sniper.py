@@ -22,12 +22,19 @@ def build_config_string(config, cores):
 		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
 		variables.append('-g perf_model/l3_cache/pipp_min_insert=8')
 		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
+	elif config['policy']['policy'] == "pipp-min16": 		
+		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
+		variables.append('-g perf_model/l3_cache/pipp_min_insert=16')
+		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
 	elif config['policy']['policy'] == "drrip-3": 		
 		variables.append('-g perf_model/l3_cache/replacement_policy=drrip')
 		variables.append('-g perf_model/l3_cache/drrip/bits=3')
 	elif config['policy']['policy'] == "drrip-4": 		
 		variables.append('-g perf_model/l3_cache/replacement_policy=drrip')
 		variables.append('-g perf_model/l3_cache/drrip/bits=4')
+	elif config['policy']['policy'] == "prism-l": 		
+		variables.append('-g perf_model/l3_cache/replacement_policy=prism')
+		variables.append('-g perf_model/l3_cache/prism_period=32768')
 
 	# Core model
 	variables.append('-g perf_model/core/interval_timer/window_size=%d' % config['core']['rob'])
