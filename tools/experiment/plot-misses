@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib
+from scipy.stats.mstats import gmean
 #matplotlib.rcParams.update({'font.size': 20})
 
 from os import path
@@ -26,7 +27,9 @@ def extract_property(property, filename, coreno = 0):
 				if line[0] == property:
 					return float(line[1].split(',')[coreno])
 	except:
+		print "Exception reading stats from %s\n" % filename
 		return 0
+	print "Did not find requested property (%s) in file %s\n" % (property, filename)
 	return 0
 
 #print profiles
@@ -46,8 +49,8 @@ if not path.exists(args.out):
 
 rundir = path.realpath(args.dir)
 
-benchmark_results = { 'lru': {} }
-workload_results = { 'lru': {}, 'tadip': {}, 'drrip': {}, 'ucp': {}, 'pipp': {}, 'pipp-nostream': {}, 'pipp-custom': {}, 'prism': {} }
+benchmark_results = {}
+workload_results = {}
 
 for subdir, dirs, files in os.walk(rundir):
 	for name in dirs:
@@ -62,8 +65,10 @@ for subdir, dirs, files in os.walk(rundir):
 		algorithm = run[2]
 
 		if len(benchmarks) == 1:
+			if algorithm not in benchmark_results: benchmark_results[algorithm] = {}
 			benchmark_results[algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
+			if algorithm not in workload_results: workload_results[algorithm] = {}
 			results = 0
 			i = 0
 			for benchmark in benchmarks:
@@ -81,6 +86,10 @@ aliases = [
 	#('workload-8', 'ra8', 'Random 8'),
 	#('workload-16', 'ra16', 'Random 16'),
 ]
+# Partition algorithms to plot
+algorithms = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism']
+
+
 renamed_results = {}
 
 for algorithm, runs in workload_results.items():
@@ -102,6 +111,19 @@ for algorithm, runs in workload_results.items():
 
 	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
 
+# Normalize all algorithms to LRU 
+for algorithm, runs in renamed_results.items():
+	if algorithm == 'lru': continue;
+	for run_name, results in runs.items():
+		renamed_results[algorithm][run_name] = results/renamed_results['lru'][run_name]
+# ... Then normalize LRU to itself
+for algorithm, runs in renamed_results.items():
+	if algorithm != 'lru': continue;
+	for run_name, results in runs.items():
+		renamed_results[algorithm][run_name] = 1.0
+
+
+
 for name, alias, title in aliases:
 	fig,ax = plt.subplots()
 	
@@ -111,25 +133,34 @@ for name, alias, title in aliases:
 
 	rects = []
 	i = 0
-	for algorithm in ['lru', 'tadip', 'drrip', 'ucp', 'pipp', 'prism']:
+	for algorithm in algorithms:
 		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
 		if len(values) != N:
 			values = [0] * (N+1)
 		else:
 			values.append(np.mean(values))
-		rects.append(ax.bar(ind+(i*width), values, width, color=cm.Blues(1.*i/5)))
+		rects.append(ax.bar(ind+(i*width), values, width, color=cm.prism(1.*i/len(algorithms))))
 		i = i + 1
 
 	#ax.set_ylabel("%s relative to LRU" % metric)
 	ax.set_ylabel("L3 Misses")
 	ax.set_xticks(ind+width*2.5)
 	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
-	ax.legend((rects[0][0], rects[1][0], rects[2][0], rects[3][0], rects[4][0], rects[5][0]), ('lru', 'tadip', 'drrip', 'ucp', 'pipp', 'prism'), fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
+
+	# Generate legends
+	handles = ()
+	legends = ()
+	count = 0
+	for algorithm in algorithms:
+		handles += (rects[count][0],)
+		legends += (algorithm,)
+		count += 1
+	ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
 
 	#plt.suptitle(title)
-	fig.set_size_inches((5*np.floor(N/10), 2.5))
+	fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
 	ax.set_xlim([0,N+1])
+	ax.set_ylim([0.8,1.2])
 
 	plt.savefig('%s/%s.png' % (args.out, alias), frameon=False, bbox_inches='tight')
 	plt.clf()
-
