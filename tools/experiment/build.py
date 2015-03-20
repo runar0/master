@@ -35,7 +35,6 @@ profiles = {
 		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
 		'06_4': { 'bw':  6.4, 'latency': 100 },
-		'12_8': { 'bw': 12.8, 'latency': 45 },
 	},
 	'replacement': {
 		'lru':   {'policy': 'lru'},
@@ -43,11 +42,10 @@ profiles = {
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
 		'pipp-min8':  {'policy': 'pipp-min8'},
-		'pipp-min16':  {'policy': 'pipp-min16'},
 		'drrip-3': {'policy': 'drrip-3'},
 		'drrip-4': {'policy': 'drrip-4'},
 		'prism': {'policy': 'prism'},
-		'prism-l': {'policy': 'prism-l'},
+		'prism-e': {'policy': 'prism-e'},
 	},
 
 	'core': {
