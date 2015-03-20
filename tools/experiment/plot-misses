@@ -63,18 +63,20 @@ for subdir, dirs, files in os.walk(rundir):
 
 		benchmarks = run_name.split('-')
 		algorithm = run[2]
+		l2size = [key.split('-')[1] for key in run if key.startswith("l2-")][0]
+		if l2size not in benchmark_results: benchmark_results[l2size] = {}
+		if l2size not in workload_results: workload_results[l2size] = {}
+
 
 		if len(benchmarks) == 1:
-			if algorithm not in benchmark_results: benchmark_results[algorithm] = {}
-			benchmark_results[algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
+			if algorithm not in benchmark_results[l2size]: benchmark_results[l2size][algorithm] = {}
+			benchmark_results[l2size][algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
-			if algorithm not in workload_results: workload_results[algorithm] = {}
+			if algorithm not in workload_results[l2size]: workload_results[l2size][algorithm] = {}
 			results = 0
-			i = 0
-			for benchmark in benchmarks:
+			for i in xrange(len(benchmarks)):
 				results += extract_misses('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
-				i = i + 1
-			workload_results[algorithm][run_name] = results
+			workload_results[l2size][algorithm][run_name] = results
 
 # convert run names to group names
 aliases = [
@@ -83,84 +85,101 @@ aliases = [
 	('workload-bw', 'bw4', 'Bandwidth'),
 	('workload-compute', 'co4', 'Compute'),
 	('workload-random', 'ra4', 'Random'),
-	#('workload-8', 'ra8', 'Random 8'),
-	#('workload-16', 'ra16', 'Random 16'),
+	('workload-8', 'ra8', 'Random 8'),
+	('workload-16', 'ra16', 'Random 16'),
 ]
 # Partition algorithms to plot
-algorithms = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism']
-
+algorithms_names = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism', 'prism-e']
+for algorithm in algorithms_names:
+	for l2size in workload_results.keys():
+		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
+		if algorithm not in workload_results[l2size]:				
+			print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
+			algorithms_names.remove(algorithm)
 
 renamed_results = {}
 
-for algorithm, runs in workload_results.items():
-	renamed_results[algorithm] = {}
+for l2size, algorithms in workload_results.items():
+	renamed_results[l2size] = {}
+	for algorithm, runs in algorithms.items():
+		renamed_results[l2size][algorithm] = {}
 
-	for run_name, results in runs.items():
-		found = False
-		for name, alias, title in aliases:
-			i = 0
-			for benchmarks in benchmark_sets[name]:
-				if '-'.join(benchmarks) == run_name:
-					renamed_results[algorithm]["%s-%02d" % (alias, i)] = results
-					found = True
+		for run_name, results in runs.items():
+			found = False
+			for name, alias, title in aliases:
+				i = 0
+				for benchmarks in benchmark_sets[name]:
+					if '-'.join(benchmarks) == run_name:
+						renamed_results[l2size][algorithm]["%s-%02d" % (alias, i)] = results
+						found = True
+						break
+					i = i + 1
+
+				if found:
 					break
-				i = i + 1
 
-			if found:
-				break
-
-	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
+		renamed_results[l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[l2size][algorithm].items()))
 
 # Normalize all algorithms to LRU 
-for algorithm, runs in renamed_results.items():
-	if algorithm == 'lru': continue;
-	for run_name, results in runs.items():
-		renamed_results[algorithm][run_name] = results/renamed_results['lru'][run_name]
+for l2size, algorithms in renamed_results.items():
+	for algorithm, runs in algorithms.items():
+		if algorithm == 'lru': continue;
+		for run_name, results in runs.items():
+			renamed_results[l2size][algorithm][run_name] = results/renamed_results[l2size]['lru'][run_name]
 # ... Then normalize LRU to itself
-for algorithm, runs in renamed_results.items():
-	if algorithm != 'lru': continue;
-	for run_name, results in runs.items():
-		renamed_results[algorithm][run_name] = 1.0
+for l2size, algorithms in renamed_results.items():
+	for algorithm, runs in algorithms.items():
+		if algorithm != 'lru': continue;
+		for run_name, results in runs.items():
+			renamed_results[l2size][algorithm][run_name] = 1.0
 
+for l2size in renamed_results.keys():
+	for name, alias, title in aliases:
+		# Find number of runs executed in this group
+		N = len([key for key,value in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")])
 
+		if N == 0:
+			print "No lru data for group %s (%s), skipping." % (title,name)
+			continue 
 
-for name, alias, title in aliases:
-	fig,ax = plt.subplots()
-	
-	N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
-	ind = np.arange(N+1)
-	width = .11
+		# Create indicies, cacluate bar width
+		ind = np.arange(N+1)
+		width = 1.0/(len(algorithms_names)+2)
 
-	rects = []
-	i = 0
-	for algorithm in algorithms:
-		values = [value for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
-		if len(values) != N:
-			values = [0] * (N+1)
-		else:
-			values.append(np.mean(values))
-		rects.append(ax.bar(ind+(i*width), values, width, color=cm.prism(1.*i/len(algorithms))))
-		i = i + 1
+		fig,ax = plt.subplots()
 
-	#ax.set_ylabel("%s relative to LRU" % metric)
-	ax.set_ylabel("L3 Misses")
-	ax.set_xticks(ind+width*2.5)
-	ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+		# Build one bar plot per algorithm
+		rects = []
+		i = 1
+		for algorithm in algorithms_names:
+			values = [value for key,value in renamed_results[l2size][algorithm].items() if key.startswith(alias+"-")]
+			if len(values) != N:
+				values = [0] * (N+1)
+			else:
+				values.append(np.mean(values))
 
-	# Generate legends
-	handles = ()
-	legends = ()
-	count = 0
-	for algorithm in algorithms:
-		handles += (rects[count][0],)
-		legends += (algorithm,)
-		count += 1
-	ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
+			rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.prism(1.*i/len(algorithms_names)), linewidth=0.45))
+			i += 1
 
-	#plt.suptitle(title)
-	fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
-	ax.set_xlim([0,N+1])
-	ax.set_ylim([0.8,1.2])
+		ax.set_ylabel("LLC Misses")
+		ax.set_xticks(ind+0.5)
+		ax.set_xticklabels([ key for key,val in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+		
+		# Generate legends, but only for the ra images
+		if alias.startswith("ra"):
+			handles = ()
+			legends = ()
+			count = 0
+			for algorithm in algorithms_names:
+				handles += (rects[count][0],)
+				legends += (algorithm,)
+				count += 1
+			ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.50), loc='upper center')
+		
 
-	plt.savefig('%s/%s.png' % (args.out, alias), frameon=False, bbox_inches='tight')
-	plt.clf()
+		ax.set_ylim([.8,1.2])
+		ax.set_xlim([0,N+1])
+
+		fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
+		plt.savefig('%s/%s-%s.png' % (args.out, l2size, alias), frameon=False, bbox_inches='tight')
+		plt.clf()

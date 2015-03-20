@@ -66,37 +66,43 @@ for subdir, dirs, files in os.walk(rundir):
 
 		benchmarks = run_name.split('-')
 		algorithm = run[2]
+		l2size = [key.split('-')[1] for key in run if key.startswith("l2-")][0]
+		if l2size not in benchmark_results: benchmark_results[l2size] = {}
+		if l2size not in workload_results: workload_results[l2size] = {}
+
 
 		if len(benchmarks) == 1:
-			if algorithm not in benchmark_results: benchmark_results[algorithm] = {}
-			benchmark_results[algorithm][run_name] = extract_cycles('%s/%s/stats-benchmark-0.txt' % (rundir, name))
+			if algorithm not in benchmark_results[l2size]: benchmark_results[l2size][algorithm] = {}
+			benchmark_results[l2size][algorithm][run_name] = extract_cycles('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
-			if algorithm not in workload_results: workload_results[algorithm] = {}
+			if algorithm not in workload_results[l2size]: workload_results[l2size][algorithm] = {}
 			results = {}
 			i = 0
 			for benchmark in benchmarks:
 				results[benchmark] = extract_cycles('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
 				i = i + 1
-			workload_results[algorithm][run_name] = results
+			workload_results[l2size][algorithm][run_name] = results
 
 # Transform workload results to STP and HMS measurements
 speedup_results = {}
-for algorithm, runs in workload_results.items():
-	speedup_results[algorithm] = {}
+for l2size, algorithms in workload_results.items():
+	speedup_results[l2size] = {}
+	for algorithm, runs in algorithms.items():
+		speedup_results[l2size][algorithm] = {}
 
-	for run_name, results in runs.items():
-		stp = 0
-		hms = 0
+		for run_name, results in runs.items():
+			stp = 0
+			hms = 0
 
-		for benchmark, cycles in results.items():
-			hms = hms + cycles/benchmark_results['lru'][benchmark]
-			stp = stp + benchmark_results['lru'][benchmark]/cycles if cycles > 0 else 0
+			for benchmark, cycles in results.items():
+				hms = hms + cycles/benchmark_results[l2size]['lru'][benchmark]
+				stp = stp + benchmark_results[l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
 
-		hms = len(results) / hms if hms > 0 else 0
+			hms = len(results) / hms if hms > 0 else 0
 
-		speedup_results[algorithm][run_name] = {
-			'stp': stp,
-			'hms': hms
+			speedup_results[l2size][algorithm][run_name] = {
+				'stp': stp,
+				'hms': hms
 		}
 
 # convert run names to group names
@@ -106,74 +112,90 @@ aliases = [
 	('workload-bw', 'bw4', 'Bandwidth'),
 	('workload-compute', 'co4', 'Compute'),
 	('workload-random', 'ra4', 'Random'),
-	#('workload-8', 'ra8', 'Random 8'),
-	#('workload-16', 'ra16', 'Random 16'),
+	('workload-8', 'ra8', 'Random 8'),
+	('workload-16', 'ra16', 'Random 16'),
 ]
 # Partition algorithms to plot
-algorithms = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism']
+algorithms_names = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism', 'prism-e']
+for algorithm in algorithms_names:
+	for l2size in speedup_results.keys():
+		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
+		if algorithm not in speedup_results[l2size]:				
+			print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
+			algorithms_names.remove(algorithm)
 
 renamed_results = {}
 
-for algorithm, runs in speedup_results.items():
-	renamed_results[algorithm] = {}
+for l2size, algorithms in speedup_results.items():
+	renamed_results[l2size] = {}
+	for algorithm, runs in algorithms.items():
+		renamed_results[l2size][algorithm] = {}
 
-	for run_name, results in runs.items():
-		found = False
-		for name, alias, title in aliases:
-			i = 0
-			for benchmarks in benchmark_sets[name]:
-				if '-'.join(benchmarks) == run_name:
-					renamed_results[algorithm]["%s-%02d" % (alias, i)] = results
-					found = True
+		for run_name, results in runs.items():
+			found = False
+			for name, alias, title in aliases:
+				i = 0
+				for benchmarks in benchmark_sets[name]:
+					if '-'.join(benchmarks) == run_name:
+						renamed_results[l2size][algorithm]["%s-%02d" % (alias, i)] = results
+						found = True
+						break
+					i = i + 1
+
+				if found:
 					break
-				i = i + 1
 
-			if found:
-				break
+		renamed_results[l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[l2size][algorithm].items()))
 
-	renamed_results[algorithm] = collections.OrderedDict(sorted(renamed_results[algorithm].items()))
-
-for metric in ['stp', 'hms']:
+for l2size in renamed_results.keys():
 	for name, alias, title in aliases:
-		fig,ax = plt.subplots()
-		
-		N = len([key for key,value in renamed_results['lru'].items() if key.startswith(alias+"-")])
+		# Find number of runs executed in this group
+		N = len([key for key,value in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")])
+
+		if N == 0:
+			print "No lru data for group %s (%s), skipping." % (title,name)
+			continue 
+
+		# Create indicies, cacluate bar width
 		ind = np.arange(N+1)
-		width = .11
+		width = 1.0/(len(algorithms_names)+2)
 
-		rects = []
-		i = 0
-		for algorithm in algorithms:
-			values = [value[metric] for key,value in renamed_results[algorithm].items() if key.startswith(alias+"-")]
-			if len(values) != N:
-				values = [0] * (N+1)
-			else:
-				values.append(np.mean(values))
+		for metric in ['stp', 'hms']:
+			fig,ax = plt.subplots()
 
-			rects.append(ax.bar(ind+(i*width), values, width, color=cm.prism(1.*i/len(algorithms))))
-			i = i + 1
+			# Build one bar plot per algorithm
+			rects = []
+			i = 1
+			for algorithm in algorithms_names:
+				values = [value[metric] for key,value in renamed_results[l2size][algorithm].items() if key.startswith(alias+"-")]
+				if len(values) != N:
+					values = [0] * (N+1)
+				else:
+					values.append(np.mean(values))
 
-		#ax.set_ylabel("%s relative to LRU" % metric)
-		ax.set_ylabel("%s" % metric)
-		ax.set_xticks(ind+width*2.5)
-		ax.set_xticklabels([ key for key,val in renamed_results['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
-		
-		# Generate legends
-		handles = ()
-		legends = ()
-		count = 0
-		for algorithm in algorithms:
-			handles += (rects[count][0],)
-			legends += (algorithm,)
-			count += 1
-		ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.10), loc='upper center')
-		
+				rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.prism(1.*i/len(algorithms_names)), linewidth=0.45))
+				i += 1
 
-		if metric == 'stp': ax.set_ylim([0,4.5])		
-		if metric == 'hms': ax.set_ylim([0,1.2])
-		ax.set_xlim([0,N+1])
+			ax.set_ylabel("%s" % metric)
+			ax.set_xticks(ind+0.5)
+			ax.set_xticklabels([ key for key,val in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+			
+			# Generate legends, but only for the ra images
+			if alias.startswith("ra"):
+				handles = ()
+				legends = ()
+				count = 0
+				for algorithm in algorithms_names:
+					handles += (rects[count][0],)
+					legends += (algorithm,)
+					count += 1
+				ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.50), loc='upper center')
+			
 
-		#plt.suptitle(title)
-		fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
-		plt.savefig('%s/%s-%s.png' % (args.out, metric, alias), frameon=False, bbox_inches='tight')
-		plt.clf()
+			if metric == 'stp': ax.set_ylim([2,4])		
+			if metric == 'hms': ax.set_ylim([0.4,1])
+			ax.set_xlim([0,N+1])
+
+			fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
+			plt.savefig('%s/%s-%s-%s.png' % (args.out, metric, l2size, alias), frameon=False, bbox_inches='tight')
+			plt.clf()
