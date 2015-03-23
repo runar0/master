@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib
-from scipy.stats.mstats import gmean
+from scipy.stats import gmean
 #matplotlib.rcParams.update({'font.size': 20})
 
 from os import path
@@ -89,7 +89,7 @@ aliases = [
 	('workload-16', 'ra16', 'Random 16'),
 ]
 # Partition algorithms to plot
-algorithms_names = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism', 'prism-e']
+algorithms_names = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 for algorithm in algorithms_names:
 	for l2size in workload_results.keys():
 		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
@@ -156,7 +156,7 @@ for l2size in renamed_results.keys():
 			if len(values) != N:
 				values = [0] * (N+1)
 			else:
-				values.append(np.mean(values))
+				values.append(gmean(values))
 
 			rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.prism(1.*i/len(algorithms_names)), linewidth=0.45))
 			i += 1
@@ -177,7 +177,7 @@ for l2size in renamed_results.keys():
 			ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.50), loc='upper center')
 		
 
-		ax.set_ylim([.8,1.2])
+		ax.set_ylim([.65,1.35])
 		ax.set_xlim([0,N+1])
 
 		fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))

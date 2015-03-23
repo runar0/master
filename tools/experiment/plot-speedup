@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib
+from scipy.stats import gmean
 #matplotlib.rcParams.update({'font.size': 20})
 
 from os import path
@@ -116,7 +117,7 @@ aliases = [
 	('workload-16', 'ra16', 'Random 16'),
 ]
 # Partition algorithms to plot
-algorithms_names = ['lru', 'tadip', 'drrip-3', 'drrip-4', 'ucp', 'pipp', 'pipp-min8', 'prism', 'prism-e']
+algorithms_names = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 for algorithm in algorithms_names:
 	for l2size in speedup_results.keys():
 		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
@@ -148,6 +149,7 @@ for l2size, algorithms in speedup_results.items():
 		renamed_results[l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[l2size][algorithm].items()))
 
 for l2size in renamed_results.keys():
+	overview = []
 	for name, alias, title in aliases:
 		# Find number of runs executed in this group
 		N = len([key for key,value in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")])
@@ -166,14 +168,15 @@ for l2size in renamed_results.keys():
 			# Build one bar plot per algorithm
 			rects = []
 			i = 1
+			values = {}
 			for algorithm in algorithms_names:
-				values = [value[metric] for key,value in renamed_results[l2size][algorithm].items() if key.startswith(alias+"-")]
-				if len(values) != N:
-					values = [0] * (N+1)
+				values[algorithm] = [value[metric] for key,value in renamed_results[l2size][algorithm].items() if key.startswith(alias+"-")]
+				if len(values[algorithm]) != N:
+					values[algorithm] = [0] * (N+1)
 				else:
-					values.append(np.mean(values))
+					values[algorithm].append(gmean(values[algorithm]))
 
-				rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.prism(1.*i/len(algorithms_names)), linewidth=0.45))
+				rects.append(ax.bar(ind+(i*width), values[algorithm], width*.8, color=cm.Blues(1.*i/len(algorithms_names)), linewidth=0.45))
 				i += 1
 
 			ax.set_ylabel("%s" % metric)
@@ -192,10 +195,39 @@ for l2size in renamed_results.keys():
 				ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.50), loc='upper center')
 			
 
-			if metric == 'stp': ax.set_ylim([2,4])		
-			if metric == 'hms': ax.set_ylim([0.4,1])
+			if metric == 'stp': 
+				if alias == 'ra8':
+					ax.set_ylim([2,8])		
+				elif alias == 'ra16':
+					ax.set_ylim([2,16])		
+				else:
+					ax.set_ylim([1,4])		
+			if metric == 'hms': ax.set_ylim([0,1])
 			ax.set_xlim([0,N+1])
 
 			fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
 			plt.savefig('%s/%s-%s-%s.png' % (args.out, metric, l2size, alias), frameon=False, bbox_inches='tight')
 			plt.clf()
+
+
+			# Append data to overview
+			if len(overview) == 0:
+				overview.append(','.join([''] + [algorithm + ',' for algorithm in algorithms_names]))
+			for i in xrange(N+1):
+				if i < N:
+					row = ['%s-%s-%02d' % (metric, alias, i)]
+				else:
+					row = ['%s-%s-avg' % (metric, alias)]
+
+				for algorithm in algorithms_names:
+					if values['lru'][i] > 0:
+						row += [str(values[algorithm][i]), str((values[algorithm][i]-values['lru'][i])/values['lru'][i])]
+					else:
+						row += [str(values[algorithm][i]),'0']
+
+				row = ','.join(row)
+				overview.append(row)
+
+	# Dump overview to a csv file
+	with open('%s/%s.csv' % (args.out, l2size), "w") as file:
+		file.write('\n'.join(overview))

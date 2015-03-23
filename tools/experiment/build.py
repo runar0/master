@@ -42,10 +42,10 @@ profiles = {
 		'ucp':   {'policy': 'ucp'},
 		'pipp':  {'policy': 'pipp'},
 		'pipp-min8':  {'policy': 'pipp-min8'},
+		'pipp-s':  {'policy': 'pipp-s'},
 		'drrip-3': {'policy': 'drrip-3'},
 		'drrip-4': {'policy': 'drrip-4'},
 		'prism': {'policy': 'prism'},
-		'prism-e': {'policy': 'prism-e'},
 	},
 
 	'core': {
