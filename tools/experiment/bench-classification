@@ -231,7 +231,6 @@ def createWorkloads(size):
 	# Generate benchmarks:
 	result = {}
 	groups = ['ca', 'bw', 'ca-bw', 'co', 'ra'] if size == 4 else [ 'ra' ]
-	print groups
 	for group in groups:
 
 		count = 5 if group in ['ca', 'ca-bw'] else 10
@@ -268,8 +267,20 @@ def createWorkloads(size):
 		number = 0
 
 		print "Group: %s" % group
+		i = 0
 		for workload in workloads:
-			print "\t%s" % '-'.join(workload)
+			print "\t%s%d-%02d: %s" % (group, len(workload), i, '-'.join(workload))
+			i += 1
+
+			## Print group composition
+			if group == 'ra':
+				counters = {'ca': 0, 'bw': 0, 'ca-bw': 0, 'co': 0}
+				for benchmark in workload:
+					for key in classified.keys():
+						if benchmark in classified[key]:
+							counters[key] += 1
+				print "\t\t Comp: ca %02d, bw %02d, cabw %02d, co %02d" % (counters['ca'], counters['bw'], counters['ca-bw'], counters['co'])
+
 
 			header = "\t\t\t" if not first else "\\textbf{%s}\t" % group
 			name = "%s%d-%d" % (group.replace('-', ''), size, number)
@@ -293,7 +304,7 @@ def createWorkloads(size):
 	tex.write("\\end{table}\n")
 	tex.close()
 
-# Seed rng before each generate, that way if we change the number of workloads grenerated in one group it will not effect the next group(s)
+# Seed rng before each generate, that way if we change the number of workloads grenerated in one group it will not effect the following group(s)
 random.seed("deadbeef01")
 createWorkloads(4)
 
