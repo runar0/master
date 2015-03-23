@@ -1,0 +1,239 @@
+Benchmark: GemsFDTD
+	Cache 	: MEAN: 1.000 STD: 0.000
+	Memory 	: MEAN: 1.000 STD: 0.000
+Benchmark: hmmer
+	Cache*	: MEAN: 0.915 STD: 0.052
+	Memory 	: MEAN: 0.885 STD: 0.101
+Benchmark: sphinx3
+	Cache*	: MEAN: 0.846 STD: 0.247
+	Memory*	: MEAN: 0.817 STD: 0.100
+Benchmark: gobmk
+	Cache*	: MEAN: 0.933 STD: 0.063
+	Memory 	: MEAN: 0.968 STD: 0.036
+Benchmark: cactusADM
+	Cache 	: MEAN: 0.986 STD: 0.013
+	Memory*	: MEAN: 0.837 STD: 0.082
+Benchmark: tonto
+	Cache 	: MEAN: 0.978 STD: 0.036
+	Memory 	: MEAN: 0.990 STD: 0.017
+Benchmark: bwaves
+	Cache 	: MEAN: 0.999 STD: 0.002
+	Memory*	: MEAN: 0.703 STD: 0.149
+Benchmark: lbm
+	Cache 	: MEAN: 0.999 STD: 0.003
+	Memory*	: MEAN: 0.545 STD: 0.076
+Benchmark: wrf
+	Cache 	: MEAN: 0.973 STD: 0.023
+	Memory*	: MEAN: 0.762 STD: 0.117
+Benchmark: gcc
+	Cache 	: MEAN: 0.897 STD: 0.115
+	Memory*	: MEAN: 0.870 STD: 0.096
+Benchmark: leslie3d
+	Cache 	: MEAN: 0.979 STD: 0.027
+	Memory 	: MEAN: 0.811 STD: 0.125
+Benchmark: gromacs
+	Cache 	: MEAN: 0.969 STD: 0.026
+	Memory 	: MEAN: 0.968 STD: 0.026
+Benchmark: sjeng
+	Cache 	: MEAN: 0.999 STD: 0.002
+	Memory 	: MEAN: 0.993 STD: 0.004
+Benchmark: calculix
+	Cache 	: MEAN: 0.998 STD: 0.002
+	Memory 	: MEAN: 0.947 STD: 0.037
+Benchmark: astar
+	Cache*	: MEAN: 0.901 STD: 0.058
+	Memory 	: MEAN: 0.928 STD: 0.050
+Benchmark: zeusmp
+	Cache 	: MEAN: 0.976 STD: 0.033
+	Memory*	: MEAN: 0.849 STD: 0.082
+Benchmark: povray
+	Cache 	: MEAN: 1.000 STD: 0.001
+	Memory 	: MEAN: 0.999 STD: 0.000
+Benchmark: milc
+	Cache 	: MEAN: 0.999 STD: 0.002
+	Memory*	: MEAN: 0.632 STD: 0.108
+Benchmark: omnetpp
+	Cache*	: MEAN: 0.917 STD: 0.029
+	Memory*	: MEAN: 0.780 STD: 0.115
+Benchmark: mcf
+	Cache*	: MEAN: 0.927 STD: 0.022
+	Memory*	: MEAN: 0.764 STD: 0.115
+Benchmark: bzip2
+	Cache*	: MEAN: 0.847 STD: 0.052
+	Memory*	: MEAN: 0.865 STD: 0.096
+Benchmark: h264ref
+	Cache*	: MEAN: 0.947 STD: 0.061
+	Memory 	: MEAN: 0.958 STD: 0.044
+Benchmark: perlbench
+	Cache*	: MEAN: 0.961 STD: 0.034
+	Memory 	: MEAN: 0.951 STD: 0.033
+Benchmark: xalancbmk
+	Cache 	: MEAN: 0.972 STD: 0.028
+	Memory*	: MEAN: 0.810 STD: 0.093
+Benchmark: dealII
+	Cache 	: MEAN: 0.986 STD: 0.018
+	Memory 	: MEAN: 0.988 STD: 0.012
+Benchmark: namd
+	Cache 	: MEAN: 0.997 STD: 0.003
+	Memory 	: MEAN: 0.993 STD: 0.004
+Benchmark: gamess
+	Cache 	: MEAN: 1.000 STD: 0.000
+	Memory 	: MEAN: 1.000 STD: 0.000
+Benchmark: libquantum
+	Cache 	: MEAN: 0.995 STD: 0.010
+	Memory*	: MEAN: 0.731 STD: 0.112
+Benchmark: soplex
+	Cache*	: MEAN: 0.887 STD: 0.056
+	Memory*	: MEAN: 0.709 STD: 0.112
+ca:
+	astar
+	gobmk
+	h264ref
+	hmmer
+	perlbench
+bw:
+	bwaves
+	cactusADM
+	gcc
+	lbm
+	libquantum
+	milc
+	wrf
+	xalancbmk
+	zeusmp
+co:
+	GemsFDTD
+	calculix
+	dealII
+	gamess
+	gromacs
+	leslie3d
+	namd
+	povray
+	sjeng
+	tonto
+ca-bw:
+	bzip2
+	mcf
+	omnetpp
+	soplex
+	sphinx3
+
+Workloads:
+Group: ca
+	ca4-00: perlbench-h264ref-gobmk-hmmer
+	ca4-04: perlbench-gobmk-astar-h264ref
+	ca4-04: perlbench-hmmer-h264ref-astar
+	ca4-04: perlbench-astar-gobmk-hmmer
+	ca4-04: h264ref-gobmk-hmmer-astar
+Group: bw
+	bw4-00: wrf-gcc-milc-libquantum
+	bw4-04: libquantum-milc-gcc-xalancbmk
+	bw4-04: libquantum-cactusADM-milc-zeusmp
+	bw4-04: xalancbmk-libquantum-lbm-milc
+	bw4-04: bwaves-gcc-lbm-xalancbmk
+	bw4-04: xalancbmk-wrf-cactusADM-libquantum
+	bw4-04: libquantum-gcc-xalancbmk-bwaves
+	bw4-04: cactusADM-milc-zeusmp-gcc
+	bw4-04: wrf-gcc-bwaves-cactusADM
+	bw4-04: libquantum-gcc-milc-lbm
+Group: ca-bw
+	ca-bw4-00: omnetpp-sphinx3-soplex-bzip2
+	ca-bw4-04: sphinx3-mcf-soplex-omnetpp
+	ca-bw4-04: sphinx3-mcf-soplex-bzip2
+	ca-bw4-04: bzip2-sphinx3-omnetpp-mcf
+	ca-bw4-04: soplex-bzip2-omnetpp-mcf
+Group: co
+	co4-00: sjeng-calculix-namd-dealII
+	co4-04: namd-GemsFDTD-sjeng-tonto
+	co4-04: povray-gamess-calculix-namd
+	co4-04: calculix-tonto-gromacs-povray
+	co4-04: gromacs-namd-leslie3d-calculix
+	co4-04: namd-dealII-sjeng-tonto
+	co4-04: sjeng-povray-gromacs-dealII
+	co4-04: leslie3d-gromacs-povray-dealII
+	co4-04: GemsFDTD-dealII-calculix-povray
+	co4-04: dealII-namd-calculix-gromacs
+Group: ra
+	ra4-00: libquantum-namd-perlbench-gcc
+		 Comp: ca 01, bw 02, cabw 00, co 01
+	ra4-04: calculix-gobmk-GemsFDTD-cactusADM
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: astar-mcf-omnetpp-gcc
+		 Comp: ca 01, bw 01, cabw 02, co 00
+	ra4-04: lbm-povray-sphinx3-gamess
+		 Comp: ca 00, bw 01, cabw 01, co 02
+	ra4-04: calculix-dealII-lbm-perlbench
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: libquantum-h264ref-GemsFDTD-gamess
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: astar-sphinx3-lbm-libquantum
+		 Comp: ca 01, bw 02, cabw 01, co 00
+	ra4-04: sphinx3-soplex-povray-perlbench
+		 Comp: ca 01, bw 00, cabw 02, co 01
+	ra4-04: sphinx3-bwaves-gobmk-bzip2
+		 Comp: ca 01, bw 01, cabw 02, co 00
+	ra4-04: milc-calculix-astar-povray
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: lbm-hmmer-calculix-gamess
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: bwaves-soplex-GemsFDTD-milc
+		 Comp: ca 00, bw 02, cabw 01, co 01
+	ra4-04: mcf-hmmer-cactusADM-wrf
+		 Comp: ca 01, bw 02, cabw 01, co 00
+	ra4-04: sphinx3-leslie3d-namd-tonto
+		 Comp: ca 00, bw 00, cabw 01, co 03
+	ra4-04: sphinx3-libquantum-calculix-povray
+		 Comp: ca 00, bw 01, cabw 01, co 02
+	ra4-04: cactusADM-perlbench-povray-gromacs
+		 Comp: ca 01, bw 01, cabw 00, co 02
+	ra4-04: astar-libquantum-calculix-soplex
+		 Comp: ca 01, bw 01, cabw 01, co 01
+	ra4-04: tonto-povray-libquantum-cactusADM
+		 Comp: ca 00, bw 02, cabw 00, co 02
+	ra4-04: xalancbmk-mcf-cactusADM-sjeng
+		 Comp: ca 00, bw 02, cabw 01, co 01
+	ra4-04: h264ref-soplex-astar-libquantum
+		 Comp: ca 02, bw 01, cabw 01, co 00
+Group: ra
+	ra8-00: tonto-bzip2-gobmk-h264ref-soplex-astar-hmmer-mcf
+		 Comp: ca 04, bw 00, cabw 03, co 01
+	ra8-08: sjeng-omnetpp-GemsFDTD-calculix-perlbench-xalancbmk-gcc-mcf
+		 Comp: ca 01, bw 02, cabw 02, co 03
+	ra8-08: h264ref-sjeng-gromacs-milc-tonto-libquantum-povray-astar
+		 Comp: ca 02, bw 02, cabw 00, co 04
+	ra8-08: calculix-omnetpp-gromacs-mcf-gobmk-leslie3d-xalancbmk-soplex
+		 Comp: ca 01, bw 01, cabw 03, co 03
+	ra8-08: dealII-leslie3d-povray-gamess-wrf-sphinx3-cactusADM-perlbench
+		 Comp: ca 01, bw 02, cabw 01, co 04
+	ra8-08: lbm-xalancbmk-libquantum-sjeng-cactusADM-zeusmp-hmmer-povray
+		 Comp: ca 01, bw 05, cabw 00, co 02
+	ra8-08: h264ref-lbm-mcf-wrf-omnetpp-hmmer-perlbench-gamess
+		 Comp: ca 03, bw 02, cabw 02, co 01
+	ra8-08: libquantum-leslie3d-h264ref-namd-cactusADM-astar-perlbench-dealII
+		 Comp: ca 03, bw 02, cabw 00, co 03
+	ra8-08: astar-sjeng-povray-h264ref-calculix-gcc-gamess-wrf
+		 Comp: ca 02, bw 02, cabw 00, co 04
+	ra8-08: gcc-gamess-milc-gromacs-tonto-hmmer-wrf-sphinx3
+		 Comp: ca 01, bw 03, cabw 01, co 03
+Group: ra
+	ra16-00: bzip2-calculix-astar-omnetpp-wrf-gamess-gobmk-povray-leslie3d-xalancbmk-namd-milc-hmmer-GemsFDTD-lbm-gcc
+		 Comp: ca 03, bw 05, cabw 02, co 06
+	ra16-16: wrf-gobmk-zeusmp-leslie3d-perlbench-hmmer-milc-cactusADM-calculix-tonto-bwaves-povray-omnetpp-h264ref-gromacs-bzip2
+		 Comp: ca 04, bw 05, cabw 02, co 05
+	ra16-16: wrf-GemsFDTD-libquantum-tonto-omnetpp-dealII-perlbench-soplex-lbm-leslie3d-bwaves-calculix-xalancbmk-milc-gamess-namd
+		 Comp: ca 01, bw 06, cabw 02, co 07
+	ra16-16: soplex-povray-h264ref-leslie3d-namd-gobmk-hmmer-sjeng-astar-omnetpp-gcc-lbm-gamess-wrf-sphinx3-GemsFDTD
+		 Comp: ca 04, bw 03, cabw 03, co 06
+	ra16-16: astar-bwaves-cactusADM-zeusmp-h264ref-omnetpp-namd-gromacs-GemsFDTD-libquantum-sphinx3-hmmer-xalancbmk-leslie3d-gcc-gamess
+		 Comp: ca 03, bw 06, cabw 02, co 05
+	ra16-16: sphinx3-GemsFDTD-soplex-milc-libquantum-astar-zeusmp-omnetpp-namd-bwaves-bzip2-lbm-povray-cactusADM-h264ref-dealII
+		 Comp: ca 02, bw 06, cabw 04, co 04
+	ra16-16: bwaves-hmmer-sjeng-leslie3d-astar-mcf-GemsFDTD-gromacs-libquantum-sphinx3-bzip2-omnetpp-gcc-milc-cactusADM-zeusmp
+		 Comp: ca 02, bw 06, cabw 04, co 04
+	ra16-16: omnetpp-calculix-tonto-hmmer-h264ref-astar-wrf-sjeng-soplex-namd-zeusmp-povray-leslie3d-gromacs-gamess-perlbench
+		 Comp: ca 04, bw 02, cabw 02, co 08
+	ra16-16: lbm-h264ref-soplex-gobmk-cactusADM-tonto-zeusmp-GemsFDTD-calculix-gromacs-bzip2-gcc-sphinx3-mcf-sjeng-namd
+		 Comp: ca 02, bw 04, cabw 04, co 06
+	ra16-16: lbm-sjeng-sphinx3-tonto-milc-mcf-wrf-omnetpp-bzip2-leslie3d-gcc-perlbench-gamess-calculix-namd-xalancbmk
+		 Comp: ca 01, bw 05, cabw 04, co 06
