@@ -69,6 +69,9 @@ for subdir, dirs, files in os.walk(rundir):
 
 
 		if len(benchmarks) == 1:
+			# use only 4M l3 configurations as baseline
+			if not "l3-04M" in name: continue
+			
 			if algorithm not in benchmark_results[l2size]: benchmark_results[l2size][algorithm] = {}
 			benchmark_results[l2size][algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
