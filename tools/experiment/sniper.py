@@ -22,16 +22,9 @@ def build_config_string(config, cores):
 		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
 		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
 		variables.append('-g perf_model/l3_cache/pipp_min_insert=8')
-	elif config['policy']['policy'] == "pipp-s": 		
-		variables.append('-g perf_model/l3_cache/replacement_policy=pipp')
-		variables.append('-g perf_model/l3_cache/umon/enable_stream_detection=true')
-		variables.append('-g perf_model/l3_cache/umon/stream_miss_fraction_limit=0.125')
 	elif config['policy']['policy'] == "drrip-3": 		
 		variables.append('-g perf_model/l3_cache/replacement_policy=drrip')
 		variables.append('-g perf_model/l3_cache/drrip/bits=3')
-	elif config['policy']['policy'] == "drrip-4": 		
-		variables.append('-g perf_model/l3_cache/replacement_policy=drrip')
-		variables.append('-g perf_model/l3_cache/drrip/bits=4')
 	else:
 		variables.append('-g perf_model/l3_cache/replacement_policy=%s' % (config['policy']['policy']))
 
