@@ -71,7 +71,7 @@ for subdir, dirs, files in os.walk(rundir):
 		if len(benchmarks) == 1:
 			# use only 4M l3 configurations as baseline
 			if not "l3-04M" in name: continue
-			
+
 			if algorithm not in benchmark_results[l2size]: benchmark_results[l2size][algorithm] = {}
 			benchmark_results[l2size][algorithm][run_name] = extract_misses('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
@@ -161,15 +161,15 @@ for l2size in renamed_results.keys():
 			else:
 				values.append(gmean(values))
 
-			rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.prism(1.*i/len(algorithms_names)), linewidth=0.45))
+			rects.append(ax.bar(ind+(i*width), values, width*.8, color=cm.Blues(1.*i/len(algorithms_names)), linewidth=0.45))
 			i += 1
 
 		ax.set_ylabel("LLC Misses")
 		ax.set_xticks(ind+0.5)
 		ax.set_xticklabels([ key for key,val in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
 		
-		# Generate legends, but only for the ra images
-		if alias.startswith("ra"):
+		# Generate legends, but only for the ra4 images
+		if alias == "ra4":
 			handles = ()
 			legends = ()
 			count = 0
