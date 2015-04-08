@@ -120,7 +120,7 @@ aliases = [
 	('workload-16', 'ra16', 'Random 16'),
 ]
 # Partition algorithms to plot
-algorithms_names = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'pipp-s', 'prism']
+algorithms_names = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 for algorithm in algorithms_names:
 	for l2size in speedup_results.keys():
 		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
@@ -187,7 +187,7 @@ for l2size in renamed_results.keys():
 			ax.set_xticklabels([ key for key,val in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
 			
 			# Generate legends, but only for the ra images
-			if alias.startswith("ra"):
+			if alias == "ra4" or (metric == "stp" and alias.startswith("ra")):
 				handles = ()
 				legends = ()
 				count = 0
@@ -195,7 +195,7 @@ for l2size in renamed_results.keys():
 					handles += (rects[count][0],)
 					legends += (algorithm,)
 					count += 1
-				ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.50), loc='upper center')
+				ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.40), loc='upper center')
 			
 
 			if metric == 'stp': 
