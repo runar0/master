@@ -2,6 +2,8 @@
 \chapter{Results}
 \label{cpt:results}
 
+\section{Base Experiment}
+\todo{Rewrite this section, it needs to be more readable. But the main content is here. When we compare algorithms we need to explain differences observed in terms of theoretical diferences between algorithms. Do the observed results concure with the expectation we have based on differences in implementations?}
 \begin{figure}
     \centering
     \begin{subfigure}[b]{\textwidth}
@@ -174,41 +176,6 @@ If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will 
 \begin{figure}
     \centering
     \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-ra4}
-            \caption{Random (ra4) workloads}
-            \label{fig:results:4core:stp:random}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-ca4}
-            \caption{Cache (ca4) workloads}
-            \label{fig:results:4core:stp:cache}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-cabw4}
-            \caption{Cache-Bandwidth (cabw4) workloads}
-            \label{fig:results:4core:stp:cache-bw}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-bw4}
-            \caption{Bandwidth (bw4) workloads}
-            \label{fig:results:4core:stp:bw}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-co4}
-            \caption{Compute (co4) workloads}
-            \label{fig:results:4core:stp:co}
-    \end{subfigure}%
-
-    \caption{4-Core workload STP results (512k L2)}\label{fig:results:4core:stp}
-\end{figure}
-
-
-
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{\textwidth}
             \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-ra8}
             \label{fig:results:4core:hms:random}
     \end{subfigure}
@@ -244,6 +211,10 @@ If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will 
     \caption{16-Core workload results (128k L2)}\label{fig:results:4core:hms}
 \end{figure}
 
+
+\section{L2 Sensitivity}
+
+\todo{This section should cover results from varying L2 size. It is probably not a good idea to have all graphs for all runs, we should find a way to aggregate while keeping all important details.}
 
 \begin{figure}
     \centering
@@ -310,3 +281,41 @@ If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will 
 
     \caption{4-Core workload LLC misses (512k L2)}\label{fig:results:4core:misses}
 \end{figure}
+
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-ra4}
+            \caption{Random (ra4) workloads}
+            \label{fig:results:4core:stp:random}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-ca4}
+            \caption{Cache (ca4) workloads}
+            \label{fig:results:4core:stp:cache}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-cabw4}
+            \caption{Cache-Bandwidth (cabw4) workloads}
+            \label{fig:results:4core:stp:cache-bw}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-bw4}
+            \caption{Bandwidth (bw4) workloads}
+            \label{fig:results:4core:stp:bw}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0512k-co4}
+            \caption{Compute (co4) workloads}
+            \label{fig:results:4core:stp:co}
+    \end{subfigure}%
+
+    \caption{4-Core workload STP results (512k L2)}\label{fig:results:4core:stp}
+\end{figure}
+
+\section{Simulator Parallelism Sentitivity}
+\todo{As above, but along a different axis}
