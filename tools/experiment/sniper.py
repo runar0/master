@@ -41,6 +41,10 @@ def build_config_string(config, cores):
 	variables.append('-g perf_model/dram/per_controller_bandwidth=%f' % (config['membus']['bw']))
 	variables.append('-g perf_model/dram/latency=%f' % (config['membus']['latency']))
 
+	# Clock skew minimization barrier
+	variables.append('-g clock_skew_minimization/barrier/quantum=%d' % (config['csmb']['barrier']))
+
+
 	return ' '.join(variables)
 
 

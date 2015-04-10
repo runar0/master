@@ -45,6 +45,12 @@ profiles = {
 		'drrip-3': {'policy': 'drrip-3'},
 		'prism': {'policy': 'prism'},
 	},
+	'csmb': {
+		'1': {'barrier': 1},
+		'10': {'barrier': 10},
+		'100': {'barrier': 100},
+		'1000': {'barrier': 1000}
+	},
 
 	'core': {
 		'default' : {'rob': 128, 'rs': 36, 'ol': 48, 'os': 32, 'mshr': 8, 'mshr2': 12},
@@ -84,6 +90,7 @@ if __name__ == '__main__':
 	parser.add_argument('--replacement-profile', choices=profiles['replacement'].keys(), default=['lru'], nargs='*')
 	parser.add_argument('--core-profile', choices=profiles['core'].keys(), default=['default'], nargs='*')
 	parser.add_argument('--membus-profile', choices=profiles['membus'].keys(), default=['06_4'], nargs='*')
+	parser.add_argument('--csmb-profile', choices=profiles['csmb'].keys(), default=['100'], nargs='*')
 
 	# Trace length
 	parser.add_argument('--trace-length', choices=['100M', '250M', '500M'], default='250M')
@@ -142,17 +149,19 @@ if __name__ == '__main__':
 			for l3 in args.l3_profile:
 				for core_key in args.core_profile:
 					for membus in args.membus_profile:
-						core = profiles['core'][core_key]
-						#name = '%s.%s.l2-%s.l3-%s.rob-%s.rs-%d.ol-%d.os-%d.mshr-%s.membus-%s' % (args.trace_length, replacement, l2.rjust(5, '0'), l3.rjust(3, '0'), str(core['rob']).rjust(3, '0'), core['rs'], core['ol'], core['os'], str(core['mshr']).rjust(2, '0'), str(membus).rjust(4, '0'))
-						name = '%s.%s.l2-%s.l3-%s.membus-%s' % (args.trace_length, replacement, l2.rjust(5, '0'), l3.rjust(3, '0'), str(membus).rjust(4, '0'))
-						configurations.append({
-							'l2': profiles['l2'][l2], 
-							'l3': profiles['l3'][l3], 
-							'policy': profiles['replacement'][replacement], 
-							'core': core,
-							'membus': profiles['membus'][membus],
-							'name': name
-						})
+						for csmb in args.csmb_profile:
+							core = profiles['core'][core_key]
+							#name = '%s.%s.l2-%s.l3-%s.rob-%s.rs-%d.ol-%d.os-%d.mshr-%s.membus-%s' % (args.trace_length, replacement, l2.rjust(5, '0'), l3.rjust(3, '0'), str(core['rob']).rjust(3, '0'), core['rs'], core['ol'], core['os'], str(core['mshr']).rjust(2, '0'), str(membus).rjust(4, '0'))
+							name = '%s.%s.l2-%s.l3-%s.membus-%s.csmb-%s' % (args.trace_length, replacement, l2.rjust(5, '0'), l3.rjust(3, '0'), str(membus).rjust(4, '0'), str(csmb).rjust(4, '0'))
+							configurations.append({
+								'l2': profiles['l2'][l2], 
+								'l3': profiles['l3'][l3], 
+								'policy': profiles['replacement'][replacement], 
+								'core': core,
+								'membus': profiles['membus'][membus],
+								'csmb': profiles['csmb'][csmb],
+								'name': name
+							})
 
 
 	import benchmarks
