@@ -3,7 +3,7 @@
 \label{cpt:results}
 
 \section{Base Experiment}
-\todo{Rewrite this section, it needs to be more readable. But the main content is here. When we compare algorithms we need to explain differences observed in terms of theoretical diferences between algorithms. Do the observed results concure with the expectation we have based on differences in implementations?}
+\todo{Most content is here, but a rewrite is required.}
 \begin{figure}
     \centering
     \begin{subfigure}[b]{\textwidth}
@@ -103,9 +103,6 @@
     \caption{4-Core workload LLC misses (128k L2)}\label{fig:results:4core:misses}
 \end{figure}
 
-
-\todo{This section is still a sketch, beware typos and incoherent reasoning}
-
 For the cache bound 4-core workloads, we observe that LRU on average outperforms any other algorithm. 
 PIPP on average performs worse, 15.7\% worse than LRU, with PIPP-min8 and PriSM just ahead at 8.4\% performance loss.
 DRRIP performs on average as good as LRU. 
@@ -165,11 +162,11 @@ ra-02 shows a increased LLC miss rate while also showing a performance improveme
 
 
 8 and 16. We might have to redo these, as the available memory bandwidth was not scaled. Everything would have become bandwidth bounded.
-\todo{We can especially see that PIPP and PIPP-min8, in general, increases the number of misses, as observed in the 4-core workloads, but, in general, this causes a loss and not a gain of performance here. 
-If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will perform better.}
+%\todo{We can especially see that PIPP and PIPP-min8, in general, increases the number of misses, as observed in the 4-core workloads, but, in general, this causes a loss and not a gain of performance here. 
+%If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will perform better.}
 
 
-\todo{4-core with 512k L2 cache has been included; these will be evaluated in light of the above discussion. It might be interesting to plot total number of LLC accesses in the 512k case vs. the 128k case, as we expect a larger  L2 cache to filter out more of the LLC requests. One angle of the discussion would be to evaluate how a more filtered access pattern effect the algorithms.}
+%\todo{4-core with 512k L2 cache has been included; these will be evaluated in light of the above discussion. It might be interesting to plot total number of LLC accesses in the 512k case vs. the 128k case, as we expect a larger  L2 cache to filter out more of the LLC requests. One angle of the discussion would be to evaluate how a more filtered access pattern effect the algorithms.}
 
 
 
@@ -214,7 +211,7 @@ If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will 
 
 \section{L2 Sensitivity}
 
-\todo{This section should cover results from varying L2 size. It is probably not a good idea to have all graphs for all runs, we should find a way to aggregate while keeping all important details.}
+\todo{This section should cover results from varying L2 size. Due to the amout of data in this experiment we should aggrigate to keep it readable. See next section for some ideas} 
 
 \begin{figure}
     \centering
@@ -317,5 +314,8 @@ If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will 
     \caption{4-Core workload STP results (512k L2)}\label{fig:results:4core:stp}
 \end{figure}
 
-\section{Simulator Parallelism Sentitivity}
-\todo{As above, but along a different axis}
+\section{Clock Skew Barrier Sentitivity}
+\todo{We got a lot of data in this experiment, if there is a lot of variance we might give this section a lot of space, but if the results show little variance it could be kept short. }
+\todo{Variance can be measured as the relative change in one or more of the metrics used in the base experiment.}
+\todo{I picture a bar plot per algorithm with one group per workload group. Within each group three bars (1, 10 and 1000 cycles) showing precentwise difference compared to 100 cycles (default value). This will give 6 groups and 18 bars per graph. Some of these figures may be left out if they show little results.}
+\todo{More detailed plots, ex. per workload group will be plotted, but only included if they show important data.}

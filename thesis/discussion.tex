@@ -4,4 +4,6 @@
 
 \todo{This section will most likely grow as results are documented, and potential weaknesses are detected}
 
+\todo{We should mention the lack of implementation details available for some of the implemented algorithms. We had to make some assumptions along the way that will have an effect on our results compared to those of the original authors.}
+
 \todo{We need to document the problem with independent simulation threads. In the worst case, they execute sequentially and withing a single time quantum all core memory accesses may come sorted by core id, not time as in real life. This causes inaccuracies in the memory bus, which I documented last semester, but also potentially breaks most caching algorithms, especially those relying on access-recency. Our 3rd experiment show shed some light on the severity of this inaccuracy.}

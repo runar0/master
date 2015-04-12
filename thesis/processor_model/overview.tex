@@ -21,7 +21,7 @@
                                     & 12 MSHRs, LRU      \\
 \bf{Shared L3 cache}                & 4/8/16/32MB, 64B line-size, 24 mshrs, \\
                                     & 32-way, varying replacement algorithm         \\
-\bf{Memory controller}              & 12.8GB/s, 45ns access latency         \\
+\bf{Memory controller}              & 6.4GB/s, 100ns access latency         \\
 \bottomrule                             
 \end{tabular}
 \caption{Model properties}
@@ -42,6 +42,11 @@ The reason being that with increasing cache size the access latency also increas
 For our second and third cache layer, we have selected four different size configurations. 
 We will use these configurations to explore how the cache partitioning algorithms respond to low or high memory situations with varying L3 sizes.
 Also, we will explore how decreasing or increasing the L2 cache size, in turn possibly raising or reducing the L3 access rate, effects the L3 cache partitioning algorithms.
+
+
+\todo{Note the limited DRAM model, find references showing the effects we optimally should have simulated}
+
+\todo{Add information about the clock skew minimization parameters, 100 cycles barrier synchronization, as this will be focused on in later parts of the thesis}
 
 In the following sections, we describe how CACTI~\todo{ref} was used to estimate the access latency for each of our caches. 
 When using CACTI we model each cache with parallel access to the tag directory and data.
@@ -138,5 +143,3 @@ Giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
 The line size is set to be 64-bytes as in the previous level.
 Again using CACTI we find the optimal bank count and the corresponding access latencies.
 Table~\ref{tbl:processor_model:l3} summarises the cache properties for the various cache sizes.
-
-\todo{Note the limited DRAM model, find references showing the effects we optimally should have simulated}

@@ -1,5 +1,17 @@
-
 \chapter{Implementation}
 \label{cpt:implementation}
 
-\todo{One section per algorithm I've implemented. Explain any implementation detail not obvious from the original paper. All parameters should be reported. Where we have made changes these should be highlighted and backed up. Some changes have been made based on observations during testing, can they be backed up by a simple argument or do I need to run explicit experiments and show results backing up choices?}
+\todo{Quick introduction to the section. Consider whether the other algorithms also need a section, (UCP, TADIP and DRRIP). If not refer the reader to the background section for default parameter values.}
+
+\section{Auxiliary Tag Directory and UMON}
+\todo{Explain the implementation of ATDs}
+
+\todo{Cover that all experiments run with full ATDs (all sets in the cache have a corresponding set in the ATD). This is done to remove the error source caused by sampling only a few sets.}
+
+\todo{As we have inclusive caches we cannot support 0 allocations to a core. Hence, we have modified the UMON circuit to allocate at least one block to each core.}
+
+\section{PIPP}
+\todo{Because we use full sampling we also removed one of the two stream detection conditions in PIPP, number of misses in an interval. Hence, we only use miss fraction when determining of a core is streaming. Throughout testing, we have observed that the miss-fraction given in the original PIPP paper flagged benchmarks as streaming most of the time, and this made it underperform. We have therefore doubled this value in our experiments. There is no data supporting this decision in the theses right now; it could be included, but it might not be needed(?).}
+
+\section{PriSM}
+\todo{Cover how we have implemented victim selection. Either there is a problem with the original paper or we have read it wrong. We at least find that the eviction probabilities that the original paper states should sum to one does not in many cases. We had to work around this.}

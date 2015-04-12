@@ -57,9 +57,9 @@ TADIP-Feeback (TADIP-F) attempts to reduce the error caused by the assumption of
 Per core, one set runs LRU the other runs BIP, any inserts from other cores uses the currently best algorithm for that core.
 A miss in the LRU set for a core will increment that cores counter, a miss the BIP set will decrement the counter.
 
-\todo{Create an illustration like the one in the TADIP paper!}
+\todo{Create an illustration of a cache set managed by DIP, TADIP-I and TADIP-F, as they have in the original TDAIP paper. It could be made a lot smaller than in the original paper, while still being easily understandable.}
 
-Figure~\todo{ref} shows an illustration of a cache managed by DIP, TADIP-I, and TADIP-F. 
+Figure~\todo{}~\ref{} shows an illustration of a cache managed by DIP, TADIP-I, and TADIP-F. 
 As is shown the duel-sets effect a set of counters, these counters give the optimal policy, P, per core. 
 The remaining sets use the set of current optimal replacement policies.
 From this point on when we refer to TADIP in this report we assume TADIP-F unless otherwise stated.
@@ -81,5 +81,3 @@ BIP = set\_no[11:7] + core\_id + cores == set\_no[6:0]
 FOLLOWER = !LIP + !BIP
 \end{equation}
 \end{figure*}
-
-\todo{We should run an experiment finding the best binomial parameter for our workloads. Also, we need to find the optimal number of duel sets. The original paper chooses 1/32, compare this to our result. How is this experiment best executed? Does using only 4-benchmark workloads approximate or should we also use 8- and 16-benchmakr workloads? If so we have to create them.}

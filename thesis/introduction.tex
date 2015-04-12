@@ -2,11 +2,13 @@
 \chapter{Introduction}
 \label{cpt:introduction}
 
-\todo{CMPs are dominating. They share resources to achieve better utilization and higher performance. One such resource is cache. Various algorithms are suggested to organize accesses to shared caches. The optimal goal is to reduce destructive interference between cores and hence reduce the inevitable performance degradation sharing resources entails. LRU or a variant is dominating today}
+\todo{I've used cache partitioning, cache management, and cache replacement algorithm interchangeably throughout the paper; it will be converged to cache management as this is the term used by the problem description.}
 
-\todo{Reserches have suggested improvements to cache partitioning for a long time. Many claim to outperform LRU in shared caches. Some require significant hardware overhead and changes to existing cache structures while others use existing caches with little modification. Different optimization goals exist; we focus on miss minimization. Mention various examples of both algorithms included in this thesis, and others not included because they are incompatible.}
+\todo{CMPs are dominating. They share resources to achieve better utilization and higher performance. One such resource is cache. Various algorithms are suggested to organize accesses to shared caches. The optimal goal is to reduce destructive interference between cores and hence reduce the inevitable performance degradation sharing resources entails. LRU or a variant is dominating today, both in private and shared caches.}
 
-\todo{Present our work; comparison of several different algorithms all with the same optimization goal. Implementation and simulation using Sniper, evaluation of algorithms based on simulation as well as a theoretical comparison. Analysis of result sensitivity to size of available private cache, and parallelism in simulator (run-ahead limit)}
+\todo{Reserches have suggested improvements to cache management for a long time. Many claim to outperform LRU in shared caches when running multiprogram workloads. Some require significant hardware overhead and changes to existing cache structures while others use existing caches with little modification. Different optimization goals exist; we focus on miss minimization. Mention various examples of both algorithms included in this thesis, and others not included because they have other optimization goals or require significant changes to cache structures.}
+
+\todo{Present our work; comparison of several different algorithms all with the same optimization goal. Implementation and evaluation using Sniper. Comparison of algorithms based on simulation as well as a theoretical comparison (in background?). Analysis of result sensitivity to size of available private cache, and simulation clock skew minimization parameters.}
 
 \todo{Hint at results. Are all algorithms performing better than LRU as advertised? Did we see much of a difference with increased L2 size? How does the run-ahead limit effect the results, if this has a noticeable effect does that question the validity of our results?}
 
