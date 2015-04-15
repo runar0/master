@@ -9,6 +9,10 @@ import matplotlib
 from scipy.stats import gmean
 #matplotlib.rcParams.update({'font.size': 20})
 
+import itertools
+import pprint
+pp = pprint.PrettyPrinter(indent=2)
+
 from os import path
 from sys import exit
 import collections
@@ -24,6 +28,10 @@ def extract_ipc(filename, coreno = 0):
 
 def extract_cycles(filename, coreno = 0):
 	return extract_property('performance_model.cycle_count', filename, coreno)
+
+
+def extract_walltime(filename, coreno = 0):
+	return extract_property('walltime', filename, coreno)
 
 def extract_property(property, filename, coreno = 0):
 	try:
@@ -68,46 +76,65 @@ for subdir, dirs, files in os.walk(rundir):
 		benchmarks = run_name.split('-')
 		algorithm = run[2]
 		l2size = [key.split('-')[1] for key in run if key.startswith("l2-")][0]
-		if l2size not in benchmark_results: benchmark_results[l2size] = {}
-		if l2size not in workload_results: workload_results[l2size] = {}
+		csmb = [key.split('-')[1] for key in run if key.startswith("csmb-")][0]
+		if csmb == "100": csmb = "0100"
+
+		if csmb not in benchmark_results: benchmark_results[csmb] = {}
+		if csmb not in workload_results: workload_results[csmb] = {}
+		if l2size not in benchmark_results[csmb]: benchmark_results[csmb][l2size] = {}
+		if l2size not in workload_results[csmb]: workload_results[csmb][l2size] = {}
 
 
 		if len(benchmarks) == 1:
 			# use only 4M l3 configurations as baseline
 			if not "l3-04M" in name: continue
 
-			if algorithm not in benchmark_results[l2size]: benchmark_results[l2size][algorithm] = {}
-			benchmark_results[l2size][algorithm][run_name] = extract_cycles('%s/%s/stats-benchmark-0.txt' % (rundir, name))
+			if algorithm not in benchmark_results[csmb][l2size]: benchmark_results[csmb][l2size][algorithm] = {}
+			benchmark_results[csmb][l2size][algorithm][run_name] = extract_cycles('%s/%s/stats-benchmark-0.txt' % (rundir, name))
 		else:
-			if algorithm not in workload_results[l2size]: workload_results[l2size][algorithm] = {}
+			if algorithm not in workload_results[csmb][l2size]: workload_results[csmb][l2size][algorithm] = {}
 			results = {}
 			i = 0
 			for benchmark in benchmarks:
-				results[benchmark] = extract_cycles('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
+				results[benchmark] = {
+						'cycles': extract_cycles('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i),
+						'walltime': extract_walltime('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
+					}
 				i = i + 1
-			workload_results[l2size][algorithm][run_name] = results
+			workload_results[csmb][l2size][algorithm][run_name] = results
 
 # Transform workload results to STP and HMS measurements
 speedup_results = {}
-for l2size, algorithms in workload_results.items():
-	speedup_results[l2size] = {}
-	for algorithm, runs in algorithms.items():
-		speedup_results[l2size][algorithm] = {}
+for csmb, runs in workload_results.items():
+	speedup_results[csmb] = {}
+	for l2size, algorithms in runs.items():
+		speedup_results[csmb][l2size] = {}
+		for algorithm, runs in algorithms.items():
+			speedup_results[csmb][l2size][algorithm] = {}
 
-		for run_name, results in runs.items():
-			stp = 0
-			hms = 0
+			for run_name, results in runs.items():
+				stp = 0
+				hms = 0
+				walltime = 0
 
-			for benchmark, cycles in results.items():
-				hms = hms + cycles/benchmark_results[l2size]['lru'][benchmark]
-				stp = stp + benchmark_results[l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
+				for benchmark, results in results.items():
+					cycles = results['cycles']
+					walltime = max(walltime, results['walltime'])
 
-			hms = len(results) / hms if hms > 0 else 0
+					hms = hms + cycles/benchmark_results[csmb][l2size]['lru'][benchmark]
+					stp = stp + benchmark_results[csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
 
-			speedup_results[l2size][algorithm][run_name] = {
-				'stp': stp,
-				'hms': hms
-		}
+				hms = len(results) / hms if hms > 0 else 0
+
+				speedup_results[csmb][l2size][algorithm][run_name] = {
+					'stp': stp,
+					'hms': hms,
+					'walltime': walltime
+			}
+
+# Results are now in speedup_results
+benchmark_results = None
+workload_results = None
 
 # convert run names to group names
 aliases = [
@@ -118,119 +145,196 @@ aliases = [
 	('workload-random', 'ra4', 'Random'),
 	('workload-8', 'ra8', 'Random 8'),
 	('workload-16', 'ra16', 'Random 16'),
+
+	# Fake group names, for dervied results generated below
+	('overall-avg', '-avg', 'Overall Average'),
+	('csmb-comp', '-csmb-comp-4', '4-core CSMB sensitivity comparison')
 ]
 # Partition algorithms to plot
 algorithms_names = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 for algorithm in algorithms_names:
-	for l2size in speedup_results.keys():
-		# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
-		if algorithm not in speedup_results[l2size]:				
-			print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
-			algorithms_names.remove(algorithm)
+	for csmb in speedup_results.keys():
+		for l2size in speedup_results[csmb].keys():
+			# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
+			if algorithm not in speedup_results[csmb][l2size]:				
+				print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
+				algorithms_names.remove(algorithm)
 
 renamed_results = {}
 
-for l2size, algorithms in speedup_results.items():
-	renamed_results[l2size] = {}
-	for algorithm, runs in algorithms.items():
-		renamed_results[l2size][algorithm] = {}
+for csmb, runs in speedup_results.items():
 
-		for run_name, results in runs.items():
-			found = False
-			for name, alias, title in aliases:
-				i = 0
-				for benchmarks in benchmark_sets[name]:
-					if '-'.join(benchmarks) == run_name:
-						renamed_results[l2size][algorithm]["%s-%02d" % (alias, i)] = results
-						found = True
+	renamed_results[csmb] = {}
+	for l2size, algorithms in runs.items():
+		renamed_results[csmb][l2size] = {}
+		for algorithm, runs in algorithms.items():
+			renamed_results[csmb][l2size][algorithm] = {}
+
+			for run_name, results in runs.items():
+				found = False
+				for name, alias, title in aliases:
+					i = 0
+					for benchmarks in benchmark_sets[name]:
+						if '-'.join(benchmarks) == run_name:
+							renamed_results[csmb][l2size][algorithm]["%s-%02d" % (alias, i)] = results
+							found = True
+							break
+						i = i + 1
+
+					if found:
 						break
-					i = i + 1
 
-				if found:
-					break
+			renamed_results[csmb][l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[csmb][l2size][algorithm].items()))
 
-		renamed_results[l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[l2size][algorithm].items()))
+# Speedup_result is now in renamed_results
+speedup_results = None
 
-for l2size in renamed_results.keys():
-	overview = []
-	for name, alias, title in aliases:
-		# Find number of runs executed in this group
-		N = len([key for key,value in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")])
 
-		if N == 0:
-			print "No lru data for group %s (%s, l2 %s), skipping." % (title,name, l2size)
-			continue 
-
-		# Create indicies, cacluate bar width
-		ind = np.arange(N+1)
-		width = 1.0/(len(algorithms_names)+2)
-
-		for metric in ['stp', 'hms']:
-			fig,ax = plt.subplots()
-
-			# Build one bar plot per algorithm
-			rects = []
-			i = 1
-			values = {}
-			for algorithm in algorithms_names:
-				values[algorithm] = [value[metric] for key,value in renamed_results[l2size][algorithm].items() if key.startswith(alias+"-")]
-				if len(values[algorithm]) != N:
-					values[algorithm] = [0] * (N+1)
-				else:
-					values[algorithm].append(gmean(values[algorithm]))
-
-				rects.append(ax.bar(ind+(i*width), values[algorithm], width*.8, color=cm.Blues(1.*i/len(algorithms_names)), linewidth=0.45))
-				i += 1
-
-			ax.set_ylabel("%s" % metric)
-			ax.set_xticks(ind+0.5)
-			ax.set_xticklabels([ key for key,val in renamed_results[l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+# Generate the special avg-4, avg-8 and avg-16 runs
+for csmb, runs in renamed_results.items():
+	for l2size, algorithms in runs.items():
+		result = {}
+		for algorithm, runs in algorithms.items():
+			avrages = {'4': {'hms': [], 'stp': []}, '8': {'hms': [], 'stp': []}, '16': {'hms': [], 'stp': []}}
+			for workload,values in runs.items():
+				if workload.startswith('-'): continue
+				group = '4'
+				if workload.startswith("ra8"): group = '8'
+				elif workload.startswith("ra16"): group = '16'
+				
+				avrages[group]['stp'].append(values['stp'])
+				avrages[group]['hms'].append(values['hms'])
 			
-			# Generate legends, but only for the ra images
-			if alias == "ra4" or (metric == "stp" and alias.startswith("ra")):
-				handles = ()
-				legends = ()
-				count = 0
-				for algorithm in algorithms_names:
-					handles += (rects[count][0],)
-					legends += (algorithm,)
-					count += 1
-				ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.40), loc='upper center')
+			for cores in ['4', '8', '16']:
+				renamed_results[csmb][l2size][algorithm]['-avg-%s' % cores] = {
+					'hms': 0, 'stp': 0, 'walltime': 0
+				};
+				if len(avrages[cores]['stp']) > 0:
+					renamed_results[csmb][l2size][algorithm]['-avg-%s' % cores] = {
+						'hms': gmean(avrages[cores]['hms']),
+						'stp': gmean(avrages[cores]['stp']) / (float(cores)),
+						'walltime': 0
+					}
+
+# Generate the special csmb-comp-4-*, csmb-comp-8-* and csmb-comp-16-* runs
+csmbs = sorted([int(val) for val in renamed_results.keys()])
+default = '0100';
+for csmb in csmbs:
+	csmb = '%04d' % csmb
+	runs = renamed_results[csmb]
+	for l2size, algorithms in runs.items():
+		result = {}
+		for algorithm, runs in algorithms.items():
+			avrages = {'4': {'hms': [], 'stp': [], 'walltime': []}}
+			for workload,values in runs.items():
+				if workload.startswith('-'): continue
+				group = '4'
+				if workload.startswith("ra8"): group = '8'
+				elif workload.startswith("ra16"): group = '16'
+				if group != '4': continue;
+				
+				avrages[group]['stp'].append(values['stp']/renamed_results[default][l2size][algorithm][workload]['stp'])
+				avrages[group]['hms'].append(values['hms']/renamed_results[default][l2size][algorithm][workload]['hms'])
+				avrages[group]['walltime'].append(values['walltime']/renamed_results[default][l2size][algorithm][workload]['walltime'])
 			
-
-			if metric == 'stp': 
-				if alias == 'ra8':
-					ax.set_ylim([2,8])		
-				elif alias == 'ra16':
-					ax.set_ylim([2,16])		
-				else:
-					ax.set_ylim([1,4])		
-			if metric == 'hms': ax.set_ylim([0,1])
-			ax.set_xlim([0,N+1])
-
-			fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
-			plt.savefig('%s/%s-%s-%s.png' % (args.out, metric, l2size, alias), frameon=False, bbox_inches='tight')
-			plt.clf()
+			for cores in ['4']: #['4', '8', '16']:
+				renamed_results[csmb][l2size][algorithm]['-csmb-comp-%s-%s' % (cores, csmb)] = {
+					'hms': 0, 'stp': 0, 'walltime': 0
+				};
+				if len(avrages[cores]['stp']) > 0:
+					renamed_results[default][l2size][algorithm]['-csmb-comp-%s-%s' % (cores, csmb)] = {
+						'hms': gmean(avrages[cores]['hms']),
+						'stp': gmean(avrages[cores]['stp']),
+						'walltime': gmean(avrages[cores]['walltime'])
+					}
 
 
-			# Append data to overview
-			if len(overview) == 0:
-				overview.append(','.join([''] + [algorithm + ',' for algorithm in algorithms_names]))
-			for i in xrange(N+1):
-				if i < N:
-					row = ['%s-%s-%02d' % (metric, alias, i)]
-				else:
-					row = ['%s-%s-avg' % (metric, alias)]
+# Finally plot all graphs
+for csmb in renamed_results.keys():
+	for l2size in renamed_results[csmb].keys():
+		overview = []
+		for name, alias, title in aliases:
+			# Find number of runs executed in this group
+			N = len([key for key,value in renamed_results[csmb][l2size]['lru'].items() if key.startswith(alias+"-")])
 
+			if N == 0:
+				print "No lru data for group %s (%s, csmb %s l2 %s), skipping." % (title,name, csmb, l2size)
+				continue 
+
+			# Create indicies, cacluate bar width
+			ind = np.arange(N+1)
+			width = 1.0/(len(algorithms_names)+2)
+
+			for metric in ['stp', 'hms', 'walltime']:
+				fig,ax = plt.subplots()
+
+				# Build one bar plot per algorithm
+				rects = []
+				i = 1
+				values = {}
 				for algorithm in algorithms_names:
-					if values['lru'][i] > 0:
-						row += [str(values[algorithm][i]), str((values[algorithm][i]-values['lru'][i])/values['lru'][i])]
+					values[algorithm] = [value[metric] for key,value in renamed_results[csmb][l2size][algorithm].items() if key.startswith(alias+"-")]
+					if len(values[algorithm]) != N:
+						values[algorithm] = [0] * (N+1)
 					else:
-						row += [str(values[algorithm][i]),'0']
+						values[algorithm].append(gmean(values[algorithm]))
 
-				row = ','.join(row)
-				overview.append(row)
+					rects.append(ax.bar(ind+(i*width), values[algorithm], width*.8, color=cm.Blues(1.*i/len(algorithms_names)), linewidth=0.45))
+					i += 1
 
-	# Dump overview to a csv file
-	with open('%s/%s.csv' % (args.out, l2size), "w") as file:
-		file.write('\n'.join(overview))
+				ax.set_ylabel("%s" % metric)
+				ax.set_xticks(ind+0.5)
+				ax.set_xticklabels([key for key,val in renamed_results[csmb][l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
+				
+				# Generate legends, but only for the ra images
+				if alias == "ra4" or (metric == "stp" and alias.startswith("ra")):
+					handles = ()
+					legends = ()
+					count = 0
+					for algorithm in algorithms_names:
+						handles += (rects[count][0],)
+						legends += (algorithm,)
+						count += 1
+					ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.40), loc='upper center')
+				
+
+				if metric == 'stp': 
+					if alias == 'ra8':
+						ax.set_ylim([2,8])		
+					elif alias == 'ra16':
+						ax.set_ylim([2,16])		
+					elif alias == '-avg':
+						ax.set_ylim([0,1])
+					elif alias.startswith('-csmb-comp'):
+						ax.set_ylim([0.9,1.1])
+					else:
+						ax.set_ylim([1,4])		
+				if metric == 'hms': ax.set_ylim([0,1])
+				ax.set_xlim([0,N+1])
+
+				fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
+				plt.savefig('%s/%s-%s-%s-%s.png' % (args.out, metric, l2size, csmb, alias), frameon=False, bbox_inches='tight')
+				plt.clf()
+
+
+				# Append data to overview
+				if len(overview) == 0:
+					overview.append(','.join([''] + [algorithm + ',' for algorithm in algorithms_names]))
+				for i in xrange(N+1):
+					if i < N:
+						row = ['%s-%s-%02d' % (metric, alias, i)]
+					else:
+						row = ['%s-%s-avg' % (metric, alias)]
+
+					for algorithm in algorithms_names:
+						if values['lru'][i] > 0:
+							row += [str(values[algorithm][i]), str((values[algorithm][i]-values['lru'][i])/values['lru'][i])]
+						else:
+							row += [str(values[algorithm][i]),'0']
+
+					row = ','.join(row)
+					overview.append(row)
+
+		# Dump overview to a csv file
+		with open('%s/%s-%s.csv' % (args.out, l2size, csmb), "w") as file:
+			file.write('\n'.join(overview))
