@@ -1,10 +1,22 @@
-\section{SimPoint}
-\label{sec:background:simpoint}
+\section{Sample Extraction}
+\label{sec:methodology:sample_extraction}
 
-When performing experiments via simulation, it is common practice to use excerpts of benchmarks to represent the entire benchmark.
-Using excerpts is often a required simplification because simulating an entire benchmark can in many cases take hours or days.
-When performing multiple experiments, this delay adds up and can quickly become the factor limiting the size and number of experiments.
+\todo{Add references}
+As simulators have become standard tools in computer architecture research, we have seen an increase in complexity of the simulated systems. 
+From simulators supporting functional models of an in-order single core processor to detailed simulations of multicore out-of-order processors.
+The increased complexity implies that the work done per simulated instruction has increased.
+In addition, as simulation has become a standard tool the benchmarks simulated has shifted from simple micro-benchmarks to actual consumer applications. 
+Even though we have observed an increase in available processing power alongside this complexity increase, it has proved insufficient to offset the slowdown of more advanced simulators.
+With this development, it is no longer feasible to simulate a benchmark start to finish.
 
+In order to keep the simulation time at acceptable values, researchers often extract samples from a benchmark that they simulate in full detail. 
+Instructions up to this sample point are simulated using less detail in order to save time.
+The selection method used to select this sample can significantly affect the outcome of the simulation.
+In this section, we cover three methods for selection samples, one of which we will use in our experiments.
+
+\todo{Rewrite everything below}
+
+\subsection{Naive Approch}
 A naive approach for extracting excerpts from benchmarks is to specify a number of cycles into the execution where the excerpt starts, in addition to the length of the excerpt.
 The reason an excerpt does not usually start at the first executed instruction is because of the startup effect.
 When an application starts, it usually performs some initialization tasks before the main routines of the application starts.
@@ -12,6 +24,9 @@ During this startup phase, the application may not behave as it will during the 
 As a result, simulating this startup phase might yield unexpected results that are not representative for the benchmark as a whole.
 The problem with the naive approach to extracting excerpts is that it is hard to define an offset, and then guarantee that this offset is sufficiently large to skip the startup phase for all benchmarks.
 
+\subsection{SMARTS}
+
+\subsection{SimPoint}
 More sophisticated approaches to this problem include tools that analyze the instruction stream of a benchmark as it executes.
 Based on this analysis the tool will attempt to locate one or more intervals that based on a selected metric can be considered representative for the entire benchmark execution.
 SimPoint\cite{Hamerly2005} is one such tool, based on Pin~\cite{Luk2005}.
@@ -29,3 +44,12 @@ Hamerly~et~al. show that using SimPoint selected intervals can improve the accur
 They also show that the value of K, the number of intervals returned, and the length of the interval effect the accuracy of the solution. 
 
 \todo{Extend the last sentence with some actual results from the Hamerly et al. paper}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/methodology/sample_extraction_tools}
+\caption{TODO}
+\todo{Not readable when printed, have to fix text sizes}
+\label{fig:background:simpoint:sampleextract}
+
+\end{figure}
