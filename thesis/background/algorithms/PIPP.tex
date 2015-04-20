@@ -15,7 +15,7 @@ Here $\pi_n$ is the number of ways assigned to the nth core.
 In a 4-way cache dual-core setup where both cores are assigned two ways, PIPP will insert all new blocks from either core in the second to last position in the stack. 
 In this situation, the two top positions in the cache stack can only be reached by a cache block through promotion.
 Block promotion in PIPP works similar promotion in DRRIP. 
-On a access, a block has a chance, $p_{prom} = \frac{1}{32}$, to move one position upwards in the stack unless it is already at the MRU position.
+On a access, a block has a chance, $p_{prom} = \frac{3}{4}$, to move one position upwards in the stack unless it is already at the MRU position.
 
 Where the insertion policy of UCP ensures that a core cannot claim more cache blocks than it needs, the PIPP policies do not enforce this.
 However, cores with more ways assigned to it will insert its blocks higher up in the stack. 
