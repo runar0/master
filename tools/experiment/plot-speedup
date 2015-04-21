@@ -62,7 +62,6 @@ def extract_raw_data(rundir):
 			algorithm = run[2]
 			l2size = [key.split('-')[1] for key in run if key.startswith("l2-")][0]
 			csmb = [key.split('-')[1] for key in run if key.startswith("csmb-")][0]
-			if csmb == "100": csmb = "0100"
 
 			if csmb not in benchmark_results: benchmark_results[csmb] = {}
 			if csmb not in workload_results: workload_results[csmb] = {}
@@ -153,7 +152,7 @@ def load_results(rundir, aliases):
 	benchmark_results, workload_results = extract_raw_data(rundir);	
 	return transform_data_group_names(transform_data_to_speedup(benchmark_results, workload_results), aliases);
 
-def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, yLimit = None, plotname = 'default'):
+def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None):
 	for csmb in results.keys():
 		for l2size in results[csmb].keys():
 
@@ -174,11 +173,16 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 				for metric in metrics:
 					fig,ax = plt.subplots()
 
+					if plotYLine != None:
+						plt.plot(range(N+2), [plotYLine] * (N+2), ':', color="black")
+
+
 					# Build one bar plot per algorithm
 					rects = []
 					i = 1
 					values = {}
 					for algorithm in algorithms:
+						if algorithm == "lru" and dropLRU: continue
 						values[algorithm] = [value[metric] for key,value in results[csmb][l2size][algorithm].items() if key.startswith(alias+"-")]
 						if len(values[algorithm]) != N:
 							values[algorithm] = [0] * (N+1)
@@ -198,29 +202,14 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 						legends = ()
 						count = 0
 						for algorithm in algorithms:
+							if algorithm == "lru" and dropLRU: continue
 							handles += (rects[count][0],)
 							legends += (algorithm,)
 							count += 1
 						ax.legend(handles, legends, fontsize='small', ncol=3, bbox_to_anchor=(0.5, 1.40), loc='upper center')
-					
 
-					# Attempt to guess y limit based on metric and group name if it is not given
-					if yLimit == None:
-						if metric == 'stp': 
-							if alias == 'ra8':
-								ax.set_ylim([2,8])		
-							elif alias == 'ra16':
-								ax.set_ylim([2,16])		
-							elif alias == '-avg':
-								ax.set_ylim([0,1])
-							elif alias.startswith('-csmb-comp'):
-								ax.set_ylim([0.9,1.1])
-							else:
-								ax.set_ylim([1,4])		
-						if metric == 'hms': ax.set_ylim([0,1])
-					else:
-						ax.set_ylim(yLimit)
 
+					ax.set_ylim(yLimit if yLimit != None else [0.6,1.3])
 					ax.set_xlim([0,N+1])
 
 					fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
@@ -229,35 +218,57 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 
 
 					# Append data to overview
-					if len(overview) == 0:
-						overview.append(','.join([''] + [algorithm + ',' for algorithm in algorithms]))
-					for i in xrange(N+1):
-						if i < N:
-							row = ['%s-%s-%02d' % (metric, alias, i)]
-						else:
-							row = ['%s-%s-avg' % (metric, alias)]
+					#if len(overview) == 0:
+					#	overview.append(','.join([''] + [algorithm + ',' for algorithm in algorithms]))
+					#for i in xrange(N+1):
+					#	if i < N:
+					#		row = ['%s-%s-%02d' % (metric, alias, i)]
+					#	else:
+					#		row = ['%s-%s-avg' % (metric, alias)]
 
-						for algorithm in algorithms:
-							if values['lru'][i] > 0:
-								row += [str(values[algorithm][i]), str((values[algorithm][i]-values['lru'][i])/values['lru'][i])]
-							else:
-								row += [str(values[algorithm][i]),'0']
+					#	for algorithm in algorithms:
+					#		if values['lru'][i] > 0:
+					#			row += [str(values[algorithm][i]), str((values[algorithm][i]-values['lru'][i])/values['lru'][i])]
+					#		else:
+					#			row += [str(values[algorithm][i]),'0']
 
-						row = ','.join(row)
-						overview.append(row)
+					#	row = ','.join(row)
+					#	overview.append(row)
 
 			# Dump overview to a csv file
 			with open('%s/%s-%s-%s.csv' % (args.out, plotname, l2size, csmb), "w") as file:
 				file.write('\n'.join(overview))
 
+# Generate HMS and STP results relative to LRU for a subset of the l2size and csmb configurations. 
+def generate_speedup_results(results, l2size_filter = ['0128k'], csmb_filter = ['0100']):
+	generated = {}
+	for csmb, l2runs in results.items():
+		if csmb not in csmb_filter: continue
+		generated[csmb] = {}
+		for l2size, algorithms in l2runs.items():
+			if l2size not in l2size_filter: continue
+			generated[csmb][l2size] = {}
 
-# Generate per workload size avarages for each csmb-l2size combination, inpput is the output from transform speedup 
+			for algorithm, runs in algorithms.items():
+				generated[csmb][l2size][algorithm] = {}
+
+				for alias, values in runs.items():
+					generated[csmb][l2size][algorithm][alias] = {}
+					for metric, value in values.items():
+						# Store value relative to lru result
+						generated[csmb][l2size][algorithm][alias][metric] = value/results[csmb][l2size]["lru"][alias][metric]
+
+				generated[csmb][l2size][algorithm] = collections.OrderedDict(sorted(generated[csmb][l2size][algorithm].items()))
+	return generated
+
+
+# Generate per workload size avarages for each csmb-l2size combination, NOTE: Input is the output from generate_speedup_results
 def generate_size_averages(results):
 	generated = {}
 	# Generate the special avg-4, avg-8 and avg-16 runs
-	for csmb, runs in results.items():
+	for csmb, l2runs in results.items():
 		generated[csmb] = {}
-		for l2size, algorithms in runs.items():
+		for l2size, algorithms in l2runs.items():
 			generated[csmb][l2size] = {}
 			result = {}
 			for algorithm, runs in algorithms.items():
@@ -276,8 +287,6 @@ def generate_size_averages(results):
 					vals = {}
 					for metric in averages[cores]:
 						vals[metric] = gmean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-
-					vals['stp'] /= float(cores)
 					generated[csmb][l2size][algorithm]['avg-%02d' % int(cores)] = vals
 
 				generated[csmb][l2size][algorithm] = collections.OrderedDict(sorted(generated[csmb][l2size][algorithm].items()))
@@ -363,13 +372,13 @@ algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 
 results = load_results(rundir, aliases);
 
-# Plot all default result plots
-plot_results(results, aliases, ['stp', 'hms'], algorithms, rundir);
-
-# Plot group average stp and hms
-plot_results(generate_size_averages(results), [('', 'avg', '')], ['stp', 'hms'], algorithms, rundir, plotname='avg', yLimit=[0,1]);
+# Plot speedup result and average stp and hms plots for base experiment
+speedup = generate_speedup_results(results)
+plot_results(speedup, aliases, ['stp', 'hms'], algorithms, rundir, plotname='speedup', dropLRU=True, plotYLine=1);
+plot_results(generate_size_averages(speedup), [('', 'avg', '')], ['stp', 'hms'], algorithms, rundir, plotname='avg', dropLRU=True, plotYLine=1);
+speedup = None
 
 # Plot csmb comparisons
-csmb_results = generate_csmb_comparisons(results) 
-plot_results(csmb_results, [('', 'csmb-4', '')], ['stp', 'hms'], algorithms, rundir, plotname='csmb', yLimit=[0.98,1.02]);
-plot_results(csmb_results, [('', 'csmb-4', '')], ['walltime'], algorithms, rundir, plotname='csmb', yLimit=[0,2]);
+#csmb_results = generate_csmb_comparisons(results) 
+#plot_results(csmb_results, [('', 'csmb-4', '')], ['stp', 'hms'], algorithms, rundir, plotname='csmb', yLimit=[0.98,1.02]);
+#plot_results(csmb_results, [('', 'csmb-4', '')], ['walltime'], algorithms, rundir, plotname='csmb', yLimit=[0,2]);
