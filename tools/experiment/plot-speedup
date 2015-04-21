@@ -21,7 +21,22 @@ from build import profiles
 from benchmarks import benchmark_sets
 
 def extract_results(filename, coreno):
-	return extract_properties({'performance_model.cycle_count': 'cycles', 'walltime': 'walltime'}, filename, coreno)
+	props = extract_properties({
+			'performance_model.cycle_count': 'cycles', 
+			'walltime': 'walltime', 
+			'L3.load-misses': 'load_miss', 
+			'L3.store-misses': 'store_miss', 
+			'performance_model.instruction_count': 'instructions'
+		}, filename, coreno)
+
+	mpki = (props['load_miss'] + props['store_miss']) / (props['instructions']/1000) if props['instructions'] > 0 else 0
+
+	return {
+		'cycles': props['cycles'],
+		'walltime': props['walltime'],
+		'misses': props['load_miss'] + props['store_miss'],
+		'mpki': mpki
+	}
 
 def extract_properties(properties, filename, coreno):
 	results = {key: 0 for key in properties.values()}
@@ -100,10 +115,12 @@ def transform_data_to_speedup(benchmark_results, workload_results):
 					stp = 0
 					hms = 0
 					walltime = 0
+					mpki = 0
 
 					for benchmark, results in results.items():
 						cycles = results['cycles']
 						walltime = max(walltime, results['walltime'])
+						mpki = max(mpki, results['mpki'])
 
 						hms = hms + cycles/benchmark_results[csmb][l2size]['lru'][benchmark]
 						stp = stp + benchmark_results[csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
@@ -113,7 +130,8 @@ def transform_data_to_speedup(benchmark_results, workload_results):
 					speedup_results[csmb][l2size][algorithm][run_name] = {
 						'stp': stp,
 						'hms': hms,
-						'walltime': walltime
+						'walltime': walltime,
+						'mpki': mpki
 				}
 	return speedup_results
 
@@ -152,7 +170,8 @@ def load_results(rundir, aliases):
 	benchmark_results, workload_results = extract_raw_data(rundir);	
 	return transform_data_group_names(transform_data_to_speedup(benchmark_results, workload_results), aliases);
 
-def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None):
+def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None, includeLegend = None):
+	fig,ax = plt.subplots()
 	for csmb in results.keys():
 		for l2size in results[csmb].keys():
 
@@ -171,7 +190,6 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 				width = 1.0/(len(algorithms)+2)
 
 				for metric in metrics:
-					fig,ax = plt.subplots()
 
 					if plotYLine != None:
 						plt.plot(range(N+2), [plotYLine] * (N+2), ':', color="black")
@@ -197,7 +215,7 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 					ax.set_xticklabels([key for key,val in results[csmb][l2size]['lru'].items() if key.startswith(alias+"-")] + ['avg'], rotation=45)
 					
 					# Generate legends if requested
-					if legend:
+					if includeLegend != None and includeLegend(alias, metric):
 						handles = ()
 						legends = ()
 						count = 0
@@ -214,7 +232,7 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 
 					fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
 					plt.savefig('%s/%s-%s-%s-%s-%s.png' % (args.out, plotname, metric, l2size, csmb, alias), frameon=False, bbox_inches='tight')
-					plt.clf()
+					plt.cla()
 
 
 					# Append data to overview
@@ -239,7 +257,7 @@ def plot_results(results, aliases, metrics, algorithms, rundir, legend = True, y
 			with open('%s/%s-%s-%s.csv' % (args.out, plotname, l2size, csmb), "w") as file:
 				file.write('\n'.join(overview))
 
-# Generate HMS and STP results relative to LRU for a subset of the l2size and csmb configurations. 
+# Generate HMS, STP and mpki results relative to LRU for a subset of the l2size and csmb configurations. 
 def generate_speedup_results(results, l2size_filter = ['0128k'], csmb_filter = ['0100']):
 	generated = {}
 	for csmb, l2runs in results.items():
@@ -373,9 +391,10 @@ algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 results = load_results(rundir, aliases);
 
 # Plot speedup result and average stp and hms plots for base experiment
+legend = lambda alias, metric: alias.startswith('ra')
 speedup = generate_speedup_results(results)
-plot_results(speedup, aliases, ['stp', 'hms'], algorithms, rundir, plotname='speedup', dropLRU=True, plotYLine=1);
-plot_results(generate_size_averages(speedup), [('', 'avg', '')], ['stp', 'hms'], algorithms, rundir, plotname='avg', dropLRU=True, plotYLine=1);
+plot_results(speedup, aliases, ['stp', 'hms', 'mpki'], algorithms, rundir, plotname='speedup', dropLRU=True, plotYLine=1, includeLegend=lambda alias, metric: alias.startswith('ra'));
+plot_results(generate_size_averages(speedup), [('', 'avg', '')], ['stp', 'hms'], algorithms, rundir, plotname='avg', dropLRU=True, plotYLine=1, includeLegend=lambda alias, metric: True);
 speedup = None
 
 # Plot csmb comparisons
