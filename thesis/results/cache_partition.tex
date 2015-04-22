@@ -2,207 +2,114 @@
 \section{Cache Partition}
 \label{sec:results:cache_partition}
 
-\todo{Most content is here, but a rewrite is required.}
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-ra4}
-            \caption{Random (ra4) workloads}
-            \label{fig:results:4core:stp:random}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-ca4}
-            \caption{Cache (ca4) workloads}
-            \label{fig:results:4core:stp:cache}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-cabw4}
-            \caption{Cache-Bandwidth (cabw4) workloads}
-            \label{fig:results:4core:stp:cache-bw}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-bw4}
-            \caption{Bandwidth (bw4) workloads}
-            \label{fig:results:4core:stp:bw}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-co4}
-            \caption{Compute (co4) workloads}
-            \label{fig:results:4core:stp:co}
-    \end{subfigure}%
-
-    \caption{4-Core workload STP results (128k L2)}\label{fig:results:4core:stp}
-\end{figure}
+This section describes an experiment that will compare the various implemented cache partitioning algorithms both against LRU and against each other.
+When executing this experiment, we utilize the base system configuration as previously detailed in table~\todo{ref}.
+The L2 cache size is set to 128k per core, and the L3 cache size is set to 4MB, 8MB or 16MB for respectively 4-, 8- and 16-core workloads.
+Each workload is simulated on the system until all benchmarks in that workload have completed at least once. 
+The first time a benchmark completes we store its statistics.
+After completion, a benchmark will restart until all other benchmarks have completed at least once.
+We generate reference statistics for each benchmark a executing it on a single core private mode run.
+In private mode, we use the same system with only a single core, with a 128k L2 and 4MB L3.
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-ra4}
-            \caption{Random (ra4) workloads}
-            \label{fig:results:4core:hms:random}
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-stp-0128k-0100-avg}
+        \caption{STP}
+        \label{fig:results:base:avg:stp}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-hms-0128k-0100-avg}
+        \caption{HMS}
+        \label{fig:results:base:avg:hms}
     \end{subfigure}
-
     \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-ca4}
-            \caption{Cache (ca4) workloads}
-            \label{fig:results:4core:hms:cache}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-cabw4}
-            \caption{Cache-Bandwidth (cabw4) workloads}
-            \label{fig:results:4core:hms:cache-bw}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-mpki-0128k-0100-avg}
+        \caption{mpki}
+        \label{fig:results:base:avg:mpki}
     \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-bw4}
-            \caption{Bandwidth (bw4) workloads}
-            \label{fig:results:4core:hms:bw}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-co4}
-            \caption{Compute (co4) workloads}
-            \label{fig:results:4core:hms:co}
-    \end{subfigure}%
-
-    \caption{4-Core workload HMS results (128k L2)}\label{fig:results:4core:hms}
+    \caption{Average STP, HMS and mpki relative to LRU for all workloads, grouped by number of cores.}
+    \label{fig:results:base:avg}
 \end{figure}
+
+Figure~\ref{fig:results:base:avg:stp} shows the average speedup of all workloads grouped by workload size.
+We observe that most of the implemented algorithms perform close to LRU for the four core workloads.
+UCP gives the best speedup of 2.1\% while PIPP performs badly with a 2.4\% performance decrease. 
+The modified version of PIPP, PIPP-min8, performs as good as LRU.
+When considering the harmonic mean of speedups as shown in figure~\ref{fig:results:base:avg:hms} we observe that all algorithms perform as good or better than LRU.  
+Most noticably is PIPP which in terms of HMS is equal to LRU.\todo{Explain what this indicates}
+Figure~\ref{fig:results:base:avg:mpki} shows L3 cache misses, and as expected there is a significant increase, 20\%, in misses for PIPP compared to LRU, which explains the bad performance. 
+The modified PIPP algorithm has a lower increase of 6.7%.
+UCP, which is the highest performer in terms of STP and HMS, gives the third highest miss increase at 3.2\% more misses than LRU. 
+This increase could be because UCP detects applications with high access frequency but low utility and allocates only a few blocks to those while allocating more blocks to applications with higher utility but possible lower access frequency.
+The misses saved by the low access high utility applications may not weight up for the increased misses in the high-frequency ones. 
+Hence, we observe a total increase in misses.
+We could still see a performance benefit as the high utility applications now may execute with fewer misses.
+In this same case, LRU would have favored the high access frequency one.
+
+With increasing core count, we increase the size of the L3 cache, but the associativity is unchanged.
+As a result, even more cores have to share the 32 blocks in each set.
+For some algorithms, especially PIPP, this increased cache set pressure significantly degrades performance.
+At 8-cores, PIPP has a 7.2\% performance decrease measured in STP compared to LRU.
+The modified PIPP-min8 outperforms PIPP, and even slightly outperforms LRU by 2.2\%, in the same situation.
+This is an indication that rows inserted by PIPP does not stay in the cache for long enough to see much re-use.
+The modified algorithm seems to counteract this problem by inserting with an offset of 8 blocks higher than normal PIPP.
+In the 16-core case, this effect is even more visible, with PIPP performing 45\% worse than LRU measured in STP and PIPP-min8 at only 7.6\% worse than LRU.
+DRRIP and UCP, the two best performers in the 4-core case, continues to perform well for both 8- and 16-cores.
+UCP beating LRU by 5.7\% and 6.9\% measured in STP in 8- and 16-core workloads, and DRRIP at 1.8\% and 2.6\%.
+TADIP and PriSM, which both perform equally to LRU in the 4-core case, lose some traction when core count increases.
+TADIP performs equal to LRU for 8-cores, but 3.6\% slower for 16-cores.
+PriSM cannot keep up for more than 4-cores, and performs 4.7\% and 7.6\% slower for 8- and 16-cores.
+We do however not that none of them increased misses, which is a good result considering they target miss-minimization.
+This is an important result, showing that miss minimization does not imply speedup. 
+Especially considering that UCP can cause a speedup while having as many or more misses as LRU.
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-ra4}
-            \caption{Random (ra4) workloads}
-            \label{fig:results:4core:misses:random}
+    \begin{subfigure}[b]{0.6\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-stp-0128k-0100-4-avg}
+        \caption{STP}
+        \label{fig:results:base:4-avg:stp}
     \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-ca4}
-            \caption{Cache (ca4) workloads}
-            \label{fig:results:4core:misses:cache}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-cabw4}
-            \caption{Cache-Bandwidth (cabw4) workloads}
-            \label{fig:results:4core:misses:cache-bw}
+    \begin{subfigure}[b]{0.6\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-hms-0128k-0100-4-avg}
+        \caption{HMS}
+        \label{fig:results:base:4-avg:hms}
     \end{subfigure}
-
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-bw4}
-            \caption{Bandwidth (bw4) workloads}
-            \label{fig:results:4core:misses:bw}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-co4}
-            \caption{Compute (co4) workloads}
-            \label{fig:results:4core:misses:co}
-    \end{subfigure}%
-
-    \caption{4-Core workload LLC misses (128k L2)}\label{fig:results:4core:misses}
+    \begin{subfigure}[b]{0.6\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/avg-mpki-0128k-0100-4-avg}
+        \caption{mpki}
+        \label{fig:results:base:4-avg:mpki}
+    \end{subfigure}
+    \caption{Average STP, HMS and mpki relative to LRU for all 4 core workload groups.}
+    \label{fig:results:base:4-avg} 
 \end{figure}
 
-For the cache bound 4-core workloads, we observe that LRU on average outperforms any other algorithm. 
-PIPP on average performs worse, 15.7\% worse than LRU, with PIPP-min8 and PriSM just ahead at 8.4\% performance loss.
-DRRIP performs on average as good as LRU. 
-In the best case, ca4-00, DRRIP performs 1\% better than LRU.
-In all other cases, all algorithms perform as good as or worse than LRU.
-The result might be reasonable considering that these five workloads contain cache sensitive benchmarks, benchmarks whose performance is bounded by the available cache space, and which is not sensitive to changes in available bandwidth.
-When running four benchmarks of this class in parallel we would expect them all to slow down, but they should not become memory bound.
-Hence the slight changes in partition scheme should not have a big impact on either benchmark, and we should see negligible changes.
-This is the case for three of the algorithms, TADIP, DRRIP and UCP.
-For PIPP and PriSM, we observe a slowdown.
-What the first three algorithms have in common is that they all will make use of the entire cache.
-PIPP, on the other hand, inserts at lower positions and only misses can cause a block to move towards the MRU position.
-Which four cache bound benchmarks we would expect PIPP to allocate about equal cache shared to each benchmark. \todo{We can rerun this workload with extended logging to see if this is the case}
-As a result, PIPP may only insert in the lower quarter of the cache, and there is a chance only this part of the cache sees active usage.
-If this is the case then forcing PIPP to insert higher should improve performance, which we observe as PIPP-min8 outperforms normal PIPP.
-The PriSM algorithm also opens up to a reduced cache usage, and we see it perform as good as PIPP-min8.
-The HMS results for this workload shows exactly the same trends.
+Our 4-core workloads divided into five groups, where four of the groups contain benchmarks with a specific characteristic.
+Each group and the properties of their benchmarks are covered in section~\todo{ref to benchmarks-workloads}
+Figure~\ref{fig:result:base:4-avg} shows average STP, HMS and mpki normalized to LRU for these five groups.
+Exploring the result from each of these groups individually is useful as it will show how various algorithms react to specific workload characteristics.
 
-For the bandwidth bound 4-core workloads we again see that one average all algorithms perform close to LRU.
-Performance of bandwidth bound benchmarks is sensitive to available memory bandwidth, but not cache space. 
-Due to this property we expect that no partition scheme will be able to improve performance, as the baseline performance is limited by excessive misses and little re-use.
-The average speedup of bw4 workloads matches this expectation.
-All algorithms except UCP performs within 0.1\% or LRU.
-UCP has a noticeable performance gain of 2.6\%. 
-This gain could be because UCP finds one benchmark in each workload with a small but exploitable reuse pattern and can take advantage of this by allocating most of the cache to this benchmark. \todo{Re-run this group with extended logging to see if this is the case, of so why does not PIPP also detect this? It might do, but due to the promotion policy it might just provide one hit, where UCP can provide multiple?}
-\todo{Based on the extended logging results, can we link the gain to one or more benchmarks?}
+Bandwidth bound workloads contain benchmarks that do not benefit from increased cache space.
+These are benchmarks with mainly streaming access patterns. 
+As expected the figure confirms that none of the algorithms can significantly improve performance compared to LRU.
+As seen in figure~\ref{avg:result:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 0.9\% compared to LRU.
+We expect this is because UCP detects phases in the benchmark access patterns where they stray from the streaming pattern and prioritizes those benchmarks during that phase.
+While PIPP in theory also should be able to detect such changes, our result shows it does not.
+A possible explanation to this is that PIPP uses both utility and streaming flags.
+While an application may periodically have increased utility causing UCP to prioritize it, PIPP might still consider it as streaming due to its history and ignore the increased utility.
 
-Compute bounded, there should be nothing to gain. If the algorithm performs badly, i.e. causes more misses, it might decrease performance.
-PIPP and PriSM slows down, significantly more misses, could again be because if the selected insert position. \todo{Run this PIPP on this group with extended logging, how does UMON allocate?}
+Cache bound workloads contain benchmarks that are sensitive to changes in available cache space.
+Our results from these workloads show two main trends.
+First LRU performs well, and none of the other algorithms increases performance or significantly reduce misses.
+Secondly, UCP and PIPP, the two algorithms that perform way partitioning, both reduce performance and cause a significant miss increase. 
+While TADIP and DRRIP, which both mimic LRU and PriSM that performs a variant of block level partitioning performs as good as LRU in terms of performance.
+PriSM, however, causes a small increase in misses.
 
-In the Cache and bandwidth bound 4-core workloads, there is more room for performance gains. 
-Benchmarks that are bound by both cache and bandwidth are most likely periodic, in that they sometimes are cache bound, and sometimes memory bound.
-An example of this behavior would be a reduction step that handles much memory, and then a processing step that performs operations on the reduced data set.
-A partitioning algorithm may be able to prioritize benchmarks that are currently cache sensitive.
-DRRIP which is stream resistant given some conditions\todo{need to re-read the actual formulas and confirm if this property can be the cause of the speedup}  shows an average speedup of 2.9\% compared to LRU. 
-This would indicate that DRRIP was able to reduce the amount of thrashing caused by benchmarks when they are bandwidth bound.
-PIPP performs 2.8\% worse than LRU, but PIPP-min8 shows an equal speedup of 2.8\%. 
-PIPP explicitly attempt to detect streaming applications and we therefore expected this algorithm to perform well in these conditions.
-Examining the LCC miss rate we see that PIPP-min8, even thought it improves performance, it caused 9\% more misses than LRU.
-These additional misses are most likely due to a few hits lost by streaming applications because PIPP inserted their row at or around LRU, compared to MRU under LRU replacement. 
-\todo{Trivial to implement a logging that shows misses per core per state, i.e. l3.core0-miss-when-stream and l3.core0-miss-when-not-stream, could we use this to make a point here?}
-The best performer in this group is UCP, which on average performs 5.5\% better than LRU.
-The difference observed between PIPP and UCP is most likely due to the difference in promotion policy.
-While both algorithms use the UMON with equal parameters to allocate cache rows, UCP promoted recency reuse while PIPP promotes base on reuse frequency. 
-In these workloads, it would seem that the former is the optimal strategy.
-While UCP does not explicitly detect streaming applications, we expect the UMON to allocate fewer rows to a streaming application because of the low reuse and hence utility. \todo{If we re-run these with extended logging we could plot average number of ways allocated to streaming cores, we would expect it to be about the same as the number of streaming cores.}
-\todo{If the number of allocated ways is not close to one for all streaming cores, should the algorithm for PIPP be rewritten? Currently, we first allocate rows based on utility and then override if a core is streaming. However, if the streaming core was allocated say 16 rows, and we override it to 1, then there are 15 rows which are left unallocated. The PIPP paper is unclear on this, but if we find this to be the case we should probably rewrite the allocation for PIPP}
+The performance of compute bound workloads are expected to be unaffected by the partitioning algorithm. 
+Our results also what our results supports this assumption, with the exception of PIPP, which again causes increased misses and, as a result, a slight performance decrease.
+Again PIPP-min8 seems to remedy this, pointing to blocks having to short lifetimes in a PIPP managed cache to see many hits.
 
-It could be argued that random workloads show a more real-world benchmark of the algorithms.
-The average values show the same trend as the previous TADIP and DRRIP performs about equally to LRU.
-PIPP is worse than LRU, but PIPP-min8 is an improvement.
-Finally, UCP overall performs best.
-In ra-13, we observe more than a 40\% decrease in LLC misses for PIPP-min8\todo{extend graph, bar not showing} giving a 3.2\% STP increase and a 20.7\% HMS increase.
-However, TADIP at 1.8\% STP increase, and an HMS increase of 4.0\% shows a reduction of misses by less than 10\%.
-This is a good demonstration of the fact that a reduction in misses does not directly translate to a proportional performance increase. 
-ra-02 shows a increased LLC miss rate while also showing a performance improvement under PIPP-min8
+Both cache and bandwidth bound workloads and the random workloads show results that concur with the overall averages discussed earlier.
+One interesting fact to note is that both versions of PIPP and UCP are equally good and also the best performers when measuring in HMS.\todo{discuss why this could be}
 
-
-8 and 16. We might have to redo these, as the available memory bandwidth was not scaled. Everything would have become bandwidth bounded.
-%\todo{We can especially see that PIPP and PIPP-min8, in general, increases the number of misses, as observed in the 4-core workloads, but, in general, this causes a loss and not a gain of performance here. 
-%If we scale the memory bandwidth, as we scale the LCC size, I believe PIPP will perform better.}
-
-
-%\todo{4-core with 512k L2 cache has been included; these will be evaluated in light of the above discussion. It might be interesting to plot total number of LLC accesses in the 512k case vs. the 128k case, as we expect a larger  L2 cache to filter out more of the LLC requests. One angle of the discussion would be to evaluate how a more filtered access pattern effect the algorithms.}
-
-
-
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-ra8}
-            \label{fig:results:4core:hms:random}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-ra8}
-            \label{fig:results:4core:hms:cache}
-    \end{subfigure}
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-ra8}
-            \label{fig:results:4core:hms:cache-bw}
-    \end{subfigure}
-
-    \caption{8-Core workload results (128k L2)}\label{fig:results:4core:hms}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/stp-0128k-ra16}
-            \label{fig:results:4core:hms:random}
-    \end{subfigure}
-
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/speedup/hms-0128k-ra16}
-            \label{fig:results:4core:hms:cache}
-    \end{subfigure}
-    \begin{subfigure}[b]{\textwidth}
-            \includegraphics[width=\textwidth]{figures/results/misses/0128k-ra16}
-            \label{fig:results:4core:hms:cache-bw}
-    \end{subfigure}
-
-    \caption{16-Core workload results (128k L2)}\label{fig:results:4core:hms}
-\end{figure}
