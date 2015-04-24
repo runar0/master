@@ -13,39 +13,39 @@
 	    \label{fig:results:l2:access}
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-lru-l2}
-        \caption{LRU sensitivity to L2 size}
+        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-tadip-l2}
+        \caption{Speedup of TADIP relative to LRU}
         \label{fig:results:l2:tadip}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-tadip-l2}
-        \caption{TADIP sensitivity to L2 size}
-        \label{fig:results:l2:tadip}
+        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-drrip-3-l2}
+        \caption{Speedup of DRRIP relative to LRU}
+        \label{fig:results:l2:drrip}
     \end{subfigure}
 \end{figure}
 \clearpage
 \begin{figure}[H]
 	\ContinuedFloat
     \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-drrip-3-l2}
-        \caption{DRRIP sensitivity to L2 size}
-        \label{fig:results:l2:drrip}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-ucp-l2}
-        \caption{UCP sensitivity to L2 size}
+        \caption{Speedup of UCP relative to LRU}
         \label{fig:results:l2:ucp}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-pipp-l2}
-        \caption{PIPP sensitivity to L2 size}
-        \label{fig:results:l2:pipp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-prism-l2}
-        \caption{PriSM sensitivity to L2 size}
+        \caption{Speedup of PriSM relative to LRU}
         \label{fig:results:l2:prism}
     \end{subfigure}
-    \caption{STP, HMS and walltime sensitivity to size of CSMB}
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-pipp-l2}
+        \caption{Speedup of PIPP relative to LRU}
+        \label{fig:results:l2:pipp}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/l2-stp-0128k-pipp-min8-l2}
+        \caption{Speedup of PIPP-min8 relative to LRU}
+        \label{fig:results:l2:pipp-min8}
+    \end{subfigure}
+    \caption{Speedup of cache paritition algorithms relative to LRU with increasing private L2 size}
     \label{fig:results:l2}
 \end{figure}

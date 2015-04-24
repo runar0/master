@@ -39,7 +39,7 @@ The modified version of PIPP, PIPP-min8, performs as good as LRU.
 When considering the harmonic mean of speedups as shown in figure~\ref{fig:results:base:avg:hms} we observe that all algorithms perform as good or better than LRU.  
 Most noticably is PIPP which in terms of HMS is equal to LRU.\todo{Explain what this indicates}
 Figure~\ref{fig:results:base:avg:mpki} shows L3 cache misses, and as expected there is a significant increase, 20\%, in misses for PIPP compared to LRU, which explains the bad performance. 
-The modified PIPP algorithm has a lower increase of 6.7%.
+The modified PIPP algorithm has a lower increase of 6.7\%.
 UCP, which is the highest performer in terms of STP and HMS, gives the third highest miss increase at 3.2\% more misses than LRU. 
 This increase could be because UCP detects applications with high access frequency but low utility and allocates only a few blocks to those while allocating more blocks to applications with higher utility but possible lower access frequency.
 The misses saved by the low access high utility applications may not weight up for the increased misses in the high-frequency ones. 
