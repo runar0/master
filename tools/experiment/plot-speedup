@@ -241,7 +241,7 @@ def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, p
 						ax.legend(handles, legends, fontsize='small', ncol=cols, bbox_to_anchor=(0.5, 1.45), loc='upper center')
 
 
-					ax.set_ylim(yLimit if yLimit != None else [0.6,1.3])
+					if yLimit != None: ax.set_ylim(yLimit)
 					ax.set_xlim([0,N+1]) if includeAverage else ax.set_xlim([0,N])
 
 					fig.set_size_inches((2.5+2.5*np.floor(N/5), 2.5))
@@ -393,6 +393,7 @@ def generate_l3_access_averages(results):
 				averages = {key: {'accesses': []} for key in ['4', '8', '16']}
 				fouraverages = {}
 				for workload,values in runs.items():
+					random = workload.startswith("ra")
 					group = '4'
 					if workload.startswith("ra8"): group = '8'
 					elif workload.startswith("ra16"): group = '16'
@@ -405,15 +406,17 @@ def generate_l3_access_averages(results):
 						if values[metric] == 0:
 							count[group] += 1
 						else:
-							averages[group][metric].append(values[metric]/results[csmb]["0128k"][algorithm][workload][metric])
+							if random: averages[group][metric].append(values[metric]/results[csmb]["0128k"][algorithm][workload][metric])
+							#if random: averages[group][metric].append(values[metric])
 							if group == '4':
 								fouraverages[workload_group][metric].append(values[metric]/results[csmb]["0128k"][algorithm][workload][metric])
+								#fouraverages[workload_group][metric].append(values[metric])
 
 				for cores in averages:
 					vals = {}
 					for metric in averages[cores]:
 						vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-					generated[csmb]['0128k'][l2size]['access-%02d' % int(cores)] = vals
+					generated[csmb]['0128k'][l2size]['access-ra%02d' % int(cores)] = vals
 				for workload_group in fouraverages:
 					vals = {}
 					for metric in fouraverages[workload_group]:
@@ -497,9 +500,6 @@ aliases = [
 	('workload-16', 'ra16', 'Random 16'),
 ]
 
-
-
-
 # Partition algorithms to plot
 algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 
@@ -533,5 +533,5 @@ if genCsmbComp:
 
 # Plot l2 comparisons
 if genL2Comp:
-	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.4,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
-	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.85,1.1], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
+	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
