@@ -58,6 +58,7 @@ def extract_properties(properties, filename, coreno):
 					results[properties[line[0]]] = val
 
 	except:
+		print "Warning: Bad/Missing data", filename
 		pass
 	return results
 
@@ -415,6 +416,7 @@ def generate_l3_access_averages(results):
 				for cores in averages:
 					vals = {}
 					for metric in averages[cores]:
+						print l2size, cores, metric, len(averages[cores][metric])
 						vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
 					generated[csmb]['0128k'][l2size]['access-ra%02d' % int(cores)] = vals
 				for workload_group in fouraverages:
@@ -426,7 +428,7 @@ def generate_l3_access_averages(results):
 
 				generated[csmb]['0128k'][l2size] = collections.OrderedDict(sorted(generated[csmb]['0128k'][l2size].items()))
 
-	print "L3 access health; ", count
+	print "L3 access health: ", count
 	return generated
 
 def generate_l2size_comparison(results):
@@ -460,7 +462,7 @@ def generate_l2size_comparison(results):
 					if values[metric] == 0:
 						count[group] += 1
 					else:
-						averages[group][metric].append(values[metric]/results['0100'][default][algorithm][workload][metric])
+						averages[group][metric].append(values[metric]/results['0100'][l2size]["lru"][workload][metric])
 
 			
 			# Reduce list to averages and update generated
@@ -469,6 +471,7 @@ def generate_l2size_comparison(results):
 				for metric in averages[cores]:
 					vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
 				generated[algorithm][default][l2size]['l2-%02d' % (int(cores))] = vals
+
 			generated[algorithm][default][l2size] = collections.OrderedDict(sorted(generated[algorithm][default][l2size].items()))
 
 	print "L2 comp health: ", count
@@ -534,4 +537,4 @@ if genCsmbComp:
 # Plot l2 comparisons
 if genL2Comp:
 	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
-	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.90,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
