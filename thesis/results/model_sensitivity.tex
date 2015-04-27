@@ -2,64 +2,72 @@
 \section{Processor Model Parameter Sensitivity}
 \label{sec:results:model_sensitivity}
 
-As detailed in the processor model section\todo{ref after refactor} we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
-In order to gain a better understanding of this model, we selected a total of five different properties we believe to have an impact on the performance of the simulated core.
-We then varied each of the properties one at the time while keeping the others constant.
-For each parameter combination we ran all our benchmarks and calculated the average STP relative to the base configuration.
+As detailed in the processor model section~\ref{sec:methodology:processor_model} we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
+An experiment was devised, with the goal of gaining a better understanding and improved confidence in this model before we utilized it in any further experiments.
+Of the properties used to define the model, we selected a total of five we believe to have an important impact on the performance of the simulated core.
+We then varied each of the properties in isolation, keeping the others constant.
+For each parameter combination, we ran all our benchmarks and calculated the average speedup relative to the base configuration.
 The result of this experiment will show us how sensitive our simulated core is to configuration changes.
-If we observe a significant performance variation when changing one or more of the selected properties we might have uncovered a bottleneck that could be removed by modifying our base configuration.
+If we observe a significant performance variation when changing one or more of the selected properties, we might have uncovered a bottleneck.
+In this case, it might be necessary to tweak the model until we find one that is less sensitive to change.
 
 \begin{figure}[!htb]
         \centering
         \begin{subfigure}[b]{0.5\textwidth}
                 \includegraphics[width=\textwidth]{figures/processor_model/ol}
-                \label{fig:processor_model:sensitivity:ol}
+                \caption{Outstanding Loads}
+                \label{fig:results:processor_model:ol}
         \end{subfigure}%
         \begin{subfigure}[b]{0.5\textwidth}
                 \includegraphics[width=\textwidth]{figures/processor_model/os}
-                \label{fig:processor_model:sensitivity:os}
+                \caption{Outstanding Stores}
+                \label{fig:results:processor_model:os}
         \end{subfigure}
         \begin{subfigure}[b]{0.5\textwidth}
                 \includegraphics[width=\textwidth]{figures/processor_model/mshr}
-                \label{fig:processor_model:sensitivity:mshr}
+                \caption{L1 Miss Status Hold Register}
+                \label{fig:results:processor_model:mshr}
         \end{subfigure}%
         \begin{subfigure}[b]{0.5\textwidth}
                 \includegraphics[width=\textwidth]{figures/processor_model/rob}
-                \label{fig:processor_model:sensitivity:rob}
+                \caption{Re-order Buffer}
+                \label{fig:results:processor_model:rob}
         \end{subfigure}
         \begin{subfigure}[b]{0.5\textwidth}
                 \includegraphics[width=\textwidth]{figures/processor_model/rs}
-                \label{fig:processor_model:sensitivity:rs}
+                \caption{Reservation Station}
+                \label{fig:results:processor_model:rs}
         \end{subfigure}%
-        \caption{Core model property sensitivity}\label{fig:processor_model:sensitivity}
+        \caption{Core model property sensitivity}\label{fig:results:processor_model}
        ~ % Fill page, prevents latex from placing a single line of text under the figure
 \end{figure}
 
-Figure~\ref{fig:processor_model:sensitivity} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status hold registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
-Outstanding loads and stores specify the number of outstanding memory requests the core can manage before it has to block at new requests.
-The number of L1 MSHRs decide how many outstanding cache misses the cache can handle before it has to block on a new miss.
+Figure~\ref{fig:results:processor_model} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status hold registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
+Outstanding loads and stores specify the number of outstanding memory requests the core can have active in the rob.
+The number of L1 MSHRs decide how many outstanding cache misses the first level cache can handle before it has to block on a miss.
 The size of the rob and rs together decide how many instructions can be live during execution.  
 Increasing the number of live instructions can increase the amount of instruction-level parallelism (ILP) the processor can extract from the program while possibly increasing the cost of a branch miss prediction.
 
 For two of the memory related properties; os and ol, we observe no improvement nor decrease in performance for the values we explored.
-When we increase the last memory related parameter; MSHR, we do observe a slight performance increase.
+When we increase the last memory related parameter; MSHR, we do observe a slight performance change.
 With an increasing number of MSHRs, the cache and hence the core can have more outstanding memory requests. 
-As a result, the core will be able to exploit more ILP, and a slight performance improvement is expected. 
+As a result, the core will be able to exploit more ILP, and a slight performance improvement is observed. 
 Unlike the MSHRs, we do not expect the value of os and ol to effect performance. 
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
 Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
+\todo{Could we find a reference stating that this is a bit high?}
 In addition both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
-The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:processor_model:sensitivity:mshr}, is less than 1\% at 50\% storage increase. 
+The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:results:processor_model:mshr}, is less than 1\% at 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 
 
 When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.
-Figures~\ref{fig:processor_model:sensitivity:rob}~and~\ref{fig:processor_model:sensitivity:rs} show an average performance increase of about 2\% with more rob entries, and about a 3\% increase with more rs entries.
+Figures~\ref{fig:results:processor_model:rob}~and~\ref{fig:results:processor_model:rs} show an average performance increase of about 2\% with more rob entries, and about a 3\% increase with more rs entries.
 We observe that these increases come at the cost of a respectively 75\% and 50\% storage increase.
 In addition, we observe that the standard deviation in both cases is about the same as the average performance increase.
 
 When reviewed, these facts lead us to conclude that the processor model we have presented based on the Nehalem architecture is stable and that we have no obvious performance gains from small adjustments.
 As a result, we decide to continue use of this model for the rest of our experiments without making any adjustments.
 
-Considering that we base our model properties on an actual architecture and that our simulator strives to simulate the core model of that same architecture, it is not a far-fetched result observing little sensitivity to property changes.
+Considering that we base our model on an actual architecture and that our simulator strives to simulate the core model of that same architecture, it is not a far-fetched result observing little sensitivity to property changes.
 During the design process of the architecture, it is natural to expect that the designers made a conscious choice between speed and area using a similar analysis.
 The final properties would then most likely have been selected to provide a stable middle ground, which we see reflected in our simulation results.
