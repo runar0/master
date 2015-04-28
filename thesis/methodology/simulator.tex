@@ -1,0 +1,18 @@
+\section{Simulator}
+\label{sec:methodology:simulator}
+
+There are several different simulators used in computer architecture research today~\cite{Carlson2011a, Binkert2011, Miller2010, Pellauer2011}.
+Of the simulators used today, we evaluated two possible candidates for this work, Sniper~\cite{Carlson2011a} and gem5~\cite{Binkert2011}.
+These two candidates are mainly chosen because they are both in active use by the CARD research group at NTNU where this thesis is performed.
+Gem5 is also an obvious candidate because it is the simulator used in most computer architecture research today~\cite{Chen-Han2014}.
+It is a cycle accurate simulator meaning that it theoretically can perfectly mimic real hardware.
+This accuracy comes at the cost of simulation time.
+The other candidate, Sniper, is based on interval simuation~\cite{Genbrugge2010}. 
+Interval simulation allows it to simulate benchmarks significantly faster than gem5~\cite{Carlson2011a, Olsen2014} at the cost of reduced accuracy.
+In addition, Sniper is multithreaded, and each simulated core runs in a separate thread.
+This separation means Sniper can take advantage of today's multicore computers during simulations, gem5, on the other hand, performs all simulation in a single thread.
+By having multiple threads there is a chance of clock skewing~\cite{Carlson2011a} during simulations in Sniper.
+Clock skewing is when one core simulates faster or slower than the others, making the clock values in each core different.
+When this happens, the simulator cannot correctly simulate inter-core interactions, such as access to the shared cache.
+Based on the authors previous work~\cite{Olsen2014}, we chose Sniper over gem5 because the simplicity and speed of Sniper outweights the reduced accuracy compared to gem5.
+Because we know that clock skewing in Sniper might be an issue for our work, we will perform an experiment investingating this error source further.
