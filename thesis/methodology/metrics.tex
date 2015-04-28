@@ -1,0 +1,41 @@
+\section{Performance Metrics}
+\label{sec:methodology:metrics}
+
+When we simulate our workloads we expect destructive interefernce between benchmarks to cause slowdown.
+Performance metrics are need to quantify the performance of workloads, and in order to compare performance of different cache partitioning algorithms.
+We define two metrics; system throughtput (STP) and harmonic mean of speedup (HMS).
+
+In order to define STP and HMS, two concepts are needed; private mode execution time and shared mode execution time.
+Shared mode execution time is the time it takes for a benchmark to complete when run as a part of a workload.
+Private mode execution time is defined as the time it takes for a benchmark to complate when run alone on the same processor model.
+By definition we expect a benchmark to execute slower in shared mode than in private mode.
+
+Based on private and shared mode execution time we can define normalized progress (NP) as $NP_i = \frac{T^{P}_i}{T^{S}_i}$.
+Here $T^{P}_i$ and $T^{S}_i$ is respectively the private and shared mode execution time for benchmark $i$.
+Normalized progress is a measure of benchmark progression in shared mode.
+A perfect value of 1 indicates that the benchmark progresses just as fast in shared and private mode.
+While a value of 0.5 indicates that the benchmark progresses as half the rate in shared mode compared to private mode.
+STP as defined by L. Eeckhout~\cite{Eeckhout2010} as the sum of NP for all benchmarks in a worklaod, as shown in equation~\ref{eq:STP}
+By definition a perfect STP value equals the count of benchmark in a workload, in our case either 4, 8 or 16.
+
+\begin{equation} \label{eq:STP} 
+ STP = {\sum\limits_{n=1}^{k}}\frac{T^{P}_i}{T^{S}_i}
+\end{equation}
+
+We also define normalize turnaround time (NTT) or speedup, NTT is defined as the inverse of NP, $NP_i = \frac{T^{S}_i}{T^{P}_i}$.
+Based on NTT, L. Eeckhout~\cite{Eeckhout2010} defines HMS as shown in equation~\ref{eq:HMS}.
+
+\begin{equation} \label{eq:HMS}
+ HMS = \frac{k}{\sum\limits_{n=1}^{k}}\frac{Cycles^{S}_i}{Cycles^{P}_i}
+\end{equation}
+
+In general an increase in system throughput is expected to also improve turnaround time.
+However, there are cases where this is not true.
+A simple example would be a scheduler that prioritizes small jobs, hence improving throughput and STP, but by leaving long jobs in the queue turnaround time and hence HMS will increase.
+It is therefore improtant to use both metrics to gain good insight into system performance.
+
+In addition to HMS and STP, we will use misses per kilo instruction (mpki) when evaluating cache paritioning algorithms.
+mpki is simply defined as the total number of misses in the LLC, per 1000 instructions.
+mpki an important metric in our experiments, especially because we are simulating an out of order core. 
+Due to latency hiding in the processor we cannot assume that a reduction in mpki necessarily will increase performance nor that a performance increase must be caused by a reduction in mpki.
+As a result, all three metrics are required to gain full insight into the effects of various cache partitioning algorithms.

@@ -2,35 +2,18 @@
 \chapter{Methodology}
 \label{cpt:methodology}
 
+This chapter introduces the simulator and benchmarks we will utilize in our work.
+It describes the simulated processor architecture and outlines how we use sample extraction to reduce simulation time.
+Finally, we introduce the various performance metrics we will use to evaluate the implemented cache partitioning algorithms.
+
+\input{methodology/simulator.tex}
+
+\input{methodology/benchmarks.tex}
+
+\input{methodology/processor_model.tex}
+
 \input{methodology/sample_extraction.tex}
 
-\section{Base Experiment}
-\todo{Describe base experiment with locked L2 size, L3 depending on workload size. All workloads executed. Define speedup, define STP. Define HMS. Quickly explain why we need both STP and HMS, what differences may they show? Also mention that we capture number of misses (and miss rate). Explain when we dump statistic snapshots for each benchmark, and that we restart benchmarks during simulation.}
-
-\section{L2 Sensitivity}
-\todo{Explain how we repeat the base experiment above with varying L2 size, but all other parameters locked. Explain how results of these experiments are compared the base experiment using changes in the already presented metrics.}
-
-\section{Simulator Parallelism Sentitivity}
-\todo{Explain how we repeat the base experiment but this time vary the quantum of the clock skew minimization barrier. This result will give an indication of how much this variable affects our results. As we are not comparing against real HW or even a proven cycle accurate simulator, these results only give an indication and cannot be used to draw a conclusion. If we show a large variation, we do have something to write about in the discussion and something to add to future work.}
-
-\todo{It is natural to use to relative change in one of our existing metrics when comparing, we should also mention the simulation time differences, but they do not need to be plotted.}
+\input{methodology/metrics.tex}
 
 \todo{The effect of clock skew minimization is discussed in T. Carlson et al. 2011}
-
-\todo{We will only investigate barrier synchronization, the other option, random pair synchronization, is expected to give a higher performance, but also is expected to give a higher clock variance.}
-
-\begin{table}[ht]
-\centering
-
-\begin{tabular}{r}
-\textbf{Quantum Size} \\ \hline
-1 cycles \\
-10 cycles \\
-100 cycles \\
-1000 cycles
-\end{tabular}
-\caption{Barrier synchronization quantum sizes}
-
-\todo{I picture one cycle may be problimatic}
-
-\end{table}
