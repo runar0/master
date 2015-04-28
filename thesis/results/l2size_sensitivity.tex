@@ -1,31 +1,28 @@
 \section{L2 Cache Size Sensitivity}
 \label{sec:results:l2size_sensitivity}
 
-\todo{First figure shows how an increasing size of l2 cache causes fewer accesses to l3, and hence all algorithms have fewer request to base their choices on}
-\todo{All other figures in general show that when size of private cache increases, the gains of running a custom algorithm over running lru lessens. By this observation it seems that if the choice is either increasing cache space, or utilizing a more advanced algorithm, then the choice may not be obvious.}
-
-In this section, we investigate how increasing the size of private cache available to each processor affects the performance of the algorithms.
+In this section, we investigate how increasing the size of the private cache affects the performance of the cache partitioning algorithms.
 We ran the same experiment as in section~\ref{sec:results:base}, but with varying L2 sizes.
-The L2 configurations used are shown in table~\ref{}\todo{}, to summarize we utilise cache sizes of 128k, 256k, 512k, and 1024k.
+The L2 configurations are as shown in table~\ref{}\todo{}, to summarize we utilize cache sizes of 128k, 256k, 512k, and 1024k.
 As in previous experiments, we vary the L3 size relative to the workload size.
 In this experiment, we only utilize the three random workload groups.
 We do this to be able to aggregate and compare 4-core results to 8- and 16-core results.
 If results from all 4-core workloads had been used to generate an aggregate, it would have been biased.
 This because most of the workloads have specific traits while the random workloads contain benchmarks with mixed traits.
+In addition, we have only plotted STP results, this because HMS and mpki results did not add any additional insight in this experiment.
 
 Figure~\ref{fig:results:l2:access} shows the average number of L3 accesses for random workloads with varying L2 cache size.
-As can be seen from the graph, by increasing the size of the L2 we are decreasing the number of accesses to the L3 cache.
+As can be seen from the graph, by increasing the size of the L2 cache we are decreasing the number of accesses to the L3 cache.
 In other words, the L2 caches are hiding an increasing amount of memory requests from the shared level.
 We expect this increased filtering of requests to have an impact on the performance of the implemented algorithms.
 
-Figure~\ref{fig:results:l2:tadip} shows the relative speedup of TADIP compared to LRU measured in STP. 
+Figure~\ref{fig:results:l2:tadip} shows the speedup of TADIP relative to LRU measured in STP. 
 As seen previously, TADIP performs as good as LRU in both 4- and 8-core workloads with a 128k L2 cache.
 With increasing L2 cache size TADIP steadily outperforms LRU with between 0.1\% and 0.6\% depending on the configuration. 
 At 16-cores, TADIP underperforms compared to LRU, as previously shown.
 We note that, in this case, increasing the L2 size seems to cause a further decrease in TADIP performance, while the opposite is true in the 8-core case.
-As covered in section~\ref{}\todo{base} we expect that TADIP suffers in the 16-core workloads because the faction of dueling sets in the cache increases.
-We also know that when we increase filtering of memory requests in private levels, TADIP will react slower to changes in application phases, due to its counter architecture.
-This last effect does not seem to have a noticeable impact on the results, in the 4- and 8-core runs, but becomes visible in the 16-core runs.
+We expect that TADIP will react slower to changes in application phases as memory filtering increases, because of the counter architecture used to select optimal algorithms.
+This effect does not seem to have a noticeable impact on results for the 4- and 8-core runs, but we assume it is causing the visible decrease in performance for the 16-core runs.
 
 DRRIP as already covered outperforms LRU, figure~\ref{fig:results:l2:drrip} confirms this.
 The figure also shows that increasing the L2 size causes a reduction in DRRIP performance.
@@ -41,7 +38,10 @@ As a result, the allocation of ways to cores also is expected to change, but thi
 UCP uses LRU to manage replacement for each core, but UCP under normal circumstances only allows a core to evict one of its own blocks. 
 We have already covered that this is why UCP outperforms LRU in the base configuration, in section~\ref{}\todo{base}. 
 As filtering increases at the private level, we notice that UCP increases its performance compared to LRU. 
-We expect that this is because less information causes LRU to make worse decisions, but this effect is less noticeable in UCP because UCP separates the LRU decisions between cores.
+We expect that this is because, with increased private cache, more requests from recency-friendly applications can be satisfied by the private levels and less information reaches the shared level.
+Trashing and streaming applications will still have its requests propagate to the shared cache, largely independent of the size of the private cache. 
+Hence with increasing private cache size we expect LRU to make worse decisions by prioritizing trashing and streaming patterns due to access frequency.
+UCP with utility based way-partitioning will not suffer as much from the lack of information about recency-friendly applications, and as we have shown can take advantage of increasing private cache size.
 
 PriSM~\todo{}
 
@@ -97,6 +97,6 @@ However, in the 16-core workloads, the same issues as seen in the PIPP algorithm
         \caption{Speedup of PIPP-min8 relative to LRU}
         \label{fig:results:l2:pipp-min8}
     \end{subfigure}
-    \caption{Speedup of cache paritition algorithms relative to LRU with increasing private L2 size}
+    \caption{Speedup of cache partition algorithms relative to LRU with increasing private L2 size}
     \label{fig:results:l2}
 \end{figure}
