@@ -128,7 +128,7 @@ def transform_data_to_speedup(benchmark_results, workload_results):
 						mpki = max(mpki, results['mpki'])
 						accesses = max(accesses, results['accesses'])
 
-						hms = hms + benchmark_results[csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
+						hms = hms + cycles/benchmark_results[csmb][l2size]['lru'][benchmark]
 						stp = stp + benchmark_results[csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
 
 					hms = len(results) / hms if hms > 0 else 0
