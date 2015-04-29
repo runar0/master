@@ -10,7 +10,7 @@ Shared mode execution time is the time it takes for a benchmark to complete when
 Private mode execution time is defined as the time it takes for a benchmark to complate when run alone on the same processor model.
 By definition we expect a benchmark to execute slower in shared mode than in private mode.
 
-Based on private and shared mode execution time we can define normalized progress (NP) as $NP_i = \frac{T^{P}_i}{T^{S}_i}$.
+Based on private and shared mode execution time we can define normalized progress (NP), or speedup, as $NP_i = \frac{T^{P}_i}{T^{S}_i}$.
 Here $T^{P}_i$ and $T^{S}_i$ is respectively the private and shared mode execution time for benchmark $i$.
 Normalized progress is a measure of benchmark progression in shared mode.
 A perfect value of 1 indicates that the benchmark progresses just as fast in shared and private mode.
@@ -22,11 +22,12 @@ By definition a perfect STP value equals the count of benchmark in a workload, i
  STP = {\sum\limits_{n=1}^{k}}\frac{T^{P}_i}{T^{S}_i}
 \end{equation}
 
-Also based on the definition of $NP_i$, L. Eeckhout~\cite{Eeckhout2010} defines HMS or hmean as shown in equation~\ref{eq:HMS}.
-HMS is by definition the reciprocal of average normalized turnaround-time (ANTT), and hence HMS has a system level meaning relating to the average benchmark's normalized turnaround-time.
+In addition to STP we define HMS as the harmonic mean of NP values, as shown in equation~\ref{eq:HMS}.
+The summation kernel in HMS is also known as normalized turnaround time (NTT).
+HMS is therefore by definition the reciprocal of average normalized turnaround-time (ANTT)~\cite{Eeckhout2010}, and hence HMS has a system level meaning relating to the average benchmark's normalized turnaround-time.
 
 \begin{equation} \label{eq:HMS}
- HMS = \frac{k}{{\sum\limits_{n=1}^{k}}\frac{T^{P}_i}{T^{S}_i}}
+ HMS = \frac{k}{{\sum\limits_{n=1}^{k}}\frac{1}{\frac{T^{P}_i}{T^{S}_i}}} = \frac{k}{{\sum\limits_{n=1}^{k}}\frac{T^{S}_i}{T^{P}_i}}
 \end{equation}
 
 In general an increase in system throughput is expected to also improve turnaround time.
