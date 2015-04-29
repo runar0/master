@@ -16,10 +16,10 @@ Because simulating an entire benchmark is a time-consuming processe, we choose t
 There are multiple ways of extracting sample intervals.
 The naive way of choosing intervals is to specify an offset and a length and use this across all benchmarks.
 However, several more advanced methods of sample selections exists, two examples are SimPoint~\cite{Hamerly2005} and SimFlex/SMARTS~\cite{Hardavellas2004, Wunderlich2003}.
-The both work in a simular manner, by dividing the instruction stream of a benchmark into equal sized intervals. 
+They both work in a simular manner, by dividing the instruction stream of a benchmark into equal sized intervals. 
 Intervals are then classified, and a set of them chosen to represent the entire benchmark. 
 What separates the two methods is the classification process used.
-J. Yi et al.\todo{add cite} has shown that there is little difference between SimPoint and SimFlex selected intervals.
+J. Yi et al.\todo{add cite} has shown that there is variation in accuracy between SimPoint and SimFlex selected intervals.
 Because SimPoint integrates well with our selected simulator, Sniper, we chose to use SimPoint to extract intervals.
 
 Ideally a few sample intervals are needed per benchmark in order to get accurate simulation results.
@@ -31,13 +31,14 @@ The length chosen for our intervals may also affect the final results.
 As caches are empty when the simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results if the simulated interval is short.
 Additionally, as we are experimenting with cache partitioning algorithms, we believe that a certain number of instructions are needed for our results to stabilize.
 Finally, by increasing the number of instructions we are also increasing the time required to simulate a benchmark.
-We choose to extract 250M instruction intervals using SimPoints.
+We choose to extract 250M instruction intervals using SimPoint.
 This number of instructions will make the cold cache effect neglishable~\cite{Hamerly2005,Hamerly2004,Olsen2014} while we keep the simulation time relatively low.
 We generate an instruction trace using Sniper for each SimPoint extracted interval.
 All later experiments utilize these traces in place of the actual benchmark executable.
 
 \subsection{Benchmark Classification}
 \label{sec:methodology:benchmarks:classification}
+\todo{Results? (This and the next subsection)}
 
 \input{figures/workloads/benchmarks.tex}
 

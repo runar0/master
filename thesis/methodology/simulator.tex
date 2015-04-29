@@ -14,5 +14,7 @@ This separation means Sniper can take advantage of today's multicore computers d
 By having multiple threads there is a chance of clock skewing~\cite{Carlson2011a} during simulations in Sniper.
 Clock skewing is when one core simulates faster or slower than the others, making the clock values in each core different.
 When this happens, the simulator cannot correctly simulate inter-core interactions, such as access to the shared cache.
+There are however techniques implemented in Sniper that attempts to reduce errors caused by clock skewing.
+
 Based on the authors previous work~\cite{Olsen2014}, we chose Sniper over gem5 because the simplicity and speed of Sniper outweights the reduced accuracy compared to gem5.
 Because we know that clock skewing in Sniper might be an issue for our work, we will perform an experiment investingating this error source further.

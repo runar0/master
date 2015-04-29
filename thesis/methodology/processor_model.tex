@@ -23,13 +23,14 @@
 \bf{Shared L3 cache}                & 4/8/16/32MB, 64B line-size, 24 mshrs, \\
                                     & 32-way, varying replacement algorithm         \\
 \bf{Memory controller}              & 6.4GB/s, 100ns access latency         \\
+\bf{Clock Skew}                     & 100 cycle barrier synchronization        \\
 \bottomrule                             
 \end{tabular}
 \caption{Model properties}
 \label{tbl:processor_model:properties}
 \end{table}
 
-Throughout this thesis, we utilize a CMP model simulated on Sniper~\cite{Carlson2011a} to obtain our results. 
+Throughout this thesis, we utilize a CMP model simulated on Sniper~\cite{Carlson2011a}. 
 In our model, each processing core has two levels of private cache, the L1 data and code caches and a unified L2 cache.
 Additionally there is a third cache level, L3, which is shared by all cores. 
 The private caches are managed by an LRU replacement policy, and the replacement policy of the third cache level varies throughout our experiments.
@@ -38,16 +39,22 @@ Figure~\ref{fig:processor_model} shows an overview of the simulated architecture
 As the sniper simulation system implements a Nehalem core model, all our processor core properties are based on Intel's Nehalem architecture~\cite{Thomadakis2011}. 
 The first level cache size is also selected based on the Nehalem architecture. 
 We do note that in more recent architectures such as Intel's Haswell~\cite{Jain2013} the core properties have changed compared to the older Nehalem, but the size of the first level cache remains the same.
-The reason being that with increasing cache size the access latency also increases this in turn can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions.
+The reason being that with increasing cache size the access latency also increases. 
+This in turn can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions.
 
-For our second and third cache layer, we have selected four different size configurations. 
-We will use these configurations to explore how the cache partitioning algorithms respond to low or high memory situations with varying L3 sizes.
-Also, we will explore how decreasing or increasing the L2 cache size, in turn possibly raising or reducing the L3 access rate, effects the L3 cache partitioning algorithms.
+For our second cache layer, we have selected four different size configurations.
+We will use these configurations to evalute how cache partitioning algorithms running on the third cache level responds to changes in size of private caches.
+Our third level cache has three configurations.
+During our experiment we will choose a configuration based on the number of cores used.
+For 4-, 8- and 16-core simulations we will respectivly use a 4M, 8M and 16M L3 configuration.
 
-
-\todo{Note the limited DRAM model, find references showing the effects we optimally should have simulated}
-
-\todo{Add information about the clock skew minimization parameters, 100 cycles barrier synchronization, as this will be focused on in later parts of the thesis}
+Snipers memory model very limited compared to models in cycle-accurate simulators, such as gem5.
+In our processor model each memory request completes in a constant 100ns, there is no simulation of row and colum access delays.
+Because inter-core interractions may be out-of-order the memory bus model is a statistical model that attempts to estimate queuing delays based on a history window.
+Both of these limitations introduces an error source in our simulations, but previous work~\cite{Carlson2011a, Olsen2014} has shown that results are still comparable to cycle-accurate simulations.
+In order to reduce clock skewing caused by having multiple simulation threads we utilize a 100 cycle barrier synchronization.
+This implies that all simulated cores synchronize every 100 cycles.
+An experiment will be conducted to explore the effect on our results when the width of this barrier is changed.
 
 In the following sections, we describe how CACTI~\todo{ref} was used to estimate the access latency for each of our caches. 
 When using CACTI we model each cache with parallel access to the tag directory and data.
