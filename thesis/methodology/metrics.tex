@@ -27,7 +27,7 @@ The summation kernel in HMS is also known as normalized turnaround time (NTT).
 HMS is therefore by definition the reciprocal of average normalized turnaround-time (ANTT)~\cite{Eeckhout2010}, and hence HMS has a system level meaning relating to the average benchmark's normalized turnaround-time.
 
 \begin{equation} \label{eq:HMS}
- HMS = \frac{k}{{\sum\limits_{n=1}^{k}}\frac{1}{\frac{T^{P}_i}{T^{S}_i}}} = \frac{k}{{\sum\limits_{n=1}^{k}}\frac{T^{S}_i}{T^{P}_i}}
+ HMS = \frac{k}{{\sum\limits_{n=1}^{k}\frac{1}{\frac{T^{P}_i}{T^{S}_i}}}} = \frac{k}{{\sum\limits_{n=1}^{k}\frac{T^{S}_i}{T^{P}_i}}}
 \end{equation}
 
 In general an increase in system throughput is expected to also improve turnaround time.

@@ -1,6 +1,6 @@
 
-\subsection{LRU}
-\label{sec:background:algorithms:lru}
+\section{LRU}
+\label{sec:algorithms:lru}
 
 
 \begin{figure}[ht]
@@ -69,9 +69,6 @@ Finally, another request is made to block E. Nothing changes since the block alr
 LRU is a simple replacement algorithm that is usable in both private and shared caches.
 In shared caches, LRU will favor access frequency, giving cores that issue many cache requests more cache space than those who issue fewer requests. 
 In some cases, this might be an acceptable solution. 
-However, several thread-aware replacement algorithms claiming to outperform LRU exists. 
-In this thesis, we will investigate several such algorithms and compare their performance against the simple LRU algorithm.
-
-\todo{Mention Pseudo-LRU}
+However, as we will discover, several thread-aware replacement algorithms claiming to outperform LRU exists. 
 
 
