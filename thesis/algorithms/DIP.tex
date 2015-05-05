@@ -36,13 +36,14 @@ Misses in LRU sets will increment the counter and misses in BIP sets will decrem
 The MSB of the counter can then be used to select the optimal algorithm.
 If the MSB is one, an overweight of misses in LRU sets are occurring, and BIP is the optimal algorithm. 
 If the MSB is zero, then an overweight of BIP misses are occurring, and LRU is the optimal algorithm.
-Figure~\ref{fig:algorithms:dip:architecture} shows the set dueling and algorithm selection algoritecture suggested by M. K. Qureshi et al.
+Figure~\ref{fig:algorithms:dip:set_dueling} shows the set dueling and algorithm selection algoritecture suggested by M. K. Qureshi et al.
 In the figure sets x, y and z are dueling sets for LIP while x, y, and z are dueling sets for BIP.
 All other sets are follower sets, meaning that they utilize the algorithm indicated by the selection logic.
 
-Another solution is to utilize two Auxilliary Tag Directories (ATDs) which is a structure equal to the Tag directory of the cache itself.
-The two ATDs run one algorithm each, and all cache accesses are also executed on the ATDs.
-Again a counter controlled by misses in either ATD is used to select the optimal algorithm for the main cache.
+Another solution is to utilize two Auxilliary Tag Directories (ATDs), as shown in figure~\ref{fig:algorithms:dip:atd}.
+An ATD is equal to the caches tag directory, it keeps track of blocks present but does not store any data.
+ATDs are for this reason cheaper than a full cache, but still requires more storage than dual-sets which use the existing cache.
+As the figure shows, the two ATDs run one algorithm each, and all accesses to the real cache are also executed in parallell on the ATDs.
+Again the same counter architecture controlled by misses in either ATD is used to select the optimal algorithm for the main cache.
 The main advantage of using a ATD is that all available information is used when selecting between BIP and LIP.
 Also the entire cache will always use the best algorithm, where in set-dueling a faction of the sets will always run the non-optimal algorithm.
-However, ATDs required additional storage space, where set-dueling uses the existing store space and only requires counters and algorithm selection logic.

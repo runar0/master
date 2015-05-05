@@ -55,6 +55,7 @@ A value of 0 indicates a near re-reference interval, the algorithm expects the b
 The value $2^M - 1$ indicates a distant re-reference interval while the value of $2^M - 2$ indicates a long re-reference interval.
 Multiple blocks may have the same re-reference interval. 
 Hence, blocks are not strictly ordered as in the LRU stack.
+By setting $M=1$ DRRIP degrades into the Not Recently Used (NRU)~\cite{Microsystems2007} algorithm, which is used on the UltraSPARC T2.
 
 The replacement policy of DRRIP is to scan all blocks and evict the first one found with a distance re-reference interval.
 If no blocks have a distant re-reference interval the re-reference interval of all blocks are incremented by one and the scan starts over.

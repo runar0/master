@@ -18,7 +18,7 @@ p_{rf} = (a_0 a_1 ... a_{k-1})^N
 \end{figure}
 \todo{Fix numbering, counts as both an algorithm and figure which is weird.}
 
-\paragraph{Trashing}
+\subsection{Trashing}
 A trashing memory pattern is one that repeats in a similar manner to a recency-friendly pattern, but with more blocks per cycle than the number of cache ways. 
 Figure~\ref{fig:background:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of k.
 Under LRU or another recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
@@ -31,7 +31,7 @@ p_{rf} = (a_0 a_1 ... a_{k-1})^N
 \caption{Trashing memory access pattern to a single cache set (k $>$ number of ways, N $>$ 1)}
 \end{figure}
 
-\paragraph{Streaming}
+\subsection{Streaming}
 A streaming memory access pattern is one that has no re-references, or where the period is so large that no pattern is detectable.
 Figure~\ref{fig:background:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
 No caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
@@ -44,14 +44,14 @@ p_{rf} = (a_0 a_1 ... a_{k-1})
 \caption{Streaming memory access  pattern (k = $\infty$) }
 \end{figure}
 
-\paragraph{Combined}
+\subsection{Combined}
 In reality, memory access patterns can be more complex than the simple examples shown above.
 A single program might, for instance, behave both in a recency-friendly and streaming fashion. 
 An example would be a program performing a reduction over a large dataset.
 Most accesses would be streaming as the program iterates over the dataset, but some accesses will exhibit recency-friendly behavior like when the program stores temporary results to memory during the iteration.
 
 For shared caches the observed pattern is the union of accesses from all cores, this can result in even more complex patterns.
-A particular non-optimal situation for an LRU managed shared cache is when multiple cores execute recency-friendly applications, and one single core execute a streaming application.
+A particular non-optimal situation for a cache assuming recency-friendly behaviour is when multiple cores execute recency-friendly applications, and one single core execute a streaming application.
 In this case, the streaming application will constantly clear the cache, degrading performance of the recency-friendly applications.
 An algorithm that could detect the one streaming application and handle it as a special case could potentially increase performance of the recency-friendly applications without affecting the performance of the streaming application.
-Some of the algorithms we cover in this report will attempt to detect streaming applications.
+Some of the algorithms we cover in the following sections will attempt to detect streaming applications.

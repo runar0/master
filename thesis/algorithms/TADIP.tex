@@ -32,29 +32,30 @@ As a result, the authors of TADIP suggests two selection techniques based on set
 Both solutions have one saturating counter per core sharing the cache.
 This counter is used to select the optimal policy for that core.
 
-TADIP-Isolated (TADIP-I) has one set per core running BIP for that core and LRU for all others, as shown in figure~\ref{fig:algorithms:tadip:isolated}.
+TADIP-Isolated (TADIP-I) has one set per core running BIP for that core and LRU for all others.
 In addition to these N sets, a single set runs LRU for all cores. 
 A miss in the LRU set will increment all the core counters while a miss in the core specific set will decrement the counter for the specific core.
-For a large N, this solution requires significantly less duel-sets compared to having one per combination. 
-Because it assumes that all other cores run LRU, the effect different cores with different policies might have on each other is ignored.
+For a large N, this solution requires significantly less duel-sets compared to having one per combination ($N+1 << N^2$). 
+This solution assumes that all other cores run LRU, and therefore cannot fully capture the effect of interractions between cores.
+As a result, TADIP-I is more inaccurate than the solution of having one set per combination.
+Figure~\ref{fig:algorithms:tadip:isolated} shows an example of a cache managed by TADIP-I. 
+In the figure PSEL0 is the saturating counter used to select the optimal policy for core 0.
+Within a set <0, 0> indicates that both cores run LIP, while <1, 0> indicates that core 0 runs BIP while core 1 runs LIP.
+The variables p0 and p1 represent the currently optimal policy for core 0 and 1 respectivly.
 
 TADIP-Feeback (TADIP-F) attempts to reduce the error caused by the assumption of other cores by having two sets per core, a total of 2N.
+A cache managed by TADIP-F is illustrated in figure~\ref{fig:algorithms:tadip:feedback}.
 Per core, one set runs LRU the other runs BIP, any inserts from other cores uses the currently best algorithm for that core.
-A miss in the LRU set for a core will increment that cores counter, a miss the BIP set will decrement the counter.
+Like in the other policies, a miss in the LRU set for a core will increment that cores counter while a miss the BIP set will decrement the counter.
+For the remainder of this thesis when we refer to TADIP we assume TADIP-F unless otherwise stated.
 
-\todo{Create an illustration of a cache set managed by DIP, TADIP-I and TADIP-F, as they have in the original TDAIP paper. It could be made a lot smaller than in the original paper, while still being easily understandable.}
-
-Figure~\todo{}~\ref{} shows an illustration of a cache managed by DIP, TADIP-I, and TADIP-F. 
-As is shown the duel-sets effect a set of counters, these counters give the optimal policy, P, per core. 
-The remaining sets use the set of current optimal replacement policies.
-From this point on when we refer to TADIP in this report we assume TADIP-F unless otherwise stated.
-
-When detailing their implementation, the authors of TADIP show a simple hash function used to select dueling sets.
+When implementing TADIP some mechanism is required to select which sets are duel sets, and which are follower sets.
+The authors of TADIP provides a simple hash function which can be used to select dueling sets.
 On their 4096 set cache, they use the formulas shown below.
 Here set index is a number from 0-4095, core\_id is the zero-indexed id of the requester core and cores is the total number of cores sharing the cache.
 If BIP or LIP is true, then the set is a duel set for the given core, and the policy forced to either BIP or LIP.
 If both BIP and LIP is false, then the set is a normal follower set and utilizes the current best algorithm for the given core.
-From the algorithm, it is clear that the original paper use a total of 32 groups of duel sets spread evenly throughout the cache.
+From the algorithm, it is clear that the original authors use a total of 32 groups of duel sets spread evenly throughout the cache.
 \begin{figure*}[ht]
 \begin{equation}
 LIP = set\_no[11:7] + core\_id == set\_no[6:0]
