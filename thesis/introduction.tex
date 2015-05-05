@@ -37,22 +37,45 @@ Any memory request issued by a processing core is filtered through one or multip
 If any of the caches has the value of the requested memory address, the value is returned, and the memory request never reaches the main memory.
 This mechanism to an extent can hide the processor-memory gap, given a high hit rate in cache memories.
 
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/introduction/dircache_read}
+        \caption{Direct mapped cache, showing the mechanics of a read operation. Each set contains only one block.}
+        \label{fig:introduction:cache:dir}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/introduction/2waycache_read}
+        \caption{2-way associative cache, showing the mechanics of a read operation. A selector, not shown here, is used to select between line0 and line1 to produce the data output. Each set contains two block, and additional hardware is required to select the correct block to output.}
+        \label{fig:introduction:cache:2way}
+    \end{subfigure}
+    \caption{The figures above show how a 16-bit address is divided into parts and used to look up data in a direct and 2-way cache. We assume 64B lines with byte addressing, hence 6 bits are used to offset into the block. Both caches use 7 bit tags.}
+    \label{fig:introduction:cache}
+\end{figure}
+
 Traditionally there are three main ways of organizing cache memory; direct, set-associative and fully associative.
-Caches used in commercial CMPs~\cite{Thomadakis2011, Jain2013} today are set associative memory structures.
-A cache is organized a 2d array, where each row is called a set, and each set consist of one or more blocks.
-A block, or a cache line, stores data from main memory.
+Caches used in commercial CMPs today are set associative memory structures~\cite{Thomadakis2011, Jain2013}.
+A cache is organized a 2d array, where each row is called a set, and each set consist of one or more blocks, sometimes known as cache lines.
+A block is the minimum unit of data a cache stores, this is typically 64B.
 The cache divides all memory addresses into three portions, the set address, block tag and block offset.
-The set address is used to determine which set is responsible for caching this address.
+The set address is used to determine which set is responsible for caching a value.
 Within a set, all blocks are valid cache locations.
-Each block in use stores the block tag of the data it has stored, so a lookup will scan for a block with a block tag matching the block tag from the address.
+Each block in use stores the block tag of the data it contains, and during a lookup all valid blocks will be scanned looking for  the block tag from the address.
 For a direct mapped cache, each set contains only one block, making the block scan cheap.
 Fully associative caches contain only a single set, hence making any block a valid cache location for any address, the block scan is expensive in this case.
 Set associative caches, also known as n-way caches, is a middle ground organization that stores n blocks per set.
-Figure~\todo{create} shows the three cache organizations and how each divides an incoming memory address during a lookup.
+Figure~\ref{fig:introduction:cache} shows both a direct and a 2-way cache under a read opertaion.
+A fully associative cache is not shown, but its organization should be deducable from the 2-way cache organization.
+Increasing the number of ways can improve performance, and as we shall show later in this thesis improves performance of cache partitioning algorithms.
+However, from this architectural overview it is apparent that the critical path and complexity of a cache increases as the number of ways increases.
+As a result, first level caches are often limited to 2- or 4-ways~\cite{Sachez2010}, and even third level caches are often limited at 16- or 32-ways.
+There exists alternative cache orgianization, such as zcache~\cite{Sanchez2010}, that allows for higher assosiativity at lower cost, but these are not considered in this thesis.
+
 When a request for an address cannot be satisfied by a cache, the cache will send the request to the next level in the memory hierarchy.
-Once the cache receives a response from the lower level, the data is stored to provide faster access time if the block is later referenced.
+Once the cache receives a response from the lower level, the data is generally stored to provide faster access time if the block is later referenced.
 For a set-associative or fully associative cache, there are multiple valid storage positions.
-An algorithm, known as a cache partitioning algorithm, defines how the new block is stored in the cache.
+It is the job of a cache partitioning algorithm to define which block is used to store the new data.
+If the block selected is already in use, the existing data is removed from the cache.
 Whenever we reference a cache in the remainder of the thesis, a set associative cache is implied unless otherwise specified.
 
 In the memory hierarchy, smaller means faster. 
@@ -61,10 +84,10 @@ The same is valid for caches, a smaller cache has a lower response time compared
 Figure~\ref{fig:cmp_model} shows an example 16-core CMP architecture with three cache levels and main memory.
 For each cache level, the size increased and response time decreases.
 The first level caches are the smallest while the third level caches are largest.
-In order to save area on CMP chips, and also to provide an easy mechanism for data sharing between cores, it is common to have one level of shared cache.
+In order to save area on CMP chips, and also to provide an easy mechanism for data sharing between cores, it is common to have atleast one level of shared cache.
 In figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, but the final L3 cache is shared among all cores.
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
-It is the cache partitioning algorithms job to manage access to shared caches, and to a varying extent reduce interference.
+The cache partitioning algorithm, running on the shared cache, may either ignore the effects of interference, or it may attempt to reduce it by prioritization.
 
 
 \section{Requirements and Contributions}
