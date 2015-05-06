@@ -1,17 +1,54 @@
 \chapter{Implementation}
 \label{cpt:implementation}
 
-\todo{Quick introduction to the section. Consider whether the other algorithms also need a section, (UCP, TADIP and DRRIP). If not refer the reader to the background section for default parameter values.}
+A total of 5 algorithms presented in chapter~\ref{cpt:algorithms} has been implemented in our simulation system; TADIP, DRRIP, UCP, PIPP, and PriSM.
+This chapter shortly covers any assumption, simplifications, or modifications in our implementations.
+If nothing is stated in this chapter, the implementation matches the theoretical description given earlier.
+
 
 \section{Auxiliary Tag Directory and UMON}
-\todo{Explain the implementation of ATDs}
 
-\todo{Cover that all experiments run with full ATDs (all sets in the cache have a corresponding set in the ATD). This is done to remove the error source caused by sampling only a few sets.}
+We have implemented a generic ATD as described in section~\ref{sec:algorithms:umon}.
+The ATD supports both configurable dynamic sampling and full sampling.
+While previous work has shown that the estimation error when using dynamic sampling with a sufficient number of sets~\cite{} is negligible, we still opted for full sampling in all our experiments.
+By doing full sampling, we eliminate the error source caused by imperfect data and allow the focus of our experiment to be on the decisions made by the algorithm instead.
+Of the algorithms using the ATD implementation, only PIPP is affected by this decision, this is covered further in the next section.
 
-\todo{As we have inclusive caches we cannot support 0 allocations to a core. Hence, we have modified the UMON circuit to allocate at least one block to each core.}
+Based on the ATD implementation a common UMON implementation was done, based on the description in section~\ref{sec:algorithms:umon}.
+The theoretical UMON implementation allows a core to be assigned zero ways, but because our simulator uses inclusive caches, we need to store at least one block per core.
+To achive this we have modified the first two lines of the UMON allocation algorithm, as shown in~\ref{alg:algorithms:ucp}.
+Algorithm~\ref{alg:implementation:umon} shows the modification that ensures that each core is assigned at least one way.
+Several of the previous works also did this modification to support inclusive caches~\cite{Qureshi2006,Xie2009}
+
+\begin{algorithm}[ht]
+\caption{Snip: Modified UMON Lookahead Algorithm}
+\label{alg:implementation:ucp}
+\begin{algorithmic}[1]
+\State $balance\gets N - cores $ /* Number of ways minus number of cores */
+\State $allocations[i]\gets 1$  /* for each core $i$ */
+\end{algorithmic}
+\end{algorithm}
 
 \section{PIPP}
-\todo{Because we use full sampling we also removed one of the two stream detection conditions in PIPP, number of misses in an interval. Hence, we only use miss fraction when determining of a core is streaming. Throughout testing, we have observed that the miss-fraction given in the original PIPP paper flagged benchmarks as streaming most of the time, and this made it underperform. We have therefore doubled this value in our experiments. There is no data supporting this decision in the theses right now; it could be included, but it might not be needed(?).}
+
+In the original PIPP paper~\cite{Xie2009}, there are two conditions that cause an application to be marked as streaming; miss rate and miss count.
+The original paper uses dynamic sampling in the ATDs while we use full sampling.
+Because the miss count condition scaled badly with full sampling, it was removed in our experiments.
+Additionally, the original paper used a miss limit of 0.125 as the classification limit.
+However, using our workloads we observed that most benchmarks were always marked as streaming, and this caused poor performance.
+As a result, we increased the value to the next power of two, 0.25.
+This change resulted in most benchmarks switching between streaming and not streaming as expected.
 
 \section{PriSM}
-\todo{Cover how we have implemented victim selection. Either there is a problem with the original paper or we have read it wrong. We at least find that the eviction probabilities that the original paper states should sum to one does not in many cases. We had to work around this.}
+
+The original PriSM paper states that the eviction probabilities, $E_i$, for all cores should sum to 1~\cite{Manikantan2012}.
+However, we discover that this is not the case, at least for the miss minimization algorithm.
+Simply normalizing the eviction probabilities is not a viable solution, as one or more cores may have an eviction probability of 1, indicating that they are always the eviction target, while other cores have $E > 0$.
+If we normalize, the core(s) with $E=1$ are not guaranteed to be selected as the eviction target breaking this assumption.
+As a result, we use a compound victim selection algorithm;
+\begin{enumerate}
+\item If one or more cores have an eviction probability of 1 we choose a victim at random between these cores.
+\item If no core has an eviction probability of one or the selected core has no blocks in the set; we select one of the cores with $0 < E < 1$.
+\item If neither of the two selected cores has blocks in the set the algorithm selects a random block owned by a with $E > 0$ as in the original implementation does.
+\end{enumerate}
+This modification allows us to prioritize cores with $E = 1$, which is not doable by normalizing.

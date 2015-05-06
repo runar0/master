@@ -1,7 +1,7 @@
 \section{UCP}
 \label{sec:background:algorithms:ucp}
 
-Utility Cache Partition\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y.Patt in 2006. 
+Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y.Patt in 2006. 
 UCP uses the concept of utility when assigning ways to a core.
 Using a utility monitor (UMON), UCP calculates the number of ways assigned to each core.
 UCP then uses the same insertion and promotion policy as LRU.
@@ -19,7 +19,7 @@ In addition to the ATDs, there is a monitor circuit that has access to the count
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
-Algorithm~\ref{alg:background:algorithms:ucp} is the Lookahead Algorithm they propose.
+Algorithm~\ref{alg:algorithms:ucp} is the Lookahead Algorithm they propose.
 This algorithm is the one the original authors propose for situations with more than two cores sharing a cache.
 The algorithm assigns cache ways based on an increase in marginal utility.
 While there are more ways to distribute, the algorithm calculates the maximum marginal utility achievable by each core. 
@@ -37,7 +37,7 @@ It is unclear from their paper why the original authors did this, but in our cas
 
 \begin{algorithm}[ht]
 \caption{UMON Lookahead Algorithm}
-\label{alg:background:algorithms:ucp}
+\label{alg:algorithms:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N$ /* Number of ways */
 \State $allocations[i]\gets 0$  /* for each core $i$ */
