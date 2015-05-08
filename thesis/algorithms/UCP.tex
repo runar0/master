@@ -32,8 +32,6 @@ To find the marginal utility, this value is then divided by the number of sets i
 The rest of the algorithm is simply a greedy algorithm selecting the best core each iteration.
 After a reallocation of cache ways, the ATD counters are all halved.
 By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
-While this algorithm could choose to assign 0 ways to one or more cores both the authors' implementation~\cite{Qureshi2006} and our implementation forces at least one way per core.
-It is unclear from their paper why the original authors did this, but in our case it is done because our simulator implements inclusive caches.
 
 \begin{algorithm}[ht]
 \caption{UMON Lookahead Algorithm}

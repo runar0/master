@@ -43,23 +43,23 @@ The reason being that with increasing cache size the access latency also increas
 This in turn can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions.
 
 For our second cache layer, we have selected four different size configurations.
-We will use these configurations to evalute how cache partitioning algorithms running on the third cache level responds to changes in size of private caches.
+We will use these configurations to evaluate how cache partitioning algorithms running on the third cache level responds to changes in the size of private caches.
 Our third level cache has three configurations.
-During our experiment we will choose a configuration based on the number of cores used.
-For 4-, 8- and 16-core simulations we will respectivly use a 4M, 8M and 16M L3 configuration.
+During our experiment, we will choose a configuration based on the number of cores used.
+For 4-, 8- and 16-core simulations we will respectively use a 4M, 8M, and 16M L3 configuration.
 
-Snipers memory model very limited compared to models in cycle-accurate simulators, such as gem5.
-In our processor model each memory request completes in a constant 100ns, there is no simulation of row and colum access delays.
-Because inter-core interractions may be out-of-order the memory bus model is a statistical model that attempts to estimate queuing delays based on a history window.
+Snipers memory model is very limited compared to models in cycle-accurate simulators, such as gem5.
+In our processor model each memory request completes in a constant 100ns, there is no simulation of row and column access delays.
+Because inter-core interactions may be out-of-order, the memory bus model is a statistical model that attempts to estimate queuing delays based on a history window.
 Both of these limitations introduces an error source in our simulations, but previous work~\cite{Carlson2011a, Olsen2014} has shown that results are still comparable to cycle-accurate simulations.
-In order to reduce clock skewing caused by having multiple simulation threads we utilize a 100 cycle barrier synchronization.
-This implies that all simulated cores synchronize every 100 cycles.
-An experiment will be conducted to explore the effect on our results when the width of this barrier is changed.
+In order to reduce clock skewing caused by having multiple simulation threads, we utilize a 100 cycle barrier synchronization.
+Barrier synchronization implies that all simulated cores must wait every 100 cycles for all other cores to catch up.
+An experiment will be conducted to explore how big the effect on our results are when we change the synchronization period.
 
-In the following sections, we describe how CACTI~\todo{ref} was used to estimate the access latency for each of our caches. 
+In the following sections, we describe how CACTI~\cite{Shivakumar2001} was used to estimate the access latency for each of our caches. 
 When using CACTI we model each cache with parallel access to the tag directory and data.
 We also opted for high-performance storage cells over the power saving ones that CACTI also supports.
-Finally, we specify an optimization goal with a preference to lower access latencies.
+Finally, we specify an optimization goal with a preference for lower access latencies.
 To get a model that is as accurate as possible we have estimated the access latency for each configuration in both the L2 and the L3 caches.
 As a result, we will correctly observe increasing access latencies with increasing cache sizes.
 
@@ -128,24 +128,24 @@ As expected we observe an access latency increase when the cache size increases.
 \centering
 \begin{tabular}{rrrrr}
 \toprule
-\bf{Size}                 & 4MB         & 8MB         & 16MB        & 32MB              \\
-\bf{Block size}           & 64B         & 64B         & 64B         & 64B               \\
-\bf{Associativity}        & 32          & 32          & 32          & 32                \\
-\bf{Banks}                & 4           & 4           & 4           & 8                 \\
-\bf{Technology}           & 32nm        & 32nm        & 32nm        & 32nm              \\
-\bf{Access time (Tag)}    & 0.52ns      & 0.71ns      & 0.88ns      & 0.85ns            \\
-\bf{Access time (Data)}   & 1.81ns      & 2.11ns      & 2.69ns      & 3.30ns            \\
-\bf{Access cycles (Tag)}  & 2           & 3           & 3           & 3                 \\
-\bf{Access cycles (Data)} & 6           & 7           & 9           & 10                \\
+\bf{Size}                 & 4MB         & 8MB         & 16MB       \\
+\bf{Block size}           & 64B         & 64B         & 64B         \\
+\bf{Associativity}        & 32          & 32          & 32             \\
+\bf{Banks}                & 4           & 4           & 4           \\
+\bf{Technology}           & 32nm        & 32nm        & 32nm    \\
+\bf{Access time (Tag)}    & 0.52ns      & 0.71ns      & 0.88ns   \\
+\bf{Access time (Data)}   & 1.81ns      & 2.11ns      & 2.69ns     \\
+\bf{Access cycles (Tag)}  & 2           & 3           & 3             \\
+\bf{Access cycles (Data)} & 6           & 7           & 9      \\
 \bottomrule
 \end{tabular}
 \caption{L3 cache properties}
 \label{tbl:processor_model:l3}
 \end{table}
 
-Like the previous level we have four different size configurations for the L3 cache; 4MB, 8MB, 16MB, and 32MB.
+Like the previous level we have three different size configurations for the L3 cache; 4MB, 8MB, and 16MB.
 Unlike the previous two cache levels, that all use a standard LRU replacement policy, we will vary the replacement policy of the third level.
-The algorithms we are experimenting with in this work all resemble some form of way-partitioning by assigning a number of ways (or cache lines) per cache set to each core.
+Many of the algorithms we are experimenting with in this work resemble some form of way-partitioning by assigning a number of ways (or cache lines) per cache set to each core.
 For this reason, the third level cache has 32 cache lines per cache set, in contrast to the 16 cache lines per set in the original Nehalem architecture.
 Giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
 The line size is set to be 64-bytes as in the previous level.
