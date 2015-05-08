@@ -6,22 +6,22 @@ We will also introduce the role of a cache partitioning algorithm.
 Then, we will analyze our problem description and introduce a set of requirements the thesis has to fulfill.
 Finally, an overall outline of the report is given, including an overview of which chapter fulfills the various requirements.
 
-\section{Chip Multiprocessor}
+\section{Chip Multiprocessors}
 
-Moore's Law~\cite{Moore1998}, an observation made by G. E. Moore one of the co-founders of Intel, has been the driving force behind processor development since its beginning.
+Moore's Law~\cite{Moore1998}, an observation made by G. E. Moore one of the co-founders of Intel, has been the driving force behind processor development in the last decades.
 The law is simply an observation; that scaling of transistors used to make integrated circuits will allow for approximately twice the number of transistors per die every 18 month.
-Up until the mid-2000s, manufacturers used these additional transistors to increase single-core performance.
-To improve performance manufacturers increased the clock frequency, and they used the increasing number of transistors to make increasingly complex processor cores.
+Up until the mid-2000s, manufacturers used these smaller transistors to increase single-core performance.
+Smaller transistors allowed for increased frequency, and more transistors per die allowed for increasingly complex processor cores.
 Features such as speculative and out-of-order execution were added to take advantage of instruction-level parallelism (ILP) present in computer programs.
-By the mid-2000s, processor cores had become so complex and were running at a frequency so high that manufacturers had reached what is known as the power wall.
+By the mid-2000s, processor cores had become so complex and were running at such high frequencies that manufacturers had reached the limitation known as the power wall.
 The power wall entails that manufacturers were unable to continue increasing the frequency and the transistor count of each core, without also attaching high-performance cooling systems to counter the increase power usage and hence increase heat generation.
-Systems like water or even nitrogen cooling were needed to continue the performance increase~\cite{Sutter2005}; these systems are not suitable for personal computers.
+Systems like water or even nitrogen cooling were needed to continue the performance increase~\cite{Sutter2005}; these systems are not practical for personal computers.
 
 By 2005, most manufacturers had abandoned their plans for increased single core performance, and where all working towards chip multiprocessors (CMPs)~\cite{Sutter2005}.
 CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
 This simplification of cores allowed manufacturers to fit multiple cores on a single die, without reaching the same power consumption as single core processors were reaching.
 With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
-Today CMPs are the de-facto standard, being use in everything from embedded computers\todo{cite some arm, avr, etc. spec} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
+Today CMPs are the de-facto standard, being use in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
 
 \section{CMP Memory System}
@@ -46,20 +46,20 @@ This mechanism to an extent can hide the processor-memory gap, given a high hit 
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/introduction/dircache_read}
-        \caption{Direct mapped cache, showing the mechanics of a read operation. Each set contains only one block. The three most significant bits used for set addressing.}
+        \caption{Direct mapped cache. Each set contains only one block. The three most significant bits used for set addressing.}
         \label{fig:introduction:cache:dir}
     \end{subfigure}%
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/introduction/2waycache_read}
-        \caption{2-way associative cache, showing the mechanics of a read operation. A selector, not shown here, is used to select between line0 and line1 to produce the data output. Each set contain two blocks, and additional hardware, compared to the direct case, is required to select the correct block to output. Two bits used to set addressing, the most significant bit ignored.}
+        \caption{2-way associative cache. A selector, not shown here, is used to select between line0 and line1 to produce the data output. Each set contain two blocks, and compared to the direct case, additional hardware is required to select the correct output. Two bits used to set addressing, the most significant bit ignored.}
         \label{fig:introduction:cache:2way}
     \end{subfigure}
-    \caption{Simplified architecture of a direct and 2-way cache under a read operation. With 64B line, 7-bit tags, and byte addressing.}
+    \caption{Simplified architecture of a direct and 2-way cache under a read operation. With 64B lines, 7-bit tags, and byte addressing.}
     \label{fig:introduction:cache}
 \end{figure}
 
 Traditionally there are three main ways of organizing cache memory; direct, set-associative and fully associative.
-Caches used in commercial CMPs today are set associative memory structures~\cite{Thomadakis2011, Jain2013}.
+Caches used in commercial CMPs today are set associative memory structures~\cite{Thomadakis2011, Jain2013, ARM2010, Ho2014}.
 A cache is organized a 2d array, where each row is called a set, and each set consist of one or more blocks, sometimes known as cache lines.
 A block is the minimum unit of data a cache stores, this is typically 64B.
 The cache divides all memory addresses into three portions, the set address, block tag and block offset.
@@ -68,21 +68,23 @@ Within a set, all blocks are valid cache locations.
 Each block that contains valid data also stores the block tag of the data it contains.
 During a cache lookup, all valid blocks will be scanned looking for one containing the block tag from the address.
 In a direct mapped cache, each set contains only one block, making the block scan cheap.
-Fully associative caches have all blocks in a single set, hence making any block a valid cache location for any address, the block scan is expensive in this case.
+Fully associative caches have all blocks in a single set, and the block scan is expensive in this case.
 Set associative caches, also known as n-way caches, is a middle ground organization that stores n blocks per set.
 Figure~\ref{fig:introduction:cache} shows both a direct and a 2-way cache under a read operation.
-A fully associative cache organization is not included in the figure, but its organization should be deductible from the 2-way cache organization.
-Increasing the number of ways can improve performance, and as we shall show later in this thesis can improve performance of cache partitioning algorithms.
-However, from this architectural overview it is apparent that the critical path and complexity of a cache increases as the number of ways increases.
-As a result, first level caches are often limited to 2- or 4-ways~\cite{Sachez2010}, and even third level caches rarely exceeds 16- or 32-ways.
+The figure does not show a fully associative cache organization, but its organization is deductible from the 2-way cache organization.
+In this thesis, we will show that increasing the number of ways can improve performance of a cache and the cache partitioning algorithms.
+However, from this architectural overview it is apparent that the critical path and complexity of a cache also increases as the number of ways increases.
+As a result, first level caches are often limited to 2- or 4-ways~\cite{Sachez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
+Even third level caches rarely exceed 16- or 32-ways.
 There exists alternative cache organizations, such as zcache~\cite{Sanchez2010}, which allows for higher associativity at a lower cost.
 These techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
 
-When a request for an address cannot be satisfied by a cache, the cache will send the request to the next level in the memory hierarchy.
-Once the cache receives a response from the lower level, the data is normally stored to provide faster access time in case of a re-reference later.
-For a set-associative or fully associative cache, there are multiple valid storage positions for data block.
+When data not present in the cache is requested by a processing core, a request is sent the cache to the next cache level, or possibly the main memory.
+Once the cache receives a response, it normally stores the data to provide faster access times in case of a re-reference.
+Caches also normally store data that is written by a processing core, speeding up the write operation.
+For a set-associative or fully associative cache, there are multiple valid storage positions for a data block.
 It is the job of a cache partitioning algorithm to define which block is used to store the new data.
-If the block selected is already in use, the existing data is removed from the cache.
+If the block selected is already in use, the cache removes, or evicts, the existing data.
 
 In the memory hierarchy, smaller means faster. 
 For instance, main memory is much faster than disks, but disks can store much more data.
@@ -91,13 +93,13 @@ Figure~\ref{fig:cmp_model} shows an example 16-core CMP architecture with three 
 For each cache level, the size increased and response time decreases.
 The first level caches are the smallest while the third level caches are largest.
 In order to save area on CMP chips, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
-In figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, but the final L3 cache is shared among all cores.
+In figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared last-level cache (LLC), the L3 cache.
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
-The cache partitioning algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by prioritization.
+The cache partitioning algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by some form of prioritization.
 
 
 \section{Requirements and Contributions}
-By analyzing the problem description, we have been able to extract a set of requirements that this thesis has to achieve:
+By analyzing the problem description, we have been able to extract a set of requirements that this thesis has to fulfill:
 
 \begin{description}
     \item[R1] Introduce CMPs, their memory system, and the role of a cache partitioning algorithm.
@@ -112,10 +114,10 @@ Each algorithm will be presented in detail at a theoretical level, with comparis
 
 To fulfill the third and fourth requirement, we will implement a simulation framework and within that framework implement several of the algorithms selected.
 We present a series of experiments executed on this implementation.
-The resulting data will be used to compare the various algorithms against each other, providing depth to the previously theoretical comparison.
-In addition evaluations of the implemented simulation framework will also be performed.
-These evaluations will explore the validity of our results.
-The implemented simulation framework will at the end of this thesis be made available to NTNU and the CARD~\ref{CARD2015} research group for future research.
+The resulting data will be used to compare the various algorithms against each other, providing depth to the theoretical comparison.
+In addition, an evaluation of the implemented simulation framework will be performed.
+This evaluation will explore the validity of our results.
+The implemented simulation framework will at the end of this thesis be made available to NTNU and the CARD~\cite{CARD2015} research group for future research.
 
 \section{Outline}
 
@@ -127,8 +129,9 @@ Chapter~\ref{cpt:implementation} presents the subset of algorithms that we imple
 Any assumptions or changes we have made compared to the theoretical description of the algorithm in chapter~\ref{cpt:algorithms} are presented here.
 
 Chapter~\ref{cpt:methodology} contains a description of our simulation framework and explains all metrics we later use to evaluate our experiments, this fulfills requirement~\textbf{R3}.
-Next, chapter~\ref{cpt:results} presents all experiments performed during the work with this thesis and evaluates their results. 
-This includes a performance comparison of all implemented cache partitioning algorithms, fulfilling requirement \textbf{R4}.
+
+Chapter~\ref{cpt:results} presents all experiments performed during the work with this thesis and evaluates their results. 
+This evaluation includes a performance comparison of all implemented cache partitioning algorithms, fulfilling requirement \textbf{R4}.
 
 Chapters~\ref{cpt:discussion} and~\{cpt:conclusion} contains a discussion of our results and a conclusion based on these. 
 In addition, an overview of future work is given.

@@ -7,7 +7,7 @@
     \centering
     \includegraphics[width=\textwidth]{figures/algorithms/LRU}
     \caption{LRU managed 4-way cache set}
-    \label{fig:background:lru_example}
+    \label{fig:algorithms:lru_example}
 \end{figure}
 
 Least recently used (LRU) replacement, or some simplification of LRU, is one of the dominant cache management algorithms in hardware today. 
@@ -20,7 +20,7 @@ In a hardware implementation, the blocks are not stored in a sorted fashion, but
 The replacement policy of LRU is to evict the least recently used cache block, the one on the bottom of the LRU stack.
 The insertion and promotion policy of LRU is the same; a inserted or accessed block is always moved to the MRU position unless it is already there.
 
-Figure~\ref{fig:background:lru_example} shows how a 4-way cache set managed by LRU replacement handles three requests. 
+Figure~\ref{fig:algorithms:lru_example} shows how a 4-way cache set managed by LRU replacement handles three requests. 
 Initially, the set contains four blocks; A, B, C and D. 
 A is in the MRU position while D is in the LRU position.
 The first request is for block C; this is a hit, and that causes the block to move to the MRU position, pushing both block A and B one step closer to the LRU position.
@@ -34,3 +34,4 @@ In some cases, this might be an acceptable solution.
 However, as we will discover, several thread-aware replacement algorithms claiming to outperform LRU exists. 
 
 
+\todo{Section covering the stack property of LRU, as many of the following algorithms depend on this property in some way.}

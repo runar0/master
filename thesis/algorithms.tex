@@ -25,15 +25,15 @@ This metric is easy to measure and also makes it easy to compare the various alg
 We also focus on algorithms that target conventional caches as they are designed in CMPs today.
 This limitation makes the comparison of results from different algorithms easier.
 Also, we avoid having to extend our simulator with a new cache type, which would unfeasible given the time constraints of this thesis.
-An overview of all selected algorithms is shown in table~\ref{tbl:algorithms}.
+Table~\ref{tbl:algorithms} is an overview of all selected algorithms presented in this thesis.
 
 It is possible to divide all algorithms includes in this evaluation into three distinct policies.
 \begin{itemize}
 \item The replacement policy specifies which block a cache set evicts when inserting a new block into that set.
-\item The insertion policy specifies the state of new blocks after insertion into  the cache set.
+\item The insertion policy specifies the state of new blocks after insertion into the cache set.
 \item The promotion policy specifies how the state of a block changes following an access from a processor core.
 \end{itemize}
-In the following sections, we will explain how each of the selected cache pratitining algorithms work, with an emphasis on this division to make comparisons easier.
+In the following sections, we will explain how each of the selected cache partitioning algorithms work, with an emphasis on this division to make comparisons easier.
 
 \input{algorithms/common_patterns.tex}
 \input{algorithms/LRU.tex}

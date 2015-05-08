@@ -1,7 +1,7 @@
 \section{UCP}
-\label{sec:background:algorithms:ucp}
+\label{sec:algorithms:ucp}
 
-Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y.Patt in 2006. 
+Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y. Patt in 2006. 
 UCP uses the concept of utility when assigning ways to a core.
 Using a utility monitor (UMON), UCP calculates the number of ways assigned to each core.
 UCP then uses the same insertion and promotion policy as LRU.
@@ -30,8 +30,8 @@ First the number of misses prevented by increasing the allocation from a to be i
 With the counters available the algorithm can simply sum the values of counters a to $b-1$, as the number of hits in the new sets must equal the number of misses prevented.
 To find the marginal utility, this value is then divided by the number of sets introduced.
 The rest of the algorithm is simply a greedy algorithm selecting the best core each iteration.
-After a realloaction of cache ways the ATD counters are all halved.
-By doing this the UMON will keep historical data for future descissions, while keeping the weight on the current period.
+After a reallocation of cache ways, the ATD counters are all halved.
+By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
 While this algorithm could choose to assign 0 ways to one or more cores both the authors' implementation~\cite{Qureshi2006} and our implementation forces at least one way per core.
 It is unclear from their paper why the original authors did this, but in our case it is done because our simulator implements inclusive caches.
 
@@ -72,5 +72,3 @@ It is unclear from their paper why the original authors did this, but in our cas
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
-
-\todo{Consider adding a simple example showing insertion and replacement in a UCP managed cache set}

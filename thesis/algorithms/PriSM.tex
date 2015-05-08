@@ -1,22 +1,22 @@
 \section{PriSM}
-\label{sec:background:algorithms:prism}
+\label{sec:algorithms:prism}
 
 Probabilistic Shared Cache Management (PriSM) was first presented by R. Manikantan~et~al.~\cite{Manikantan2012} in 2012.
 PriSM is a framework for cache management with optimization algorithms targetting multiple performance goals.
-The original paper presents hit maximization, fairness and quality of service optimization goals.
+The original paper presents hit maximization, fairness and QoS goals.
 In our thesis, as we focus solely on algorithms targetting miss minimization, we will only focus on the hit maximization performance goal.
-PriSM utilizes shadow tag directories to estimate private cache performance for each of the cores.
-The shadow tag directory will keep track of total misses and hits.
-It will not track hits per cache way like the shadow tags in UCP and PIPP.
-In addition to the shadow tags, the algorithm requires three counters per core tracking hits, misses and number of blocks owned in the actual cache.
-PriSM utilizes the same insertion and promotion policies as LRU, but the replacement policy is optimized based on the shadow tag data and the optimization target.
+PriSM utilizes ATDs to estimate private cache performance for each of the cores.
+The ATD will keep track of total misses and hits.
+It will not track hits per cache way like the ATDs in UCP and PIPP.
+In addition to the ATDs, the algorithm requires three counters per core tracking hits, misses and number of blocks owned in the actual cache.
+PriSM utilizes the same insertion and promotion policies as LRU, but the replacement policy is optimized based on the ATD and the optimization target.
 
 The replacement algorithm of PriSM utilizes eviction probabilities, $E_i$ ($\sum{E_i} = 1$), assigned to each core when selecting a victim block.
 On replacement, a victim core is first selected by a random draw using the eviction probabilities.
 The LRU block owned by the victim core within the cache set is the eviction target.
-In the case where the selected target does not own a block in the set the LRU block of all cores with $E_i > 0$ is the eviction target.
+In the case where the selected target does not own a block in the set, the LRU block of all cores with $E_i > 0$ is the eviction target.
 At set intervals, an optimization algorithm determines the eviction probability, $E_i$, for each core.
-In the original paper, they recalculated $E_i$ values at every 10000 cache miss.
+The original paper recalculated $E_i$ values at every 10000 cache miss.
 
 The insertion and promotion policy of PriSM is equal to LRU.
 On insertion, a block is promoted to the MRU position, and on any subsequent accesses the block is again promoted to MRU unless it already has that position.
@@ -29,20 +29,20 @@ Here $M_i * W$ is the number of blocks inserted during the interval, and N is th
 If the core has a non-zero eviction probability, then this formula extends into $T_i = C_i + (M_i - E_i) * W/N$.
 As noted PriSM defines three optimization targets, each of these is responsible for calculating the optimal $T_i$ that will fulfill the target.
 Rearranging the above formula for $E_i$ yields: $E_i = (C_i - T_i) * N/W + M_i$.
-The values of $T_i$ is calculated by Algorithm~\ref{alg:background:algorithms:prism}; it is a relatively simple algorithm that will adjust the target occupancy based on current occupancy and the potential for gaining more hits.
+The values of $T_i$ is calculated by Algorithm~\ref{alg:algorithms:prism}; it is a relatively simple algorithm that will adjust the target occupancy based on current occupancy and the potential for gaining more hits.
 
 \begin{algorithm}[ht]
 \caption{PriSM Hit Maximization}
-\label{alg:background:algorithms:prism}
+\label{alg:algorithms:prism}
 \begin{algorithmic}[1]
 \State $N$ /* Number of cores */
 \ForAll{$cores\ i$}
-	\State $PotentialGain[i]\gets StandAloneHits[i] - SharedHits[i]$
+    \State $PotentialGain[i]\gets StandAloneHits[i] - SharedHits[i]$
 \EndFor
 \State $TotalGain\gets \sum{PotentialGain}$
 
 \ForAll{$cores\ i$}
-	\State $T_i\gets C_i * (1 + \frac{PotentialGain[i]}{TotalGain})$
+    \State $T_i\gets C_i * (1 + \frac{PotentialGain[i]}{TotalGain})$
 \EndFor
 \State $T_i = \frac{T_i}{\sum{T}}$ /* Normalize target occupancy */
 \end{algorithmic}
@@ -50,5 +50,4 @@ The values of $T_i$ is calculated by Algorithm~\ref{alg:background:algorithms:pr
 
 While we have presented PriSM based on LRU replacement, as done in the original paper, it should be noted that PriSM is not dependent on this underlying replacement algorithm.
 Any algorithm is usable, as long as it is augmented to prioritize the selected victim during replacement.
-The algorithm run on the shadow tags has to be the same as the underlying algorithm in the PriSM implementation.
-
+The algorithm run on the ATDs has to be the same as the underlying algorithm in the PriSM implementation.
