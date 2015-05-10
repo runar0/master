@@ -11,7 +11,7 @@ Assuming LRU or another recency-assumption based algorithm, the cache will provi
 
 \begin{figure}[ht]
 \centering
-\begin{equation} \label{fig::algorithms:rf_pattern}
+\begin{equation} \label{fig:algorithms:rf_pattern}
 p_{rf} = (a_0 a_1 ... a_{k-1})^N
 \end{equation}
 \caption{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
@@ -19,7 +19,7 @@ p_{rf} = (a_0 a_1 ... a_{k-1})^N
 
 \subsection{Trashing}
 A trashing memory pattern is one that repeats in a similar manner to a recency-friendly pattern, but with more blocks per cycle than the number of cache ways. 
-Figure~\ref{fig:background:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of k.
+Figure~\ref{fig:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of k.
 Under LRU or another recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
 An optimal replacement algorithm might keep some of the working set in the cache, providing hits for parts of the access pattern.
 \begin{figure}[ht]

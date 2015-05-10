@@ -56,7 +56,6 @@ As a result, the core will be able to exploit more ILP, and a slight performance
 Unlike the MSHRs, we do not expect the value of os and ol to effect performance. 
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
 Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
-\todo{Could we find a reference stating that this is a bit high?}
 In addition, both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
 The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 

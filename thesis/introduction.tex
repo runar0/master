@@ -74,7 +74,7 @@ Figure~\ref{fig:introduction:cache} shows both a direct and a 2-way cache under 
 The figure does not show a fully associative cache organization, but its organization is deductible from the 2-way cache organization.
 In this thesis, we will show that increasing the number of ways can improve performance of a cache and the cache partitioning algorithms.
 However, from this architectural overview it is apparent that the critical path and complexity of a cache also increases as the number of ways increases.
-As a result, first level caches are often limited to 2- or 4-ways~\cite{Sachez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
+As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
 There exists alternative cache organizations, such as zcache~\cite{Sanchez2010}, which allows for higher associativity at a lower cost.
 These techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.

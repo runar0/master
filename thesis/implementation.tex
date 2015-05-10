@@ -11,25 +11,25 @@ We use the same algorithm as in TADIP to select duel sets, because the authors o
 
 \section{Auxiliary Tag Directory and UMON}
 
-We have implemented a generic ATD as described in section~\ref{sec:algorithms:umon}.
+We have implemented a generic ATD as described in section~\ref{sec:algorithms:ucp}.
 The ATD supports both configurable dynamic sampling and full sampling.
 While previous work has shown that the estimation error when using dynamic sampling with a sufficient number of sets~\cite{} is negligible, we still opted for full sampling in all our experiments.
 By doing full sampling, we eliminate the error source caused by imperfect data and allow the focus of our experiment to be on the decisions made by the algorithm instead.
 Of the algorithms using the ATD implementation, only PIPP is affected by this decision, this is covered further in the next section.
 
-Based on the ATD implementation a common UMON implementation was done, based on the description in section~\ref{sec:algorithms:umon}.
+Based on the ATD implementation a common UMON implementation was done, based on the description in section~\ref{sec:algorithms:ucp}.
 The theoretical UMON implementation allows a core to be assigned zero ways, but because our simulator uses inclusive caches, we need to store at least one block per core.
 To achive this we have modified the first two lines of the UMON allocation algorithm, as shown in~\ref{alg:algorithms:ucp}.
-Algorithm~\ref{alg:implementation:umon} shows the modification that ensures that each core is assigned at least one way.
+Algorithm~\ref{alg:implementation:ucp} shows the modification that ensures that each core is assigned at least one way.
 Several of the previous works also did this modification to support inclusive caches~\cite{Qureshi2006,Xie2009}
 
 \begin{algorithm}[ht]
-\caption{Snip: Modified UMON Lookahead Algorithm.}
-\label{alg:implementation:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N - cores $ /* Number of ways minus number of cores */
 \State $allocations[i]\gets 1$  /* for each core $i$ */
 \end{algorithmic}
+\caption{Snip: Modified UMON Lookahead Algorithm.}
+\label{alg:implementation:ucp}
 \end{algorithm}
 
 \section{PIPP}
