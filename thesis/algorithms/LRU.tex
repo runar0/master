@@ -32,6 +32,7 @@ One important result of the LRU insertion, promotion, and replacement policies i
 Given a 4-way LRU managed cache with counters that count the number of hits in each way. 
 Then we know that the number of misses in a 3-way LRU managed cache equals the misses in the 4-way cache plus the number of hits in the 4th cache way.
 This effect occurs because any request that hits in the 4th way of the 4-way cache would miss in the 3-way cache, but in both caches the requested block is then moved to the MRU position.
+No blocks can enter the cache set at any other position than the MRU.
 As a result, the state of the three first ways of the caches is always identical given an identical memory request sequence.
 The same argument holds for a 2-way cache, by summing the hits in the third and fourth way of the 4-way cache we get the additional misses in a 2-way cache.
 This property generalizes, we can find the relative miss rate of any LRU managed cache with one to $n$ ways by having a single n-way cache with access counters per way.

@@ -42,6 +42,12 @@ However, using our workloads we observed that most benchmarks were always marked
 As a result, we increased the value to the next power of two, 0.25.
 This change resulted in most benchmarks switching between streaming and not streaming as expected.
 
+In additional to PIPP, we have implemented a variation we named PIPP-min8.
+This variation works exactly like the normal PIPP algorithm, except that the insertion policy always adds eight to every position.
+A block from an application with one block allocated to it will be inserted at position 9 instead of 1.
+This modification is intended to increase the lifetime of blocks inserted by PIPP to increase the hit rate.
+This modification has been mentioned by previous works~\cite{Manikantan2012} as well.
+
 \section{PriSM}
 
 The original PriSM paper states that the eviction probabilities, $E_i$, for all cores should sum to 1~\cite{Manikantan2012}.
