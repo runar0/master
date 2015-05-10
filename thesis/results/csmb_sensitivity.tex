@@ -12,7 +12,7 @@ In other words, within a single barrier there is the possibility that all simula
 For our work, this implies that there is a possibility that memory requests within a barrier arrives in the cache sorted by the core id, and not by time.
 Because of this possibility we expect that changing the CSMB value could have a noticeable effect on our experimentation results.
 
-\begin{figure}
+\begin{figure}[!htb]
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=\textwidth]{figures/results/speedup/csmb-stp-0128k-0100-csmb-4}
