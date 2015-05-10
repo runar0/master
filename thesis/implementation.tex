@@ -24,7 +24,7 @@ Algorithm~\ref{alg:implementation:umon} shows the modification that ensures that
 Several of the previous works also did this modification to support inclusive caches~\cite{Qureshi2006,Xie2009}
 
 \begin{algorithm}[ht]
-\caption{Snip: Modified UMON Lookahead Algorithm}
+\caption{Snip: Modified UMON Lookahead Algorithm.}
 \label{alg:implementation:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N - cores $ /* Number of ways minus number of cores */
@@ -41,6 +41,12 @@ Additionally, the original paper used a miss limit of 0.125 as the classificatio
 However, using our workloads we observed that most benchmarks were always marked as streaming, and this caused poor performance.
 As a result, we increased the value to the next power of two, 0.25.
 This change resulted in most benchmarks switching between streaming and not streaming as expected.
+
+In additional to PIPP, we have implemented a variation we named PIPP-min8.
+This variation works exactly like the normal PIPP algorithm, except that the insertion policy always adds eight to every position.
+A block from an application with one block allocated to it will be inserted at position 9 instead of 1.
+This modification is intended to increase the lifetime of blocks inserted by PIPP to increase the hit rate.
+This modification has been mentioned by previous works~\cite{Manikantan2012} as well.
 
 \section{PriSM}
 

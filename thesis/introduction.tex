@@ -29,7 +29,7 @@ Today CMPs are the de-facto standard, being use in everything from embedded comp
 \begin{figure}[ht]
 \centering
 \includegraphics[scale=.65]{figures/processor_model/processor_model}
-\caption{Generic Chip Multiprocessor Architecture}
+\caption{Generic Chip Multiprocessor Architecture.}
 \label{fig:cmp_model}
 \end{figure}
 
@@ -48,7 +48,7 @@ This mechanism to an extent can hide the processor-memory gap, given a high hit 
         \includegraphics[width=\textwidth]{figures/introduction/dircache_read}
         \caption{Direct mapped cache. Each set contains only one block. The three most significant bits used for set addressing.}
         \label{fig:introduction:cache:dir}
-    \end{subfigure}%
+    \end{subfigure}\hfill%
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/introduction/2waycache_read}
         \caption{2-way associative cache. A selector, not shown here, is used to select between line0 and line1 to produce the data output. Each set contain two blocks, and compared to the direct case, additional hardware is required to select the correct output. Two bits used to set addressing, the most significant bit ignored.}

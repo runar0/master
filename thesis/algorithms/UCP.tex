@@ -14,7 +14,7 @@ The UMON is the core of the UCP algorithm.
 It consists of one ATD per core sharing the cache. 
 The ATD is managed by normal LRU replacement and has one access counter per way.
 Whenever a cache request hits in the ATD the access counter index by the LRU stack position of that block is incremented.
-Hence, on a access to the MRU block the first counter is incremented.
+In other words, UMON uses the stack property of LRU to find the hit rate of all valid partition sizes.
 In addition to the ATDs, there is a monitor circuit that has access to the counters and using them calculates how to partition the cache at set intervals. 
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
@@ -34,7 +34,7 @@ After a reallocation of cache ways, the ATD counters are all halved.
 By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
 
 \begin{algorithm}[ht]
-\caption{UMON Lookahead Algorithm}
+\caption{UMON Lookahead Algorithm.}
 \label{alg:algorithms:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N$ /* Number of ways */
