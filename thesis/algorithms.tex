@@ -2,12 +2,22 @@
 \chapter{Cache Partitioning Algorithms}
 \label{cpt:algorithms}
 
-\begin{table}
-\begin{tabular}
-Name & Date & Partitioning & Notes & Implemented 
+\begin{table}[h]
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{Algorithm} & \multicolumn{1}{c|}{Published} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Replacement} & \multicolumn{1}{c|}{Insertion} & \multicolumn{1}{c|}{Promotion} & \multicolumn{1}{c|}{Hardware}         \\
+\multicolumn{1}{|c|}{}          & \multicolumn{1}{c|}{}          & \multicolumn{1}{c|}{aware}  & \multicolumn{1}{c|}{policy}      & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{overhead\footnote{Simplified hardware overhead compared to a LRU managed cached.}}         \\ \hline
+DIP                             & 2007                           & No                          & LRU                              & LIP/BIP                        & Promote to MRU/Skip            & 1 counter. set dueling                \\ \hline
+TADIP                           & 2008                           & Yes                         & LRU                              & LIP/BIP                        & Promote to MRU/Skip            & 1 counter/core, set dueling           \\ \hline
+DRRIP                           & 2010                           & Yes                         & LRU approx.                      & SRRIP/BRRIP                    & Frequency promotion            & 1 counter/core, set dueling           \\ \hline
+UCP                             & 2006                           & Yes                         & Per core LRU                     & LRU                            & Promote to MRU                 & UMON 1 ATD per core                   \\ \hline
+PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Frequency promotion            & UMON 1 ATD per core, random generator \\ \hline
+PriSM                           & 2012                           & Yes                         & Random core LRU                  & LRU                            & Promote to MRU                 & 1 ATD per core                        \\ \hline
+NUCache                         & 2011                           & No                          & LRU, with DeliWays promotion     & LRU                            & Promote to MRU                 & NUTrack                               \\ \hline
+CLU                             & 2014                           & Yes                         & LRU                              & LIP/BIP                        & Promote to MRU/Skip            & UMON \~3 ATDs per core                 \\ \hline
 \end{tabular}
 \label{tbl:algorithms}
-\caption{Overview of Cache Partitioning Algorithms
+\caption{Overview of Cache Partitioning Algorithms}
 \end{table}
 
 A cache partitioning algorithm divides available cache space between core(s) that access that cache.
@@ -44,5 +54,4 @@ In the following sections, we will explain how each of the selected cache partit
 \input{algorithms/PIPP.tex}
 \input{algorithms/PriSM.tex}
 \input{algorithms/NUCache.tex}
-
-\todo{Document; NRU, NUCache ++}
+\input{algorithms/CLU.tex}
