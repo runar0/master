@@ -56,8 +56,8 @@ Unlike the MSHRs, we do not expect the value of os and ol to effect performance.
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
 Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
 \todo{Could we find a reference stating that this is a bit high?}
-In addition both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
-The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:results:processor_model:mshr}, is less than 1\% at 50\% storage increase. 
+In addition, both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
+The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 
 
 When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.
@@ -65,7 +65,7 @@ Figures~\ref{fig:results:processor_model:rob}~and~\ref{fig:results:processor_mod
 We observe that these increases come at the cost of a respectively 75\% and 50\% storage increase.
 In addition, we observe that the standard deviation in both cases is about the same as the average performance increase.
 
-When reviewed, these facts lead us to conclude that the processor model we have presented based on the Nehalem architecture is stable and that we have no obvious performance gains from small adjustments.
+When reviewed, these results lead us to conclude that the processor model we have presented, based on the Nehalem architecture, is stable and that we have no obvious performance gains from small adjustments.
 As a result, we decide to continue use of this model for the rest of our experiments without making any adjustments.
 
 Considering that we base our model on an actual architecture and that our simulator strives to simulate the core model of that same architecture, it is not a far-fetched result observing little sensitivity to property changes.

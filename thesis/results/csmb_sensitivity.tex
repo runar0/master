@@ -2,16 +2,15 @@
 \section{Clock Skew Sensitivity}
 \label{sec:results:csmb_sensitivity}
 
-As explained in section~\ref{sec:methodology:sniper} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads, each simulating one processor core.
+As explained in section~\ref{sec:methodology:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
 In order to correctly simulate inter-core interactions, the simulation threads need to be kept in sync.
 The method used to keep the threads in sync affects both simulation accuracy and simulation time.
 By having a relaxed synchronization method, one can improve simulation time, at the cost of simulation accuracy.
 In our experiments, we have used barrier synchronization with a barrier width of 100 cycles.
-This entails that for every 100 simulated cycles the separate threads synchronize.
 Any inter-core interactions that occur between two successive barriers are not guaranteed to happen in the correct order, but events separated by a barrier will be simulated in order.
 In other words, within a single barrier there is the possibility that all simulation threads run sequentially.
-For our work, this implies that there is a possibility that memory requests within a barrier arrives sorted by the core id, and not by time.
-Because of this possibility we expect that changing the CSMB value could have a noticeable effect on our exprimentation results.
+For our work, this implies that there is a possibility that memory requests within a barrier arrives in the cache sorted by the core id, and not by time.
+Because of this possibility we expect that changing the CSMB value could have a noticeable effect on our experimentation results.
 
 \begin{figure}
     \centering
@@ -47,7 +46,5 @@ Variance in simulation time relative to CSMB values, as shown in figure~\ref{fig
 When lowering the barrier interval we measure an increase in average simulation time.
 Increasing the barrier value causes a slight decrease in simulation time.
 We observe that the performance gain by increasing the barrier is small compared to the result variation. 
-Also when decreasing the barrier the result variation is small compared to the simulation time increase.
-Based on this observation we find that 100 cycles is a good middle ground value for the synchronization barrier.
-
-\todo{We could explain PIPP performance based on insertion position, and memory request serialization}
+When decreasing the barrier, the opposite is true; the result variation is small compared to the simulation time increase.
+These observations confirm that a barrier width of 100 cycles is a good middle ground value.
