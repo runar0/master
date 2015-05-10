@@ -13,13 +13,13 @@ Because the stack property of LRU is the base of the utility calculations in bot
 The authors of CLU presents a novel approach for calculating the utility curve of a BIP managed cache.
 BIP, as covered earlier, is one of the two insertion policies under DIP and TADIP. 
 BIP violates the stack property of LRU by mostly inserting new rows at the MRU position, or at a low probability in LRU position.
-In order to correctly measure the utility curve of a BIP managed k-way cache, one needs k ATDs; ATD(1), ATD(2), ... ATD(k). 
-Where ATD(x) is an x-way ATD.
+In order to correctly measure the utility curve of a BIP managed k-way cache, one needs k ATDs; ATD($1$), ATD($2$), ... ATD($k$). 
+Where ATD($x$) is an x-way ATD.
 In contrast, the utility curve of an LRU managed cache can be found using one ATD, due to the stack property.
 Having k ATDs per core sharing the LLC is not a realistic goal due to the required overhead.
-The authors of CLU proposes a simplification where there are $m = log_2 k$ ATDs; ATD(1), ATD(2^1), ..., ATD(2^m).
+The authors of CLU proposes a simplification where there are $m = log_2 k$ ATDs; ATD($1$), ATD($2^1$), ..., ATD($2^m$).
 A linear increase between the sample points is assumed when calculating the final utility curve.
-It should be noted that the storage overhead of m ATDs in total is less the twice the overhead of the single ATD(k) required to sample the LRU curve.
+It should be noted that the storage overhead of m ATDs in total is less the twice the overhead of the single ATD($k$) required to sample the LRU curve.
 
 CLU uses the two curves first to allocate ways to each core using the same algorithm as shown for UCP in section~\ref{sec:algorithms:ucp}.
 The only difference is that the algorithm uses either the LRU of BIP value when estimating utility given an allocation, depending on which algorithm performs best.
