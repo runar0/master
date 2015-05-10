@@ -14,7 +14,7 @@ Assuming LRU or another recency-assumption based algorithm, the cache will provi
 \begin{equation} \label{fig::algorithms:rf_pattern}
 p_{rf} = (a_0 a_1 ... a_{k-1})^N
 \end{equation}
-\caption{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1)}
+\caption{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
 \end{figure}
 
 \subsection{Trashing}
@@ -27,7 +27,7 @@ An optimal replacement algorithm might keep some of the working set in the cache
 \begin{equation} \label{fig:algorithms:tr_pattern}
 p_{rf} = (a_0 a_1 ... a_{k-1})^N
 \end{equation}
-\caption{Trashing memory access pattern (k $>$ number of ways, N $>$ 1)}
+\caption{Trashing memory access pattern (k $>$ number of ways, N $>$ 1).}
 \end{figure}
 
 \subsection{Streaming}
@@ -40,7 +40,7 @@ No caching algorithm can provide hits for such an access pattern, simply because
 \begin{equation} \label{fig:algorithms:st_pattern}
 p_{rf} = (a_0 a_1 ... a_{k-1})
 \end{equation}
-\caption{Streaming memory access  pattern (k = $\infty$) }
+\caption{Streaming memory access  pattern (k = $\infty$).}
 \end{figure}
 
 \subsection{Combined}
