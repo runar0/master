@@ -1,7 +1,7 @@
-\subsection{UCP}
-\label{sec:background:algorithms:ucp}
+\section{UCP}
+\label{sec:algorithms:ucp}
 
-Utility Cache Partition\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y.Patt in 2006. 
+Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y. Patt in 2006. 
 UCP uses the concept of utility when assigning ways to a core.
 Using a utility monitor (UMON), UCP calculates the number of ways assigned to each core.
 UCP then uses the same insertion and promotion policy as LRU.
@@ -14,12 +14,12 @@ The UMON is the core of the UCP algorithm.
 It consists of one ATD per core sharing the cache. 
 The ATD is managed by normal LRU replacement and has one access counter per way.
 Whenever a cache request hits in the ATD the access counter index by the LRU stack position of that block is incremented.
-Hence, on a access to the MRU block the first counter is incremented.
+In other words, UMON uses the stack property of LRU to find the hit rate of all valid partition sizes.
 In addition to the ATDs, there is a monitor circuit that has access to the counters and using them calculates how to partition the cache at set intervals. 
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
-Algorithm~\ref{alg:background:algorithms:ucp} is the Lookahead Algorithm they propose.
+Algorithm~\ref{alg:algorithms:ucp} is the Lookahead Algorithm they propose.
 This algorithm is the one the original authors propose for situations with more than two cores sharing a cache.
 The algorithm assigns cache ways based on an increase in marginal utility.
 While there are more ways to distribute, the algorithm calculates the maximum marginal utility achievable by each core. 
@@ -30,14 +30,12 @@ First the number of misses prevented by increasing the allocation from a to be i
 With the counters available the algorithm can simply sum the values of counters a to $b-1$, as the number of hits in the new sets must equal the number of misses prevented.
 To find the marginal utility, this value is then divided by the number of sets introduced.
 The rest of the algorithm is simply a greedy algorithm selecting the best core each iteration.
-After a realloaction of cache ways the ATD counters are all halved.
-By doing this the UMON will keep historical data for future descissions, while keeping the weight on the current period.
-While this algorithm could choose to assign 0 ways to one or more cores both the authors' implementation~\cite{Qureshi2006} and our implementation forces at least one way per core.
-It is unclear from their paper why the original authors did this, but in our case it is done because our simulator implements inclusive caches.
+After a reallocation of cache ways, the ATD counters are all halved.
+By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
 
 \begin{algorithm}[ht]
-\caption{UMON Lookahead Algorithm}
-\label{alg:background:algorithms:ucp}
+\caption{UMON Lookahead Algorithm.}
+\label{alg:algorithms:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N$ /* Number of ways */
 \State $allocations[i]\gets 0$  /* for each core $i$ */
@@ -72,5 +70,3 @@ It is unclear from their paper why the original authors did this, but in our cas
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
-
-\todo{Consider adding a simple example showing insertion and replacement in a UCP managed cache set}

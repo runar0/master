@@ -2,24 +2,28 @@
 \chapter{Discussion}
 \label{cpt:discussion}
 
-\todo{This section will most likely grow as results are documented, and potential weaknesses are detected}
+
+\section{Lack of implementation details}
 
 \todo{We should mention the lack of implementation details available for some of the implemented algorithms. We had to make some assumptions along the way that will have an effect on our results compared to those of the original authors.}
 
-\todo{We need to document the problem with independent simulation threads. In the worst case, they execute sequentially and withing a single time quantum all core memory accesses may come sorted by core id, not time as in real life. This causes inaccuracies in the memory bus, which I documented last semester, but also potentially breaks most caching algorithms, especially those relying on access-recency. Our 3rd experiment show shed some light on the severity of this inaccuracy.}
+\section{Parameter Fitting}
+
+\todo{We have used the parameters given in their original papers, the parameters a possibly fitted towards the original authors workloads. We could most likely have acheived better speedups if we had fitted the parameters to our workloads. But then again is that better, given that we cannot fit to all possible workloads?}
+
 
 \section{Clock Skew Synchronization Barrier}
 
-One of the advantages of Sniper is the use of multiple simulation threads\cite{Carlson2011a}.
-We covered how this could improve performance in section~\todo{ref methodology}, but this speed improvement does naturally decrease accuracy.
+One of the advantages of Sniper is the use of multiple simulation threads~\cite{Carlson2011a}.
+We covered how this could improve performance in section~\ref{sec:methodology:simulator}, but this speed improvement does naturally decrease accuracy.
 In the context of this thesis, there are two effects of having multiple
 simulation threads that could bias our results.
 The problem relates to the ordering of memory events.
-With multiple simulation threads, the only guarantee the simulator gives regarding the ordering of memory events from different cores that events from different intervals are seen in the correct order.
+With multiple simulation threads, the only guarantee the simulator gives regarding the ordering of memory events from different cores is that events from different intervals execute in the correct order.
 The order of events from different cores within the same interval depends on the os scheduler.
 The worst case would be if the os schedule all simulation threads serially and hence memory events would be sorted by time but grouped by origin core.
 All the implemented cache partition algorithms assume that memory requests are in order, and this inaccuracy will break this assumption.
-In addition, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the authors autumn project~\cite{Olsen2014}.
+In addition to the effects on the cache partitioning, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the authors autumn project~\cite{Olsen2014}.
 
 Section~\ref{sec:results:csmb_sensitivity} presents an experiment where we attempted to vary the CSMB interval, and we evaluate the performance using changes in measure STP and HMS.
 The results of this experiment showed that there is little change when lowering the CSMB from the default value of 100 cycles all the way to 1 cycle.
@@ -28,9 +32,9 @@ The cache used in this experiment and all other four core experiments is 4MB wit
 In other words, there are 2048 sets.
 For out of order memory accesses to have an impact on our accuracy there would have to be at least one of the 2048 sets accessed by two cores within the same interval.
 Additionally the order of the requests have to be reversed.
-For this to have a serious effect, we expect there would have to be a significant larger number of requests resolving the same set.
+For this to have a serious effect, we expect there would have to be a significant larger number of requests resolving the same set within the same interval.
 This seems to be an unlikely situation, and our experiment supports this assumption.
 
 The experiment only did a sensitivity analysis of 4-core workloads. 
-We chose to do this because repeating it for 8- and 16-cores would have been unpractiaclly. 
-However, as we scale the number of sets in the cache with the number of cores, 4096 and 8192 for respectively 8- and 16-core workloads, there is no reason to doubt that the results would have been the same in these cases.
+We chose to do this because repeating it for 8- and 16-cores would have been unpractical given the time constraints of this work. 
+However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been the same in these cases.

@@ -1,33 +1,45 @@
 
-\chapter{Bechmarks and Workloads}
-\label{cpt:benchmarks_workloads}
+\section{Bechmarks and Workloads}
+\label{sec:methodology:benchmarks}
 
-In this chapter, we will present the benchmarks we use to evaluate cache partitioning algorithms.
+In this section, we will present the benchmarks we use to evaluate cache partitioning algorithms in this thesis.
 We explain how the we extracted simulation traces from benchmarks and how we classified those traces based on their sensitivity to changes in available cache space and memory bandwidth. 
 Finally, we explain how we created 4-, 8-, and 16-core workloads based on those benchmark traces.
 
-\section{Benchmarks}
+\subsection{Benchmarks and Sample Extraction}
+\label{sec:methodology:benchmarks:benchmarks}
 
 In all our experiments, we are utilizing benchmarks from the SPEC CPU2006~\cite{SPECCPU2006} benchmark suite. 
-We choose this suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test performance of various computer architectures with benchmarks based on real user applications.
+We choose this suite because it is the newest of the CPU benchmark suites from SPEC, and it is specifically designed to test the performance of various computer architectures with benchmarks based on real user applications.
 Unless otherwise stated all benchmarks use the first reference input set.
-For each benchmark, we use SimPoint\cite{Hamerly2005} to extract intervals that we use to represent the entire benchmark.
-In this work, we choose to extract only a single interval from each benchmark.
-By doing this, we are willingly increasing the error\cite{Hamerly2004} between simulating our interval and the results obtained by simulating the entire benchmark.
-Because we are investigating performance changes due to various architectural choices, we find that this increased error will not affect our results in a negative manner.
-Having only one interval per benchmark greatly simplifies the process of simulation.
-We only have to do one simulation per benchmark, and the results of this simulation are equal to the weighted results as the weight will always equal one.
+Because simulating an entire benchmark is a time-consuming process, we choose to extract a sample interval used to represent each benchmark.
+There are multiple ways of extracting sample intervals.
+The naive way of choosing intervals is to specify an offset and a length and use this across all benchmarks.
+However, several more advanced methods of sample selections exists, two examples are SimPoint~\cite{Hamerly2005} and SimFlex/SMARTS~\cite{Hardavellas2004, Wunderlich2003}.
+They both work in a similar manner, by dividing the instruction stream of a benchmark into equal sized intervals. 
+Intervals are then classified, and a set of them chosen to represent the entire benchmark. 
+What separates the two methods is the classification process used.
+J. Yi et al.~\cite{Yi2005} has shown that there is variation in accuracy between SimPoint and SimFlex selected intervals.
+As a result, We chose to use SimPoint because it integrates well with our selected simulator Sniper.
+
+Ideally a few sample intervals are needed per benchmark in order to get accurate simulation results.
+To simplify the simulation, we chose to extract one larger interval per benchmark, in place of multiple smaller ones.
+By doing this, we are willingly increasing the error~\cite{Hamerly2004} between simulating our interval and the results obtained by simulating the entire benchmark.
+Because we are investigating performance changes due to various architectural choices, we are not that interested in correctly estimating the performance of the benchmark.
+We are rather observing the correct change, which we believe to be possible even with only a single interval.
 
 The length chosen for our intervals may also affect the final results.
-As caches are empty when simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results if the simulated interval is short.
+As caches are empty when the simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results if the simulated interval is short.
 Additionally, as we are experimenting with cache partitioning algorithms, we believe that a certain number of instructions are needed for our results to stabilize.
 Finally, by increasing the number of instructions we are also increasing the time required to simulate a benchmark.
-We choose to extract 250M instruction intervals using SimPoints.
+We choose to extract 250M instruction intervals using SimPoint.
 This number of instructions will make the cold cache effect neglishable~\cite{Hamerly2005,Hamerly2004,Olsen2014} while we keep the simulation time relatively low.
 We generate an instruction trace using Sniper for each SimPoint extracted interval.
 All later experiments utilize these traces in place of the actual benchmark executable.
 
-\section{Benchmark Classification}
+\subsection{Benchmark Classification}
+\label{sec:methodology:benchmarks:classification}
+\todo{Results? (This and the next subsection)}
 
 \input{figures/workloads/benchmarks.tex}
 
@@ -47,7 +59,7 @@ By reducing the size of the L3 cache and the speed of the memory bus, we intend 
 \bf{Memory Bus Speed}   & 1.6GB/s, 3.2GB/s, 6.4GB/s, 12.8GB/s \\
 \bottomrule                             
 \end{tabular}
-\caption{Model properties}
+\caption{Model properties.}
 \label{tbl:benchmarks_workloads:classification_model}
 \end{table}
 
@@ -55,11 +67,11 @@ We simulate each benchmark for each combination of LLC size and memory bus bandw
 Then we evaluate how changes to the architecture affected the benchmarks performance using the reported IPC.
 The evaluation is done by organizing the IPC measurements in a 2d data table with LLC size on one axis and bandwidth on the other.
 Between each data pair along each axis, we calculate the performance reduction.
-Using the arithmetic average of reductions along each axis we classify each benchmark as either sensitive or not sensitive to changes in that axis property.
+Using the arithmetic average of reductions along each axis, we classify each benchmark as either sensitive or not sensitive to changes in that axis property.
 The standard deviation is used to increase the required limits on the average reduction if a benchmark shows high variability along an axis.
-This often happens in cases where there is little change in performance except for one point where performance is significantly worse, dragging the average value down.
-We define four groups for our benchmarks as describe below.
-For each group, we define rules used to select benchmarks into that group.
+We observed this in cases where there is little change in performance except for one point where performance is significantly worse, dragging the average value down.
+We define four groups for our benchmarks as described below.
+For each group, we define rules used to detect benchmarks in that group.
 \begin{itemize}
 
 \item \textbf{Cache sensitive} (ca) benchmarks are in general benchmarks with memory access patterns that are recency-friendly. We required an average performance reduction along the cache axis of at least 4\% and a standard deviation of less than 11\% to classify a benchmark as cache sensitive. If the deviation is higher than 11\%, a performance reduction of at least 13\% is required to be classified as cache sensitive.
@@ -73,13 +85,14 @@ For each group, we define rules used to select benchmarks into that group.
 \end{itemize}
 
 We set the classification limits based on manual observation of benchmark behavior. 
-We noted that benchmarks that are bandwidth dependant in general had a higher performance loss when we halved the available bandwidth compared to cache sensitive when we halved the cache size.
+We noted that benchmarks that are bandwidth dependent, in general, had a higher performance loss when we halved the available bandwidth compared to cache sensitive when we halved the cache size.
 We also noted that the average performance drop for some benchmarks were dominated by one sample point, in these cases the standard deviation also rose. 
 As a result, we applied higher cutoff limits when the standard deviation was high compared to the general case.
 Table~\ref{tbl:benchmarks_workloads:benchmark_classification} lists all benchmarks and their classification according to the above rules.
 
 
-\section{Workloads}
+\subsection{Workloads}
+\label{sec:methodology:benchmarks:workloads}
 
 Based on the classified benchmarks we generated 4, 8 and 16 core workloads.
 The 4 core workloads come in five classes.

@@ -1,0 +1,56 @@
+\section{Common Memory Access Patterns}
+Before we explore the various algorithms proposed for cache partitioning we will define four memory access patterns~\cite{Jaleel2010}; recency-friendly, trashing, streaming and combined access patterns.
+These patterns are then used to describe the strengths and weaknesses of each algorithm in the following sections.
+
+\subsection{Recency-friendly}
+Several cache partitioning algorithms make an assumption known as the recency-assumption.
+This is the assumption that recently accesses memory addresses have a higher probability of re-use that less recently accesses addresses.
+A recency-friendly access pattern is one that causes no misses under an algorithm that always keeps the most recently used blocks in the cache.
+Figure~\ref{fig:algorithms:rf_pattern} illustrates an example memory access pattern that is said to be recency-friendly.
+Assuming LRU or another recency-assumption based algorithm, the cache will provide hits for all accesses every time the pattern repeats.
+
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig::algorithms:rf_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
+\end{figure}
+
+\subsection{Trashing}
+A trashing memory pattern is one that repeats in a similar manner to a recency-friendly pattern, but with more blocks per cycle than the number of cache ways. 
+Figure~\ref{fig:background:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of k.
+Under LRU or another recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
+An optimal replacement algorithm might keep some of the working set in the cache, providing hits for parts of the access pattern.
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig:algorithms:tr_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Trashing memory access pattern (k $>$ number of ways, N $>$ 1).}
+\end{figure}
+
+\subsection{Streaming}
+A streaming memory access pattern is one that has no re-references, or where the period is so large that no pattern is detectable.
+Figure~\ref{fig:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
+No caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
+
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig:algorithms:st_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})
+\end{equation}
+\caption{Streaming memory access  pattern (k = $\infty$).}
+\end{figure}
+
+\subsection{Combined}
+In reality, memory access patterns can be more complex than the simple examples shown above.
+A single program might, for instance, behave both in a recency-friendly and streaming fashion. 
+An example would be a program performing a reduction over a large dataset.
+Most accesses would be streaming as the program iterates over the dataset, but some accesses will exhibit recency-friendly behavior like when the program stores temporary results to memory during the iteration.
+
+For shared caches the observed pattern is the union of accesses from all cores, this can result in even more complex patterns.
+A particular non-optimal situation for a cache assuming recency-friendly behavior is when multiple cores execute recency-friendly applications, and one single core execute a streaming application.
+In this case, the streaming application will constantly clear the cache, degrading performance of the recency-friendly applications.
+An algorithm that could detect the one streaming application and handle it as a special case could potentially increase the performance of the recency-friendly applications without affecting the performance of the streaming application.
+Some of the algorithms we cover in the following sections will attempt to detect streaming applications.

@@ -1,14 +1,12 @@
 
-
 \chapter{Results}
 \label{cpt:results}
 
-This chapter contains descriptions of the four experiments performed as a part of this thesis.
-Some experiments are intended to provide necessary data to fulfill the requirements of the assignment text while others are intended to explore error sources or the sensitivity of our setup towards important configuration properties.
-Section~\ref{sec:results:model_sensitivity} starts by exploring how sensitive our simulation results are to changes in the core model configuration. 
-Then section~\ref{sec:results:cache_partition} details our main experiment where we compare several cache partitioning algorithms against each other.
-Next section~\ref{sec:results:l2size_sensitivity} covers an experiment where multiple L2 cache size configurations are used to explore how the various partition algorithms are affected by the size of the available private cache.
-Finally section~\ref{sec:results:csmb_sensitivity} explores how simulation clock skew in Sniper affects the results of our main experiment.
+In this chapter, we will outline four experiments and their results.
+The first experiment, covered in section~\ref{sec:results:model_sensitivity}, will investigate the stability of our processor model and attempt to uncover and remove any bottlenecks.
+Section~\ref{sec:results:cache_partition} will cover an experiment where we evaluate the performance of the implemented cache partitioning algorithms.
+Based on the previous experiment, section~\ref{sec:results:l2size_sensitivity} will cover an experiment where we vary the size of the private L2 cache in order to evaluate how this affects the algorithms.
+Finally section~\ref{sec:results:csmb_sensitivity} explores how simulation clock skew in Sniper affects the results of our two previous experiments.
 
 \input{results/model_sensitivity.tex}
 

@@ -477,6 +477,36 @@ def generate_l2size_comparison(results):
 	print "L2 comp health: ", count
 	return generated
 
+def generate_pubyear_comparison(results):
+
+	generated = {}
+	for algorithm, runs in results['0100']['0128k'].items():
+		if algorithm == "lru" or algorithm == "pipp-min8": continue
+		if algorithm not in generated: generated[algorithm] = {}
+
+		averages = {key: {'hms': [], 'stp': [], 'mpki': []} for key in ['4', '8', '16']}
+
+		for workload,values in runs.items():
+			# Skip non random workloads
+			if not workload.startswith("ra"): continue
+
+			group = '4'
+			if workload.startswith("ra8"): group = '8'
+			elif workload.startswith("ra16"): group = '16'
+			
+			for metric in averages[group].keys():
+				averages[group][metric].append(values[metric]/results['0100']['0128k']["lru"][workload][metric])
+
+		
+		# Reduce list to averages and update generated
+		for cores in averages:
+			vals = {}
+			for metric in averages[cores]:
+				vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+			generated[algorithm][cores] = vals
+
+	return generated
+
 parser = argparse.ArgumentParser(description='Workload speedup/throughput grapher')
 parser.add_argument('--dir', default='.', help='Experiment run directory')
 parser.add_argument('--out', default='_figures/speedup/', help='Figure output directory')
@@ -517,6 +547,7 @@ algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 genSpeedup = True
 genCsmbComp = True
 genL2Comp = True
+genPubYearComp = True
 
 results = load_results(rundir, aliases);
 
@@ -525,7 +556,7 @@ if genSpeedup:
 	legend = lambda alias, metric: alias.startswith('ra')
 	speedup = generate_speedup_results(results)
 	plot_results(speedup, aliases, ['stp', 'hms', 'mpki'], algorithms, rundir, plotname='speedup', dropLRU=True, plotYLine=1, includeLegend=lambda alias, metric: alias.startswith('ra'))
-	plot_results(generate_size_averages(speedup), [('', 'avg', ''), ('', '4-avg', '')], ['stp', 'hms', 'mpki'], algorithms, rundir, includeAverage=False, plotname='avg', dropLRU=True, plotYLine=1, yLimit=[0.5,1.2], includeLegend=lambda alias, metric: (alias == 'avg' and metric=='mpki') or (alias == '4-avg' and metric=='stp'))
+	plot_results(generate_size_averages(speedup), [('', 'avg', ''), ('', '4-avg', '')], ['stp', 'hms', 'mpki'], algorithms, rundir, includeAverage=False, plotname='avg', dropLRU=True, plotYLine=1, yLimit=[0.7,1.55], includeLegend=lambda alias, metric: (alias == 'avg' and metric=='mpki') or (alias == '4-avg' and metric=='stp'))
 	speedup = None
 
 # Plot csmb comparisons
@@ -537,4 +568,31 @@ if genCsmbComp:
 # Plot l2 comparisons
 if genL2Comp:
 	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
-	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.90,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.50,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+
+if genPubYearComp:
+	years = {
+		'tadip': 2008,
+		'drrip-3': 2010,
+		'ucp': 2006,
+		'pipp': 2009,
+		'prism': 2012
+	}
+	result = generate_pubyear_comparison(results)
+
+	data = [(years[algorithm], values['4']['stp']) for algorithm,values in result.items()]
+  	data = [list(t) for t in zip(*data)]
+
+  	pp.pprint(data)
+  	fig,ax = plt.subplots()
+	plt.plot(data[0], data[1], 'ro', color=cm.Blues(0.5))
+	ax = plt.gca()
+	ax.get_xaxis().get_major_formatter().set_useOffset(False)
+	plt.axis([2005, 2013, 0.95, 1.1])
+	ax.set_xticks([2006, 2008, 2009, 2010, 2012])
+	ax.set_ylabel("STP relative to LRU")
+	ax.set_xticklabels(['ucp\n(2006)', 'tadip\n(2008)', 'pipp\n(2009)', 'drrip\n(2010)', 'prism\n(2010)'], rotation=45)
+
+	fig.set_size_inches((2.5+5.0, 2.5))
+	plt.savefig('%s/year-comp.png' % (args.out), frameon=False, bbox_inches='tight')
+	plt.cla()
