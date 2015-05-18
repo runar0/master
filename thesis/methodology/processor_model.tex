@@ -128,15 +128,15 @@ As expected we observe an access latency increase when the cache size increases.
 \centering
 \begin{tabular}{rrrrr}
 \toprule
-\bf{Size}                 & 4MB         & 8MB         & 16MB       \\
-\bf{Block size}           & 64B         & 64B         & 64B         \\
-\bf{Associativity}        & 32          & 32          & 32             \\
-\bf{Banks}                & 4           & 4           & 4           \\
-\bf{Technology}           & 32nm        & 32nm        & 32nm    \\
-\bf{Access time (Tag)}    & 0.52ns      & 0.71ns      & 0.88ns   \\
-\bf{Access time (Data)}   & 1.81ns      & 2.11ns      & 2.69ns     \\
-\bf{Access cycles (Tag)}  & 2           & 3           & 3             \\
-\bf{Access cycles (Data)} & 6           & 7           & 9      \\
+\bf{Size}                 & 2MB         & 4MB         & 8MB         & 16MB       \\
+\bf{Block size}           & 64B         & 64B         & 64B         & 64B         \\
+\bf{Associativity}        & 32          & 32          & 32          & 32             \\
+\bf{Banks}                & 2           & 4           & 4           & 4           \\
+\bf{Technology}           & 32nm        & 32nm        & 32nm        & 32nm    \\
+\bf{Access time (Tag)}    & 0.56ns      & 0.52ns      & 0.71ns      & 0.88ns   \\
+\bf{Access time (Data)}   & 1.42ns      & 1.81ns      & 2.11ns      & 2.69ns     \\
+\bf{Access cycles (Tag)}  & 2           & 2           & 3           & 3             \\
+\bf{Access cycles (Data)} & 5           & 6           & 7           & 9      \\
 \bottomrule
 \end{tabular}
 \caption{L3 cache properties.}
