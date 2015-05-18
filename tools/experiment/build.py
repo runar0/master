@@ -22,10 +22,13 @@ profiles = {
 		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
 
 		# General profiles
-		'4M':  {'size':  4*1024, 'tags': 2, 'data': 6, 'ways': 32},
-		'8M':  {'size':  8*1024, 'tags': 3, 'data': 7, 'ways': 32},
-		'16M': {'size': 16*1024, 'tags': 3, 'data': 9, 'ways': 32},
-		'32M': {'size': 32*1024, 'tags': 3, 'data': 10, 'ways': 32},
+		'0.5MB': {'size': .5*1024, 'tags': 1, 'data':  3, 'ways': 32},
+		'1MB':   {'size':  1*1024, 'tags': 1, 'data':  3, 'ways': 32},
+		'2MB':   {'size':  2*1024, 'tags': 2, 'data':  5, 'ways': 32},
+		'4M':    {'size':  4*1024, 'tags': 2, 'data':  6, 'ways': 32},
+		'8M':    {'size':  8*1024, 'tags': 3, 'data':  7, 'ways': 32},
+		'16M':   {'size': 16*1024, 'tags': 3, 'data':  9, 'ways': 32},
+		'32M':   {'size': 32*1024, 'tags': 3, 'data': 10, 'ways': 32},
 	},
 	'membus': {
 		# Classify experiment profiles
@@ -34,6 +37,8 @@ profiles = {
 		'C-03_2': { 'bw':  3.2, 'latency': 45 },
 		'C-01_6': { 'bw':  1.6, 'latency': 45 },
 
+		'01_6': { 'bw':  1.6, 'latency': 100 },
+		'03_2': { 'bw':  3.2, 'latency': 100 },
 		'06_4': { 'bw':  6.4, 'latency': 100 },
 	},
 	'replacement': {
