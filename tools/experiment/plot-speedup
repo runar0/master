@@ -70,7 +70,7 @@ def extract_raw_data(rundir):
 
 	for subdir, dirs, files in os.walk(rundir):
 		for name in dirs:
-			run = name.split('.')
+			run = name.replace('0.5M', '0_5M').split('.')
 			run_name = run[0]
 
 			# Filter out invalid folders
@@ -81,100 +81,114 @@ def extract_raw_data(rundir):
 			algorithm = run[2]
 			l2size = [key.split('-')[1] for key in run if key.startswith("l2-")][0]
 			csmb = [key.split('-')[1] for key in run if key.startswith("csmb-")][0]
+			membus = [key.split('-')[1] for key in run if key.startswith("membus-")][0]
+			l3size = [key.split('-')[1] for key in run if key.startswith("l3-")][0]
 
-			if csmb not in benchmark_results: benchmark_results[csmb] = {}
-			if csmb not in workload_results: workload_results[csmb] = {}
-			if l2size not in benchmark_results[csmb]: benchmark_results[csmb][l2size] = {}
-			if l2size not in workload_results[csmb]: workload_results[csmb][l2size] = {}
+			if membus not in benchmark_results: benchmark_results[membus] = {}
+			if membus not in workload_results: workload_results[membus] = {}
+			if l3size not in benchmark_results[membus]: benchmark_results[membus][l3size] = {}
+			if l3size not in workload_results[membus]: workload_results[membus][l3size] = {}
+			if csmb not in benchmark_results[membus][l3size]: benchmark_results[membus][l3size][csmb] = {}
+			if csmb not in workload_results[membus][l3size]: workload_results[membus][l3size][csmb] = {}
+			if l2size not in benchmark_results[membus][l3size][csmb]: benchmark_results[membus][l3size][csmb][l2size] = {}
+			if l2size not in workload_results[membus][l3size][csmb]: workload_results[membus][l3size][csmb][l2size] = {}
 
 
 			if len(benchmarks) == 1:
 				# use only 4M l3 configurations as baseline
 				if not "l3-04M" in name: continue
 
-				if algorithm not in benchmark_results[csmb][l2size]: benchmark_results[csmb][l2size][algorithm] = {}
-				benchmark_results[csmb][l2size][algorithm][run_name] = extract_results('%s/%s/stats-benchmark-0.txt' % (rundir, name), 0)['cycles']
+				if algorithm not in benchmark_results[membus][l3size][csmb][l2size]: benchmark_results[membus][l3size][csmb][l2size][algorithm] = {}
+				benchmark_results[membus][l3size][csmb][l2size][algorithm][run_name] = extract_results('%s/%s/stats-benchmark-0.txt' % (rundir, name), 0)['cycles']
 			else:
-				if algorithm not in workload_results[csmb][l2size]: workload_results[csmb][l2size][algorithm] = {}
+				if algorithm not in workload_results[membus][l3size][csmb][l2size]: workload_results[membus][l3size][csmb][l2size][algorithm] = {}
 				results = {}
 				i = 0
 				for benchmark in benchmarks:
 					results[benchmark] = extract_results('%s/%s/stats-benchmark-%d.txt' % (rundir, name, i), i)
 					i = i + 1
-				workload_results[csmb][l2size][algorithm][run_name] = results
+				workload_results[membus][l3size][csmb][l2size][algorithm][run_name] = results
 
 	return (benchmark_results, workload_results)
 
 # Given benchmark and workload results from extract_raw_data this function will calculate speedup data while keeping walltime
 def transform_data_to_speedup(benchmark_results, workload_results):
 	speedup_results = {}
-	for csmb, runs in workload_results.items():
-		speedup_results[csmb] = {}
-		for l2size, algorithms in runs.items():
-			speedup_results[csmb][l2size] = {}
-			for algorithm, runs in algorithms.items():
-				speedup_results[csmb][l2size][algorithm] = {}
+	for membus in workload_results.keys():
+		speedup_results[membus] = {}
+		for l3size in workload_results[membus].keys():
+			speedup_results[membus][l3size] = {}
+			for csmb, runs in workload_results[membus][l3size].items():
+				speedup_results[membus][l3size][csmb] = {}
+				for l2size, algorithms in runs.items():
+					speedup_results[membus][l3size][csmb][l2size] = {}
+					for algorithm, runs in algorithms.items():
+						speedup_results[membus][l3size][csmb][l2size][algorithm] = {}
 
-				for run_name, results in runs.items():
-					stp = 0
-					hms = 0
-					walltime = 0
-					mpki = 0
-					accesses = 0
+						for run_name, results in runs.items():
+							stp = 0
+							hms = 0
+							walltime = 0
+							mpki = 0
+							accesses = 0
 
-					for benchmark, results in results.items():
-						cycles = results['cycles']
-						walltime = max(walltime, results['walltime'])
-						mpki = max(mpki, results['mpki'])
-						accesses = max(accesses, results['accesses'])
+							for benchmark, results in results.items():
+								cycles = results['cycles']
+								walltime = max(walltime, results['walltime'])
+								mpki = max(mpki, results['mpki'])
+								accesses = max(accesses, results['accesses'])
 
-						hms = hms + cycles/benchmark_results[csmb][l2size]['lru'][benchmark]
-						stp = stp + benchmark_results[csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
+								hms = hms + cycles/benchmark_results['06_4']['04M'][csmb][l2size]['lru'][benchmark]
+								stp = stp + benchmark_results['06_4']['04M'][csmb][l2size]['lru'][benchmark]/cycles if cycles > 0 else 0
 
-					hms = len(results) / hms if hms > 0 else 0
+							hms = len(results) / hms if hms > 0 else 0
 
-					speedup_results[csmb][l2size][algorithm][run_name] = {
-						'stp': stp,
-						'hms': hms,
-						'walltime': walltime,
-						'mpki': mpki,
-						'accesses': accesses
-				}
+							speedup_results[membus][l3size][csmb][l2size][algorithm][run_name] = {
+								'stp': stp,
+								'hms': hms,
+								'walltime': walltime,
+								'mpki': mpki,
+								'accesses': accesses
+							}
 	return speedup_results
 
 # Covert verbose run names to workload group specifiers, results are sorted by their position in the group
-def transform_data_group_names(results, aliases):
+def transform_data_group_names(workload_results, aliases):
 	renamed_results = {}
 
-	for csmb, runs in results.items():
+	for membus in workload_results.keys():
+		renamed_results[membus] = {}
+		for l3size in workload_results[membus].keys():
+			renamed_results[membus][l3size] = {}
+			for csmb, runs in workload_results[membus][l3size].items():
 
-		renamed_results[csmb] = {}
-		for l2size, algorithms in runs.items():
-			renamed_results[csmb][l2size] = {}
-			for algorithm, runs in algorithms.items():
-				renamed_results[csmb][l2size][algorithm] = {}
+				renamed_results[membus][l3size][csmb] = {}
+				for l2size, algorithms in runs.items():
+					renamed_results[membus][l3size][csmb][l2size] = {}
+					for algorithm, runs in algorithms.items():
+						renamed_results[membus][l3size][csmb][l2size][algorithm] = {}
 
-				for run_name, results in runs.items():
-					found = False
-					for name, alias, title in aliases:
-						i = 0
-						for benchmarks in benchmark_sets[name]:
-							if '-'.join(benchmarks) == run_name:
-								renamed_results[csmb][l2size][algorithm]["%s-%02d" % (alias, i)] = results
-								found = True
-								break
-							i = i + 1
+						for run_name, results in runs.items():
+							found = False
+							for name, alias, title in aliases:
+								i = 0
+								for benchmarks in benchmark_sets[name]:
+									if '-'.join(benchmarks) == run_name:
+										renamed_results[membus][l3size][csmb][l2size][algorithm]["%s-%02d" % (alias, i)] = results
+										found = True
+										break
+									i = i + 1
 
-						if found:
-							break
+								if found:
+									break
 
-				renamed_results[csmb][l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[csmb][l2size][algorithm].items()))
+						renamed_results[membus][l3size][csmb][l2size][algorithm] = collections.OrderedDict(sorted(renamed_results[membus][l3size][csmb][l2size][algorithm].items()))
 
 	return renamed_results
 
 # Loads all simulation data from the given run directory, transforms it into stp, hsm and walltime results and renames according to aliases and benchmark.py
 def load_results(rundir, aliases):
-	benchmark_results, workload_results = extract_raw_data(rundir);	
+	benchmark_results, workload_results = extract_raw_data(rundir);
 	return transform_data_group_names(transform_data_to_speedup(benchmark_results, workload_results), aliases);
 
 def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None, includeLegend = None, includeAverage=True):
@@ -189,7 +203,8 @@ def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, p
 				N = len([key for key,value in results[csmb][l2size][algorithms[0]].items() if key.startswith(alias+"-")])
 
 				if N == 0:
-					print "No lru data for group %s (%s, csmb %s l2 %s), skipping." % (title,name, csmb, l2size)
+					print results[csmb][l2size]['lru'].keys()
+					print "No %s data for group %s (%s, csmb %s l2 %s), skipping." % (algorithms[0],title,name, csmb, l2size)
 					continue 
 
 				# Create indicies, cacluate bar width
@@ -271,23 +286,27 @@ def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, p
 				file.write('\n'.join(overview))
 
 # Generate HMS, STP and mpki results relative to LRU for a subset of the l2size and csmb configurations. 
-def generate_speedup_results(results, l2size_filter = ['0128k'], csmb_filter = ['0100']):
+def generate_speedup_results(results, l2size_filter = ['0128k'], csmb_filter = ['0100'], membus_filter=['06_4'], l3size_filter=['04M', '08M', '16M']):
 	generated = {}
-	for csmb, l2runs in results.items():
-		if csmb not in csmb_filter: continue
-		generated[csmb] = {}
-		for l2size, algorithms in l2runs.items():
-			if l2size not in l2size_filter: continue
-			generated[csmb][l2size] = {}
+	for membus in results.keys():
+		if membus not in membus_filter: continue
+		for l3size in results[membus].keys():
+			if l3size not in l3size_filter: continue
+			for csmb, l2runs in results[membus][l3size].items():
+				if csmb not in csmb_filter: continue
+				if csmb not in generated: generated[csmb] = {}
+				for l2size, algorithms in l2runs.items():
+					if l2size not in l2size_filter: continue
+					if l2size not in generated[csmb]: generated[csmb][l2size] = {}
 
-			for algorithm, runs in algorithms.items():
-				generated[csmb][l2size][algorithm] = {}
+					for algorithm, runs in algorithms.items():
+						if algorithm not in generated[csmb][l2size]: generated[csmb][l2size][algorithm] = {}
 
-				for alias, values in runs.items():
-					generated[csmb][l2size][algorithm][alias] = {}
-					for metric, value in values.items():
-						# Store value relative to lru result
-						generated[csmb][l2size][algorithm][alias][metric] = value/results[csmb][l2size]["lru"][alias][metric]
+						for alias, values in runs.items():
+							if alias not in generated[csmb][l2size][algorithm]: generated[csmb][l2size][algorithm][alias] = {}
+							for metric, value in values.items():
+								# Store value relative to lru result
+								generated[csmb][l2size][algorithm][alias][metric] = value/results[membus][l3size][csmb][l2size]["lru"][alias][metric]
 
 				generated[csmb][l2size][algorithm] = collections.OrderedDict(sorted(generated[csmb][l2size][algorithm].items()))
 	return generated
@@ -341,37 +360,42 @@ def generate_csmb_comparisons(results):
 	generated = {}
 	# Default csmb value and sorted list of all values in run
 	default = '0100';
-	csmbs = sorted([int(val) for val in results.keys()])
+	csmbs = sorted([int(val) for val in results['06_4']['04M'].keys()])
 	generated[default] = {}
-	for csmb in csmbs:
-		csmb = '%04d' % csmb
-		runs = results[csmb]
 
-		for l2size, algorithms in runs.items():
-			if l2size != "0128k": continue
+	for membus in results.keys():
+		if membus != '06_4': continue
+		for l3size in results[membus].keys():
+			if l3size not in ['04M']: continue
+			for csmb in csmbs:
+				csmb = '%04d' % csmb
+				runs = results[membus][l3size][csmb]
 
-			if l2size not in generated[default]: generated[default][l2size] = {}
-			result = {}
-			for algorithm, runs in algorithms.items():
-				if algorithm not in generated[default][l2size]: generated[default][l2size][algorithm] = collections.OrderedDict()
+				for l2size, algorithms in runs.items():
+					if l2size != "0128k": continue
 
-				averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
+					if l2size not in generated[default]: generated[default][l2size] = {}
+					result = {}
+					for algorithm, runs in algorithms.items():
+						if algorithm not in generated[default][l2size]: generated[default][l2size][algorithm] = collections.OrderedDict()
 
-				for workload,values in runs.items():
-					group = '4'
-					if workload.startswith("ra8"): group = '8'
-					elif workload.startswith("ra16"): group = '16'
-					
-					for metric in averages[group].keys():
-						averages[group][metric].append(values[metric]/results[default][l2size][algorithm][workload][metric])
+						averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
 
-				
-				# Reduce list to averages and update generated
-				for cores in averages:
-					vals = {}
-					for metric in averages[cores]:
-						vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-					generated[default][l2size][algorithm]['csmb-%s-%s' % (cores, csmb)] = vals
+						for workload,values in runs.items():
+							group = '4'
+							if workload.startswith("ra8"): group = '8'
+							elif workload.startswith("ra16"): group = '16'
+							
+							for metric in averages[group].keys():
+								averages[group][metric].append(values[metric]/results[membus][l3size][default][l2size][algorithm][workload][metric])
+
+						
+						# Reduce list to averages and update generated
+						for cores in averages:
+							vals = {}
+							for metric in averages[cores]:
+								vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+							generated[default][l2size][algorithm]['csmb-%s-%s' % (cores, csmb)] = vals
 
 	return generated
 
@@ -380,53 +404,58 @@ def generate_l3_access_averages(results):
 	generated = {}
 	count = {'4': 0, '8': 0, '16': 0}
 	# Generate the special avg-4, avg-8 and avg-16 runs
-	for csmb, l2runs in results.items():
-		if csmb != '0100': continue
+	for membus in results.keys():
+		if membus != '06_4': continue
+		for l3size in results[membus].keys():
+			if l3size not in ['04M', '08M', '16M']: continue
+			for csmb, l2runs in results[membus][l3size].items():
+				if csmb != '0100': continue
 
-		generated[csmb] = {'0128k': {}}
-		for l2size, algorithms in l2runs.items():
-			result = {}
-			for algorithm, runs in algorithms.items():
-				if algorithm != "lru": continue
+				if csmb not in generated: generated[csmb] = {'0128k': {}}
+				for l2size, algorithms in l2runs.items():
+					result = {}
+					for algorithm, runs in algorithms.items():
+						if algorithm != "lru": continue
 
-				generated[csmb]['0128k'][l2size] = {}
+						if l2size not in generated[csmb]['0128k']: generated[csmb]['0128k'][l2size] = {}
 
-				averages = {key: {'accesses': []} for key in ['4', '8', '16']}
-				fouraverages = {}
-				for workload,values in runs.items():
-					random = workload.startswith("ra")
-					group = '4'
-					if workload.startswith("ra8"): group = '8'
-					elif workload.startswith("ra16"): group = '16'
-					workload_group = workload.split('-')[0]
-					
-					if group == '4' and workload_group not in fouraverages:
-						fouraverages[workload_group] = {'accesses': []};
+						averages = {key: {'accesses': []} for key in ['4', '8', '16']}
+						fouraverages = {}
+						for workload,values in runs.items():
+							random = workload.startswith("ra")
+							group = '4'
+							if workload.startswith("ra8"): group = '8'
+							elif workload.startswith("ra16"): group = '16'
+							workload_group = workload.split('-')[0]
+							
+							if group == '4' and workload_group not in fouraverages:
+								fouraverages[workload_group] = {'accesses': []};
 
-					for metric in averages[group].keys():
-						if values[metric] == 0:
-							count[group] += 1
-						else:
-							if random: averages[group][metric].append(values[metric]/results[csmb]["0128k"][algorithm][workload][metric])
-							#if random: averages[group][metric].append(values[metric])
-							if group == '4':
-								fouraverages[workload_group][metric].append(values[metric]/results[csmb]["0128k"][algorithm][workload][metric])
-								#fouraverages[workload_group][metric].append(values[metric])
+							for metric in averages[group].keys():
+								if values[metric] == 0:
+									count[group] += 1
+								else:
+									if random: averages[group][metric].append(values[metric]/results[membus][l3size][csmb]["0128k"][algorithm][workload][metric])
+									#if random: averages[group][metric].append(values[metric])
+									if group == '4':
+										fouraverages[workload_group][metric].append(values[metric]/results[membus][l3size][csmb]["0128k"][algorithm][workload][metric])
+										#fouraverages[workload_group][metric].append(values[metric])
 
-				for cores in averages:
-					vals = {}
-					for metric in averages[cores]:
-						print l2size, cores, metric, len(averages[cores][metric])
-						vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-					generated[csmb]['0128k'][l2size]['access-ra%02d' % int(cores)] = vals
-				for workload_group in fouraverages:
-					vals = {}
-					for metric in fouraverages[workload_group]:
-						vals[metric] = np.mean(fouraverages[workload_group][metric]) if len(fouraverages[workload_group][metric]) > 0 else 0
-					generated[csmb]['0128k'][l2size]['4-access-%s' % workload_group] = vals
+						for cores in averages:
+							if len(averages[cores]['accesses']) > 0:
+								vals = {}
+								for metric in averages[cores]:
+									vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+								generated[csmb]['0128k'][l2size]['access-ra%02d' % int(cores)] = vals
+						for workload_group in fouraverages:
+							if len(fouraverages[workload_group]['accesses']) > 0:
+								vals = {}
+								for metric in fouraverages[workload_group]:
+									vals[metric] = np.mean(fouraverages[workload_group][metric]) if len(fouraverages[workload_group][metric]) > 0 else 0
+								generated[csmb]['0128k'][l2size]['4-access-%s' % workload_group] = vals
 
 
-				generated[csmb]['0128k'][l2size] = collections.OrderedDict(sorted(generated[csmb]['0128k'][l2size].items()))
+						generated[csmb]['0128k'][l2size] = collections.OrderedDict(sorted(generated[csmb]['0128k'][l2size].items()))
 
 	print "L3 access health: ", count
 	return generated
@@ -435,44 +464,50 @@ def generate_l2size_comparison(results):
 	generated = {}
 	# Default l2size value and sorted list of all values in run
 	default = '0128k';
-	l2sizes = sorted([val for val in results['0100'].keys()])
+	l2sizes = sorted([val for val in results['06_4']['04M']['0100'].keys()])
 	generated = {}
 
 	csmb = '%04d' % 100
-	l2runs = results[csmb]
 
 	count = {'4': 0, '8': 0, '16': 0}
 
-	for l2size in l2sizes:
-		algorithms = l2runs[l2size]
-		
-		result = {}
-		for algorithm, runs in algorithms.items():
-			if algorithm not in generated: generated[algorithm] = {default: {}}
-			if l2size not in generated[algorithm][default]: generated[algorithm][default][l2size] = {}
+	for membus in results.keys():
+		if membus != "06_4": continue
+		for l3size in results[membus].keys():
+			if l3size not in ['04M', '08M', '16M']: continue
 
-			averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
-
-			for workload,values in runs.items():
-				group = '4'
-				if workload.startswith("ra8"): group = '8'
-				elif workload.startswith("ra16"): group = '16'
+			l2runs = results[membus][l3size][csmb]
+			for l2size in l2sizes:
+				algorithms = l2runs[l2size]
 				
-				for metric in averages[group].keys():
-					if values[metric] == 0:
-						count[group] += 1
-					else:
-						averages[group][metric].append(values[metric]/results['0100'][l2size]["lru"][workload][metric])
+				result = {}
+				for algorithm, runs in algorithms.items():
+					if algorithm not in generated: generated[algorithm] = {default: {}}
+					if l2size not in generated[algorithm][default]: generated[algorithm][default][l2size] = {}
 
-			
-			# Reduce list to averages and update generated
-			for cores in averages:
-				vals = {}
-				for metric in averages[cores]:
-					vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-				generated[algorithm][default][l2size]['l2-%02d' % (int(cores))] = vals
+					averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
 
-			generated[algorithm][default][l2size] = collections.OrderedDict(sorted(generated[algorithm][default][l2size].items()))
+					for workload,values in runs.items():
+						group = '4'
+						if workload.startswith("ra8"): group = '8'
+						elif workload.startswith("ra16"): group = '16'
+						
+						for metric in averages[group].keys():
+							if values[metric] == 0:
+								count[group] += 1
+							else:
+								averages[group][metric].append(values[metric]/results[membus][l3size]['0100'][l2size]["lru"][workload][metric])
+
+					
+					# Reduce list to averages and update generated
+					for cores in averages:
+						if len(averages[cores]['stp']) > 0:								
+							vals = {}
+							for metric in averages[cores]:
+								vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+							generated[algorithm][default][l2size]['l2-%02d' % (int(cores))] = vals
+
+					generated[algorithm][default][l2size] = collections.OrderedDict(sorted(generated[algorithm][default][l2size].items()))
 
 	print "L2 comp health: ", count
 	return generated
@@ -480,30 +515,33 @@ def generate_l2size_comparison(results):
 def generate_pubyear_comparison(results):
 
 	generated = {}
-	for algorithm, runs in results['0100']['0128k'].items():
-		if algorithm == "lru" or algorithm == "pipp-min8": continue
-		if algorithm not in generated: generated[algorithm] = {}
+	for l3size in results['06_4'].keys():
+		if l3size not in ['04M', '08M', '16M']: continue
+		for algorithm, runs in results['06_4'][l3size]['0100']['0128k'].items():
+			if algorithm == "lru" or algorithm == "pipp-min8": continue
+			if algorithm not in generated: generated[algorithm] = {}
 
-		averages = {key: {'hms': [], 'stp': [], 'mpki': []} for key in ['4', '8', '16']}
+			averages = {key: {'hms': [], 'stp': [], 'mpki': []} for key in ['4', '8', '16']}
 
-		for workload,values in runs.items():
-			# Skip non random workloads
-			if not workload.startswith("ra"): continue
+			for workload,values in runs.items():
+				# Skip non random workloads
+				if not workload.startswith("ra"): continue
 
-			group = '4'
-			if workload.startswith("ra8"): group = '8'
-			elif workload.startswith("ra16"): group = '16'
+				group = '4'
+				if workload.startswith("ra8"): group = '8'
+				elif workload.startswith("ra16"): group = '16'
+				
+				for metric in averages[group].keys():
+					averages[group][metric].append(values[metric]/results['06_4'][l3size]['0100']['0128k']["lru"][workload][metric])
+
 			
-			for metric in averages[group].keys():
-				averages[group][metric].append(values[metric]/results['0100']['0128k']["lru"][workload][metric])
-
-		
-		# Reduce list to averages and update generated
-		for cores in averages:
-			vals = {}
-			for metric in averages[cores]:
-				vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
-			generated[algorithm][cores] = vals
+			# Reduce list to averages and update generated
+			for cores in averages:
+				if len(averages[cores]['stp']) > 0:
+					vals = {}
+					for metric in averages[cores]:
+						vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+					generated[algorithm][cores] = vals
 
 	return generated
 
@@ -544,9 +582,9 @@ algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 #				print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
 #				algorithms_names.remove(algorithm)
 
-genSpeedup = True
-genCsmbComp = True
-genL2Comp = True
+genSpeedup = False
+genCsmbComp = False
+genL2Comp = False
 genPubYearComp = True
 
 results = load_results(rundir, aliases);

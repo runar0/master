@@ -22,9 +22,9 @@ profiles = {
 		'C-4_00':  {'size':  4.00*1024, 'tags': 2, 'data': 6, 'ways': 32},
 
 		# General profiles
-		'0.5MB': {'size': .5*1024, 'tags': 1, 'data':  3, 'ways': 32},
-		'1MB':   {'size':  1*1024, 'tags': 1, 'data':  3, 'ways': 32},
-		'2MB':   {'size':  2*1024, 'tags': 2, 'data':  5, 'ways': 32},
+		'0.5M': {'size': .5*1024, 'tags': 1, 'data':  3, 'ways': 32},
+		'1M':   {'size':  1*1024, 'tags': 1, 'data':  3, 'ways': 32},
+		'2M':   {'size':  2*1024, 'tags': 2, 'data':  5, 'ways': 32},
 		'4M':    {'size':  4*1024, 'tags': 2, 'data':  6, 'ways': 32},
 		'8M':    {'size':  8*1024, 'tags': 3, 'data':  7, 'ways': 32},
 		'16M':   {'size': 16*1024, 'tags': 3, 'data':  9, 'ways': 32},
