@@ -1,17 +1,25 @@
-
-\chapter{Results}
+\chapter{Cache Partitioning Results}
 \label{cpt:results}
-
-In this chapter, we will outline four experiments and their results.
-The first experiment, covered in section~\ref{sec:results:model_sensitivity}, will investigate the stability of our processor model and attempt to uncover and remove any bottlenecks.
-Section~\ref{sec:results:cache_partition} will cover an experiment where we evaluate the performance of the implemented cache partitioning algorithms.
-Based on the previous experiment, section~\ref{sec:results:l2size_sensitivity} will cover an experiment where we vary the size of the private L2 cache in order to evaluate how this affects the algorithms.
-Finally section~\ref{sec:results:csmb_sensitivity} explores how simulation clock skew in Sniper affects the results of our two previous experiments.
-
-\input{results/model_sensitivity.tex}
+In this chapter, we will outline an experiment where we compare the implemented cache partitioning algorithms against the commonly used LRU and each other.
 
 \input{results/cache_partition.tex}
 
-\input{results/l2size_sensitivity.tex}
+
+\chapter{Sensitivity Analysis}
+\label{cpt:sresults}
+This chapter outlines a total of five experiments exploring the sensitivity of our simulated system and our cache partitioning results to various changes in the simulated architecture.
+The first experiment, covered in section~\ref{sec:results:model_sensitivity}, will investigate the stability of our processor model and attempt to uncover and remove any bottlenecks.
+Then section~\ref{sec:results:csmb_sensitivity} explores how simulation clock skew in Sniper affects the outcome of our experiments.
+Sections~\ref{sec:results:l2size_sensitivity} and~\ref{sec:results:l3size_sensitivity} explore how algorithm performance is affected by the size of the L2 and L3 cache respectivly.
+Finally section~\ref{sec:results:membus_sensitivity} explores how changing the bandwidth of the memory controller affects algorithm performance.
+
+
+\input{results/model_sensitivity.tex}
 
 \input{results/csmb_sensitivity.tex}
+
+\input{results/l2size_sensitivity.tex}
+
+\input{results/l3size_sensitivity.tex}
+
+\input{results/membus_sensitivity.tex}
