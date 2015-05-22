@@ -2,9 +2,9 @@
 \label{cpt:introduction}
 
 In this chapter, we will first introduce chip multiprocessors and their memory systems.
-We will also introduce the role of a cache partitioning algorithm.
+We will also introduce the role of a cache partitioning algorithm, and introduce a set of common memory access patterns used to later discussions.
 Then, we will analyze our problem description and introduce a set of requirements the thesis has to fulfill.
-Finally, an overall outline of the report is given, including an overview of which chapter fulfills the various requirements.
+Finally, an overview of our contributions is given before we provide an outline of the report.
 
 \section{Chip Multiprocessors}
 
@@ -21,7 +21,7 @@ By 2005, most manufacturers had abandoned their plans for increased single core 
 CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
 This simplification of cores allowed manufacturers to fit multiple cores on a single die, without reaching the same power consumption as single core processors were reaching.
 With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
-Today CMPs are the de-facto standard, being use in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
+Today CMPs are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
 
 \section{CMP Memory System}
@@ -37,7 +37,7 @@ Memory is a vital component of any computing system, without memory we are unabl
 Traditionally the technology used to create memories have differed from the technology used in processors~\cite{Wilkes2001}.
 As processor performance increased, memory performance did not increase proportionally.
 This development has resulted in what is known as the processor-memory gap~\cite{Wilkes2001}.
-In order to mitigate this effect, small and fast memory structures known as caches are a vital part of both single core processors and CMPs.
+To mitigate this effect, small and fast memory structures known as caches are a vital part of both single core processors and CMPs.
 Any memory request issued by a processing core is filtered through one or multiple caches before being issued to the main memory.
 If any of the caches has the value of the requested memory address, the value is returned, and the memory request never reaches the main memory.
 This mechanism to an extent can hide the processor-memory gap, given a high hit rate in cache memories.
@@ -76,15 +76,17 @@ In this thesis, we will show that increasing the number of ways can improve perf
 However, from this architectural overview it is apparent that the critical path and complexity of a cache also increases as the number of ways increases.
 As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
-There exists alternative cache organizations, such as zcache~\cite{Sanchez2010}, which allows for higher associativity at a lower cost.
-These techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
+Alternative cache organizations have been proposed, such as zcache~\cite{Sanchez2010}, that allows for higher associativity at a lower cost.
+However, these techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
 
 When data not present in the cache is requested by a processing core, a request is sent the cache to the next cache level, or possibly the main memory.
 Once the cache receives a response, it normally stores the data to provide faster access times in case of a re-reference.
-Caches also normally store data that is written by a processing core, speeding up the write operation.
+Caches also normally store data that is written to memory by a processing core, speeding up the write operation.
 For a set-associative or fully associative cache, there are multiple valid storage positions for a data block.
-It is the job of a cache partitioning algorithm to define which block is used to store the new data.
-If the block selected is already in use, the cache removes, or evicts, the existing data.
+An algorithm known as the cache replacement or partitioning algorithm decides which of the valid blocks are used to store the value.
+If the block that was chosen by the algorithm already contains valid data the cache removes or evicts the existing data.
+While cache replacement and cache partitioning algorithms may be used to refer to slightly different types of algorithms, we will use the term cache partitioning algorithm throughout this thesis to reduce confusion.
+The introduction to chapter~\ref{cpt:algorithms} covers the difference between a replacement and partitioning algorithm.
 
 In the memory hierarchy, smaller means faster. 
 For instance, main memory is much faster than disks, but disks can store much more data.
@@ -97,41 +99,113 @@ In figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a sha
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
 The cache partitioning algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by some form of prioritization.
 
+\section{Common Memory Access Patterns}
 
-\section{Requirements and Contributions}
+In this section, we will define four memory access patterns~\cite{Jaleel2010}; recency-friendly, trashing, streaming and combined access patterns.
+These patterns will later be used to describe the strengths and weaknesses of presented algorithms, and to explain algorithm performance in our experiments.
+
+\subsection{Recency-friendly}
+Several cache partitioning algorithms make an assumption known as the recency-assumption.
+This is the assumption that recently accesses memory addresses have a higher probability of re-use that less recently accesses addresses.
+A recency-friendly access pattern is one that causes no misses under an algorithm that always keeps the most recently used blocks in the cache.
+Figure~\ref{fig:algorithms:rf_pattern} illustrates an example memory access pattern that is said to be recency-friendly.
+Because the pattern repeats and $k$ is less then the number of ways we know that the least recently used block will always be referenced before being evicted, if we assume a recency-assumption based algorithm.
+Hence, the algorithm will be able to provide hits for every access after the initial repetition and the pattern is recency-friendly.
+
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig:algorithms:rf_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
+\end{figure}
+
+\subsection{Trashing}
+A trashing memory pattern is one that repeats in a similar manner to a recency-friendly pattern, but with more blocks per cycle than the number of cache ways. 
+Figure~\ref{fig:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of $k$.
+Under LRU or another recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
+A better replacement algorithm for these patterns might keep some of the working set in the cache, providing hits for parts of the access pattern.
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig:algorithms:tr_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})^N
+\end{equation}
+\caption{Trashing memory access pattern (k $>$ number of ways, N $>$ 1).}
+\end{figure}
+
+\subsection{Streaming}
+A streaming memory access pattern is one that has no re-references, or where the period is so large that no pattern is detectable.
+Figure~\ref{fig:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
+No caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
+
+\begin{figure}[ht]
+\centering
+\begin{equation} \label{fig:algorithms:st_pattern}
+p_{rf} = (a_0 a_1 ... a_{k-1})
+\end{equation}
+\caption{Streaming memory access  pattern (k = $\infty$).}
+\end{figure}
+
+\subsection{Combined}
+In reality, memory access patterns can be more complex than the simple examples shown above.
+A single program might, for instance, behave both in a recency-friendly and streaming fashion. 
+An example would be a program performing a reduction over a large dataset.
+Most accesses would be streaming as the program iterates over the dataset, but some accesses will exhibit recency-friendly behavior like when the program stores temporary results to memory during the iteration.
+
+For shared caches the observed pattern is the union of accesses from all cores, this can result in even more complex patterns.
+A particular non-optimal situation for a cache assuming recency-friendly behavior is when multiple cores execute recency-friendly applications, and one single core execute a streaming application.
+In this case, the streaming application will constantly clear the cache, degrading performance of the recency-friendly applications.
+An algorithm that could detect the one streaming application and handle it as a special case could potentially increase the performance of the recency-friendly applications without affecting the performance of the streaming application.
+Some of the algorithms we cover in the following sections will attempt to detect streaming applications.
+
+\section{Requirements}
 By analyzing the problem description, we have been able to extract a set of requirements that this thesis has to fulfill:
 
 \begin{description}
     \item[R1] Introduce CMPs, their memory system, and the role of a cache partitioning algorithm.
-    \item[R2] Present important and recent work in the cache partitioning field. Present their strength and weaknesses, and compare them based on expected performance and overhead.
+    \item[R2] Present recent and important work in the cache partitioning field. Compare similarities and differences of the various proposed algorithms.
     \item[R3] Create a framework for evaluation of various cache partitioning algorithms.
     \item[R4] Implement at least one of the presented algorithm and compare against a conventional LRU-managed cache.
 \end{description}
 
-Based on the second requirement, this thesis will include a curated list of cache partitioning algorithms selected for their importance or recency in the field.
-Due to the amount of work in this field we have to select some properties that each algorithm must have in order to appear in our list of algorithms.
-Each algorithm will be presented in detail at a theoretical level, with comparisons to other relevant algorithms.
+Also, we extracted a set of optional requirements that the thesis may fulfill:
 
-To fulfill the third and fourth requirement, we will implement a simulation framework and within that framework implement several of the algorithms selected.
-We present a series of experiments executed on this implementation.
-The resulting data will be used to compare the various algorithms against each other, providing depth to the theoretical comparison.
-In addition, an evaluation of the implemented simulation framework will be performed.
-This evaluation will explore the validity of our results.
-The implemented simulation framework will at the end of this thesis be made available to NTNU and the CARD~\cite{CARD2015} research group for future research.
+\begin{description}
+    \item[O1] Implement additional algorithms and evaluate them.
+    \item[O2] Compare performance of the implemented algorithms against each other.
+    \item[O3] Investigate algorithm sensitivity to changes in L2 cache, L3 cache, and/or memory bus bandwidth.
+\end{description}
+
+\section{Requirements}
+
+In our work with this thesis we have made the following contributions:
+
+\begin{itemize}
+  \item We have created a curated list with detailed descriptions of several recently published cache partitioning algorithms.
+  \item A framework for evaluation of cache partitioning algorithms have been built on top of the Sniper~\cite{Carlson2011a} simulation system.
+  \item Several of the algorithms presented in our list has been implemented and tested within our framework.
+  \item We performed several sensitivity experiments further exploring the properties of our simulation framework and the implemented algorithms.
+  \item The implemented simulation framework will at the end of this thesis be made available to NTNU and the CARD~\cite{CARD2015} research group for future research.
+\end{itemize}
 
 \section{Outline}
 
-Chapter~\ref{cpt:introduction} introduces the thesis by putting it in a historical context and presenting the contributions made, fulfilling requirement \textbf{R1}.
+The outline of the rest of this thesis is as follows:
 
-Chapter~\ref{cpt:algorithms} presents a selection of cache partitioning algorithms and provides a theoretical comparison of them, fulfilling requirement \textbf{R2}.
+\begin{itemize}
+    \item Chapter~\ref{cpt:introduction} introduces the thesis by putting it in a historical context, presenting some background knowledge and presenting the contributions made, fulfilling requirement \textbf{R1}.
 
-Chapter~\ref{cpt:implementation} presents the subset of algorithms that we implement within our simulation framework.
-Any assumptions or changes we have made compared to the theoretical description of the algorithm in chapter~\ref{cpt:algorithms} are presented here.
+    \item Chapter~\ref{cpt:algorithms} presents a selection of cache partitioning algorithms and provides a theoretical comparison of them, fulfilling requirement \textbf{R2}.
 
-Chapter~\ref{cpt:methodology} contains a description of our simulation framework and explains all metrics we later use to evaluate our experiments, this fulfills requirement~\textbf{R3}.
+   \item Chapter~\ref{cpt:framework} presents our simulator and the framework built on this simulator to enable evaluation of cache partitioning algorithms. It also presents the subset of algorithms we have implemented. This fulfills requirement \textbf{R3} and \textbf{O1}.
 
-Chapter~\ref{cpt:results} presents all experiments performed during the work with this thesis and evaluates their results. 
-This evaluation includes a performance comparison of all implemented cache partitioning algorithms, fulfilling requirement \textbf{R4}.
+   \item Chapter~\ref{cpt:methodology} contains a description of our simulated processor model and explains all metrics we later use to evaluate our experiments.
 
-Chapters~\ref{cpt:discussion} and~\ref{cpt:conclusion} contains a discussion of our results and a conclusion based on these. 
-In addition, an overview of future work is given.
+   \item Chapter~\ref{cpt:results} presents an experiment where we compare all implemented algorithms against an LRU managed cache. Also, we compare all implemented algorithms against each other. This fulfills requirement \textbf{R4} and \textbf{O2}.
+
+   \item Chapter~\ref{cpt:sresults} presents five different experiments all exploring either framework or algorithm sensitivity to various architectural changes, fulfilling requirement \textbf{O3}.
+
+   \item Chapters~\ref{cpt:discussion} and~\ref{cpt:conclusion} contains a discussion of our results and a conclusion based on these. 
+Also, an overview of future work is given.
+
+\end{itemize}
