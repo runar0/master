@@ -2,3 +2,7 @@
 \label{sec:results:l2size_sensitivity}
 
 4-core workloads; memory bus speed: 1.6GB/s, 3.2GB/s, 6.4GB/s, 12.8GB/s
+
+\todo{Experiment is done and our results show in short; Algorithms that improve performance via miss reduction gain more against LRU, algorithms that does not change miss count perform equal to the base case. Algorithms increasing misses loose compared to LRU. (These are excatly as expected, no suprises)}
+
+\todo{The interesting algorithm is UCP, which has improved performance by increasing misses, when we lower available bandwith UCP gains less over LRU. I will run an experiment with reduced L3 cache and memory bandwidth, we might find a spot where UCP cannot outperform LRU}
