@@ -2,7 +2,7 @@
 \chapter{Cache Management Algorithms}
 \label{cpt:algorithms}
 
-\begin{table}[!htb]
+\begin{table}[htb]
 \begin{tabular}{|p{1.0cm}|p{0.5cm}|p{0.8cm}|p{1.2cm}|p{1.2cm}|p{1.2cm}|p{1.2cm}|}
 \hline
 \multicolumn{1}{|c|}{Name} & \multicolumn{1}{c|}{Year} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Repl.} & \multicolumn{1}{c|}{Insert.} & \multicolumn{1}{c|}{Promo.} & \multicolumn{1}{c|}{Hardware}         \\
@@ -25,17 +25,18 @@ It decides where to store new data blocks and which of the existing blocks are e
 Some algorithms are thread-aware and geared towards shared caches.
 Others are thread-agnostic and work both for shared and private caches.
 Some have advanced optimization goals such as quality of service (QoS) while others use simpler metrics like miss minimization.
-In the following sections, we will present various algorithms primarily proposed to manage shared caches.
-We will also present LRU, an algorithm that is thread-agnostic and widely used both in private and shared caches today.
-We group the algorithms into two groups, those that explicitly divide the storage space in the cache between cores sharing the cache and those that do not.
+Algorithms proposed for shared caches may in general be divided into two groups, those that explicitly divide storage space between cores sharing the cache and those that do not.
 The term cache replacement algorithm is often used to describe algorithms that do not divide the storage space while the term cache partitioning algorithm describe algorithms that do divide the space.
 Throughout this paper, we will use the two terms interchangeably.
 
-There exists a large number of works regarding cache management. 
-In this thesis, we select a few algorithms based on some of their characteristics and compare their performance, table~\ref{tbl:algorithms} lists the selected algorithms.
-Only algorithms that optimize for fewer cache misses are selected.
+
+The field of cache management is well researched, and there exists a large number of proposed algorithms.
+In this thesis, we present a few recently proposed algorithms based on some of their characteristics and compare their performance.
+We will also present LRU, an algorithm that is thread-agnostic and widely used both in private and shared caches today.
+Table~\ref{tbl:algorithms} lists the selected algorithms.
+Only algorithms that optimize for fewer cache misses are included.
 This metric is easy to measure and also makes it easy to compare the various algorithms.
-We also focus on algorithms that target conventional caches, as they are designed in CMPs today.
+Also, we only consider algorithms that target conventional caches, as they are designed in CMPs today.
 This limitation makes the comparison of results from different algorithms easier.
 Also, we avoid having to extend our simulator with a new cache type, which would be unfeasible given the time constraints of this thesis.
 
@@ -61,6 +62,6 @@ This section covers cache partitioning algorithms.
 In contrast to the replacement algorithms, these algorithms explicitly assign a set number of blocks in each cache set to each core.
 
 \input{algorithms/UCP.tex}
-\input{algorithms/CLU.tex}
 \input{algorithms/PIPP.tex}
 \input{algorithms/PriSM.tex}
+\input{algorithms/CLU.tex}
