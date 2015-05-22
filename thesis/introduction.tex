@@ -16,10 +16,22 @@ Features such as speculative and out-of-order execution were added to take advan
 By the mid-2000s, processor cores had become so complex and were running at such high frequencies that manufacturers had reached the limitation known as the power wall.
 The power wall entails that manufacturers were unable to continue increasing the frequency and the transistor count of each core, without also attaching high-performance cooling systems to counter the increase power usage and hence increase heat generation.
 Systems like water or even nitrogen cooling were needed to continue the performance increase~\cite{Sutter2005}; these systems are not practical for personal computers.
+Figure~\ref{fig:introduction:memgap} shows the single core performance development for processors from 1980 to 2010.
+The effect of the power wall is clearly visible from 2005 and out where we observe no improvement in single core performance.
+We also observe that in the five years leading to the power wall, the yearly performance improvement decreased.
+This decrease is observed because improving single core performance became harder, as more advanced techniques for ILP exploiting where needed, ultimately resulting in the power wall.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figures/introduction/memory-gap}
+\caption{Comparison of (single core) processor and memory performance from 1980 to 2010 based on data collected by J. Hennessy and D. Patterson\cite{hennessy2012}.}
+\label{fig:introduction:memgap}
+\end{figure}
 
 By 2005, most manufacturers had abandoned their plans for increased single core performance, and where all working towards chip multiprocessors (CMPs)~\cite{Sutter2005}.
 CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
-This simplification of cores allowed manufacturers to fit multiple cores on a single die, without reaching the same power consumption as single core processors were reaching.
+When removing the aggressive UILP utilization features the per-core power consumption also reduced.
+This simplification of cores allowed manufacturers to fit multiple cores on a single die, without reaching the power consumption of a single ILP aggressive processing core.
 With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
 Today CMPs are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
@@ -37,10 +49,18 @@ Memory is a vital component of any computing system, without memory we are unabl
 Traditionally the technology used to create memories have differed from the technology used in processors~\cite{Wilkes2001}.
 As processor performance increased, memory performance did not increase proportionally.
 This development has resulted in what is known as the processor-memory gap~\cite{Wilkes2001}.
-To mitigate this effect, small and fast memory structures known as caches are a vital part of both single core processors and CMPs.
-Any memory request issued by a processing core is filtered through one or multiple caches before being issued to the main memory.
-If any of the caches has the value of the requested memory address, the value is returned, and the memory request never reaches the main memory.
-This mechanism to an extent can hide the processor-memory gap, given a high hit rate in cache memories.
+Figure~\ref{fig:introduction:memgap} shows how the gap in processor and memory performance has developed from 1980 to 2010.
+The figure shows that memory performance has had a constant development through the period of about 7% increase yearly.
+The processor-memory gap made itself visible in 1986 when processor performance started increasing by about 52% each year.
+If not handled the increasing processor-memory gap would become the limiting factor in processor performance, as processors as dependant on the memory system providing both code and data.
+In response to the growing gap small and fast memory structures known as caches were introduced.
+Caches are produced using different techniques than main memory, proving faster access; this comes at the cost of higher production cost and power usage.
+Today, most single-core processors and CMPs have one or more caches integrated on the processor die.
+The caches filter all memory request made by the processing core.
+If one of the caches has a copy of the requested data, it will stop the memory request from going to main memory and respond with the correct data.
+This is known as a cache hit.
+If the cache does not have the value of the requested address stored it is known as a cache miss.
+Because caches are faster and are located closer to the processor than main memory they can to an extent hide the processor-memory gap, assuming a high hit rate in the caches.
 
 \begin{figure}
     \centering
@@ -67,13 +87,14 @@ The set address is used to determine which set is responsible for caching a valu
 Within a set, all blocks are valid cache locations.
 Each block that contains valid data also stores the block tag of the data it contains.
 During a cache lookup, all valid blocks will be scanned looking for one containing the block tag from the address.
-In a direct mapped cache, each set contains only one block, making the block scan cheap.
-Fully associative caches have all blocks in a single set, and the block scan is expensive in this case.
+In a direct mapped cache, each set contains only one block, making the block scan trivial.
+Fully associative caches have all blocks in a single set, and the block scan required that every block be checked.
+This is expensive both measured in hardware required, and the critical path of the cache.
 Set associative caches, also known as n-way caches, is a middle ground organization that stores n blocks per set.
 Figure~\ref{fig:introduction:cache} shows both a direct and a 2-way cache under a read operation.
-The figure does not show a fully associative cache organization, but its organization is deductible from the 2-way cache organization.
+The figure does not show a fully associative cache organization but given the 2-way cache organization a fully associative cache is created by duplicating the block scan hardware until each column has one row.
 In this thesis, we will show that increasing the number of ways can improve performance of a cache and the cache partitioning algorithms.
-However, from this architectural overview it is apparent that the critical path and complexity of a cache also increases as the number of ways increases.
+However, the critical path and complexity of a cache also increases as the number of ways increases.
 As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
 Alternative cache organizations have been proposed, such as zcache~\cite{Sanchez2010}, that allows for higher associativity at a lower cost.
@@ -90,9 +111,9 @@ The introduction to chapter~\ref{cpt:algorithms} covers the difference between a
 
 In the memory hierarchy, smaller means faster. 
 For instance, main memory is much faster than disks, but disks can store much more data.
-The same is valid for caches, a smaller cache has a lower response time compared to a larger cache.
+The same is valid for caches, a smaller cache has a shorter critical path and hence a lower access time compared to a larger cache.
 Figure~\ref{fig:cmp_model} shows an example 16-core CMP architecture with three cache levels and main memory.
-For each cache level, the size increased and response time decreases.
+For each cache level, the size increased and access time increases.
 The first level caches are the smallest while the third level caches are largest.
 In order to save area on CMP chips, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
 In figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared last-level cache (LLC), the L3 cache.
@@ -168,7 +189,7 @@ By analyzing the problem description, we have been able to extract a set of requ
     \item[R4] Implement at least one of the presented algorithm and compare against a conventional LRU-managed cache.
 \end{description}
 
-Also, we extracted a set of optional requirements that the thesis may fulfill:
+Also, based on the problem description and discussions with the thesis advisors we list an additional set of optional requirements that the thesis may fulfill:
 
 \begin{description}
     \item[O1] Implement additional algorithms and evaluate them.
@@ -181,7 +202,7 @@ Also, we extracted a set of optional requirements that the thesis may fulfill:
 In our work with this thesis we have made the following contributions:
 
 \begin{itemize}
-  \item We have created a curated list with detailed descriptions of several recently published cache partitioning algorithms.
+  \item We have created a curated list with detailed descriptions of several recently published cache partitioning algorithms. The list has been limited to only consider algorithms that target conventional caches and optimize of cache miss reduction.
   \item A framework for evaluation of cache partitioning algorithms have been built on top of the Sniper~\cite{Carlson2011a} simulation system.
   \item Several of the algorithms presented in our list has been implemented and tested within our framework.
   \item We performed several sensitivity experiments further exploring the properties of our simulation framework and the implemented algorithms.
@@ -193,19 +214,18 @@ In our work with this thesis we have made the following contributions:
 The outline of the rest of this thesis is as follows:
 
 \begin{itemize}
-    \item Chapter~\ref{cpt:introduction} introduces the thesis by putting it in a historical context, presenting some background knowledge and presenting the contributions made, fulfilling requirement \textbf{R1}.
+  \item Chapter~\ref{cpt:introduction} introduces the thesis by putting it in a historical context, presenting some background knowledge and presenting the contributions made, fulfilling requirement \textbf{R1}.
 
-    \item Chapter~\ref{cpt:algorithms} presents a selection of cache partitioning algorithms and provides a theoretical comparison of them, fulfilling requirement \textbf{R2}.
+  \item Chapter~\ref{cpt:algorithms} presents a selection of cache partitioning algorithms and provides a theoretical comparison of them, fulfilling requirement \textbf{R2}.
 
-   \item Chapter~\ref{cpt:framework} presents our simulator and the framework built on this simulator to enable evaluation of cache partitioning algorithms. It also presents the subset of algorithms we have implemented. This fulfills requirement \textbf{R3} and \textbf{O1}.
+  \item Chapter~\ref{cpt:framework} presents our simulator and the framework built on this simulator to enable evaluation of cache partitioning algorithms. It also presents the subset of algorithms we have implemented. This fulfills requirement \textbf{R3} and \textbf{O1}.
 
-   \item Chapter~\ref{cpt:methodology} contains a description of our simulated processor model and explains all metrics we later use to evaluate our experiments.
+  \item Chapter~\ref{cpt:methodology} contains a description of our simulated processor model and explains all metrics we later use to evaluate our experiments.
 
-   \item Chapter~\ref{cpt:results} presents an experiment where we compare all implemented algorithms against an LRU managed cache. Also, we compare all implemented algorithms against each other. This fulfills requirement \textbf{R4} and \textbf{O2}.
+  \item Chapter~\ref{cpt:results} presents an experiment where we compare all implemented algorithms against an LRU managed cache. Also, we compare all implemented algorithms against each other. This fulfills requirement \textbf{R4} and \textbf{O2}.
 
-   \item Chapter~\ref{cpt:sresults} presents five different experiments all exploring either framework or algorithm sensitivity to various architectural changes, fulfilling requirement \textbf{O3}.
+  \item Chapter~\ref{cpt:sresults} presents five different experiments all exploring either framework or algorithm sensitivity to various architectural changes, fulfilling requirement \textbf{O3}.
 
-   \item Chapters~\ref{cpt:discussion} and~\ref{cpt:conclusion} contains a discussion of our results and a conclusion based on these. 
-Also, an overview of future work is given.
+  \item Chapters~\ref{cpt:discussion} and~\ref{cpt:conclusion} contains a discussion of our results and a conclusion based on these. Also, an overview of future work is given.
 
 \end{itemize}
