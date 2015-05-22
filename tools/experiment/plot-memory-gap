@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+
+from matplotlib import pyplot as plt
+
+
+processor = [1]
+memory = [1]
+
+for x in xrange(1981, 2011):
+	memory.append(memory[len(memory)-1]*1.07)
+
+	scale = 1.25
+	if x > 1986 and x <= 2000:
+		scale = 1.52
+	elif x > 2000 and x <= 2005:
+		scale = 1.2
+	elif x > 2005:
+		scale = 1
+	processor.append(processor[len(processor)-1]*scale)
+
+plt.figure(figsize=(7,2.5))
+
+plt.plot(processor, label='Processor')
+plt.plot(memory, label='Memory')
+plt.legend(loc='upper left')
+plt.yscale('log')
+plt.ylabel('Performance')
+plt.xlabel('Year')
+plt.xticks(range(0, len(processor), 5), range(1980, 2011, 5))
+plt.yticks([1, 10, 100, 1000, 10000], ['1', '10', '100', '1000', '10000'])
+
+plt.axvline(1986-1980, color='grey', alpha=.5)
+#plt.axvline(2000-1980)
+plt.axvline(2005-1980, color='grey', alpha=.5)
+
+plt.savefig('memory-gap.png', frameon=False, bbox_inches='tight')

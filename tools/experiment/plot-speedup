@@ -512,6 +512,92 @@ def generate_l2size_comparison(results):
 	print "L2 comp health: ", count
 	return generated
 
+def generate_l3size_comparison(results):
+	# Default l3size value and sorted list of all values in run
+	default = '04M';
+	l3sizes = sorted(['0_5M', '01M', '02M', '04M'])
+	generated = {}
+
+	csmb = '%04d' % 100
+
+	for membus in results.keys():
+		if membus != "06_4": continue
+		for l3size in l3sizes:
+			algorithms = results[membus][l3size][csmb]['0128k']
+			
+			result = {}
+			for algorithm, runs in algorithms.items():
+				if algorithm not in generated: generated[algorithm] = {default: {}}
+				if l3size not in generated[algorithm][default]: generated[algorithm][default][l3size] = {}
+
+				averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
+
+				for workload,values in runs.items():
+					group = '4'
+					if workload.startswith("ra8"): group = '8'
+					elif workload.startswith("ra16"): group = '16'
+					
+					for metric in averages[group].keys():
+						averages[group][metric].append(values[metric]/results[membus][l3size]['0100']['0128k']["lru"][workload][metric])
+
+				
+				# Reduce list to averages and update generated
+				for cores in averages:
+					if len(averages[cores]['stp']) > 0:								
+						vals = {}
+						for metric in averages[cores]:
+							vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+						generated[algorithm][default][l3size]['l3-%02d' % (int(cores))] = vals
+
+				generated[algorithm][default][l3size] = collections.OrderedDict(sorted(generated[algorithm][default][l3size].items()))
+
+	return generated
+
+def generate_membus_comparison(results):
+	# Default l2size value and sorted list of all values in run
+	default = '06_4';
+	membuses = sorted(['01_6', '03_2', '06_4'])
+	generated = {}
+
+	csmb = '%04d' % 100
+
+	for membus in membuses:
+		for l3size in results[membus].keys():
+			if l3size not in ['04M']: continue
+
+			l2runs = results[membus][l3size][csmb]
+			print membus, l2runs.keys()
+			for l2size in ['0128k']:
+				algorithms = l2runs[l2size]
+				
+				result = {}
+				for algorithm, runs in algorithms.items():
+					if algorithm not in generated: generated[algorithm] = {default: {}}
+					if membus not in generated[algorithm][default]: generated[algorithm][default][membus] = {}
+
+					averages = {key: {'hms': [], 'stp': [], 'walltime': [], 'mpki': []} for key in ['4', '8', '16']}
+
+					for workload,values in runs.items():
+						group = '4'
+						if workload.startswith("ra8"): group = '8'
+						elif workload.startswith("ra16"): group = '16'
+						
+						for metric in averages[group].keys():
+							averages[group][metric].append(values[metric]/results[membus][l3size]['0100'][l2size]["lru"][workload][metric])
+
+					
+					# Reduce list to averages and update generated
+					for cores in averages:
+						if len(averages[cores]['stp']) > 0:								
+							vals = {}
+							for metric in averages[cores]:
+								vals[metric] = np.mean(averages[cores][metric]) if len(averages[cores][metric]) > 0 else 0
+							generated[algorithm][default][membus]['membus-%02d' % (int(cores))] = vals
+
+					generated[algorithm][default][membus] = collections.OrderedDict(sorted(generated[algorithm][default][membus].items()))
+
+	return generated
+
 def generate_pubyear_comparison(results):
 
 	generated = {}
@@ -574,18 +660,11 @@ aliases = [
 # Partition algorithms to plot
 algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 
-#for algorithm in algorithms_names:
-#	for csmb in speedup_results.keys():
-#		for l2size in speedup_results[csmb].keys():
-#			# A incomplete run will skrew complete runs with different l2 size, stupid, but the easiest way of acheiving stability
-#			if algorithm not in speedup_results[csmb][l2size]:				
-#				print "Missing results for algorithm %s (l2 %s), removing this algorithm from plot." % (algorithm, l2size)
-#				algorithms_names.remove(algorithm)
-
 genSpeedup = False
 genCsmbComp = False
 genL2Comp = False
-genPubYearComp = True
+genL3Comp = True
+genPubYearComp = False
 
 results = load_results(rundir, aliases);
 
@@ -607,6 +686,11 @@ if genCsmbComp:
 if genL2Comp:
 	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
 	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.50,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+
+if genL3Comp:
+	plot_results(generate_l3size_comparison(results), [('', 'l3', '')], ['stp', 'hms'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3', yLimit=[0.85,1.10], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_l3size_comparison(results), [('', 'l3', '')], ['mpki'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3', yLimit=[0.85,1.30], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_membus_comparison(results), [('', 'membus', '')], ['stp', 'hms', 'mpki'], ['01_6', '03_2', '06_4'], rundir, plotname='membus', yLimit=[0.50,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
 
 if genPubYearComp:
 	years = {
