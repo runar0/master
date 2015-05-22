@@ -1,5 +1,5 @@
 
-\chapter{Cache Partitioning Algorithms}
+\chapter{Cache Management Algorithms}
 \label{cpt:algorithms}
 
 \begin{table}[!htb]
@@ -10,34 +10,36 @@
 DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter, set dueling                \\ \hline
 TADIP                           & 2008                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter per core, set dueling           \\ \hline
 DRRIP                           & 2010                           & Yes                         & LRU approx.                      & SRRIP/ BRRIP                    & Frequency promotion            & 1 counter per core, set dueling           \\ \hline
-UCP                             & 2006                           & Yes                         & Per core LRU                     & LRU                            & Promote to MRU                 & UMON 1 ATD per core                   \\ \hline
-PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Frequency promotion            & UMON 1 ATD per core, random generator \\ \hline
-PriSM                           & 2012                           & Yes                         & Per core LRU                  & LRU                            & Promote to MRU                 & 1 ATD per core                        \\ \hline
 NUCache                         & 2011                           & No                          & LRU + DeliWays     & LRU                            & Promote to MRU                 & NUTrack                               \\ \hline
+UCP                             & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON 1 ATD per core                   \\ \hline
+PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Frequency promotion            & UMON 1 ATD per core, random generator \\ \hline
+PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                            & Promote to MRU                 & 1 ATD per core                        \\ \hline
 CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                 \\ \hline
 \end{tabular}
-\caption{Overview of Cache Partitioning Algorithms.}
+\caption{Overview of Cache Management Algorithms.}
 \label{tbl:algorithms}
 \end{table}
 
-A cache partitioning algorithm divides available cache space between core(s) that access that cache.
-Algorithms often enforce the division via policies that define how to insert new data and how and when to replace old data.
+A cache management algorithm manages the storage space in a cache.
+It decides where to store new data blocks and which of the existing blocks are evicted to make room for new blocks.
 Some algorithms are thread-aware and geared towards shared caches.
 Others are thread-agnostic and work both for shared and private caches.
 Some have advanced optimization goals such as quality of service (QoS) while others use simpler metrics like miss minimization.
 In the following sections, we will present various algorithms primarily proposed to manage shared caches.
-We will also present LRU, a caching algorithm that is thread-agnostic and widely used both in private and shared caches today.
+We will also present LRU, an algorithm that is thread-agnostic and widely used both in private and shared caches today.
+We group the algorithms into two groups, those that explicitly divide the storage space in the cache between cores sharing the cache and those that do not.
+The term cache replacement algorithm is often used to describe algorithms that do not divide the storage space while the term cache partitioning algorithm describe algorithms that do divide the space.
+Throughout this paper, we will use the two terms interchangeably.
 
-There exists a large number of works regarding cache partitioning. 
-In this thesis, we select a few algorithms based on some of their characteristics and compare their performance.
-Firstly we select only algorithms that optimize for fewer cache misses.
+There exists a large number of works regarding cache management. 
+In this thesis, we select a few algorithms based on some of their characteristics and compare their performance, table~\ref{tbl:algorithms} lists the selected algorithms.
+Only algorithms that optimize for fewer cache misses are selected.
 This metric is easy to measure and also makes it easy to compare the various algorithms.
-We also focus on algorithms that target conventional caches as they are designed in CMPs today.
+We also focus on algorithms that target conventional caches, as they are designed in CMPs today.
 This limitation makes the comparison of results from different algorithms easier.
-Also, we avoid having to extend our simulator with a new cache type, which would unfeasible given the time constraints of this thesis.
-Table~\ref{tbl:algorithms} is an overview of all selected algorithms presented in this thesis.
+Also, we avoid having to extend our simulator with a new cache type, which would be unfeasible given the time constraints of this thesis.
 
-It is possible to divide all algorithms includes in this evaluation into three distinct policies.
+It is possible to divide all algorithms included in this evaluation into three distinct policies:
 \begin{itemize}
 \item The replacement policy specifies which block a cache set evicts when inserting a new block into that set.
 \item The insertion policy specifies the state of new blocks after insertion into the cache set.
@@ -45,13 +47,20 @@ It is possible to divide all algorithms includes in this evaluation into three d
 \end{itemize}
 In the following sections, we will explain how each of the selected cache partitioning algorithms work, with an emphasis on this division to make comparisons easier.
 
-\input{algorithms/common_patterns.tex}
+\section{Cache Replacement Algorithms}
+This section covers cache replacement algorithms, or algorithms that do not explicitly divide the available cache space between cores.
+
 \input{algorithms/LRU.tex}
 \input{algorithms/DIP.tex}
 \input{algorithms/TADIP.tex}
 \input{algorithms/DRRIP.tex}
+\input{algorithms/NUCache.tex}
+
+\section{Cache Partitioning Algorithms}
+This section covers cache partitioning algorithms.
+In contrast to the replacement algorithms, these algorithms explicitly assign a set number of blocks in each cache set to each core.
+
 \input{algorithms/UCP.tex}
+\input{algorithms/CLU.tex}
 \input{algorithms/PIPP.tex}
 \input{algorithms/PriSM.tex}
-\input{algorithms/NUCache.tex}
-\input{algorithms/CLU.tex}
