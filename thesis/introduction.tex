@@ -23,7 +23,7 @@ This decrease is observed because improving single core performance became harde
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=\textwidth]{figures/introduction/memory-gap}
+\includegraphics[width=.8\textwidth]{figures/introduction/memory-gap}
 \caption{Comparison of (single core) processor and memory performance from 1980 to 2010 based on data collected by J. Hennessy and D. Patterson\cite{hennessy2012}.}
 \label{fig:introduction:memgap}
 \end{figure}
@@ -50,8 +50,8 @@ Traditionally the technology used to create memories have differed from the tech
 As processor performance increased, memory performance did not increase proportionally.
 This development has resulted in what is known as the processor-memory gap~\cite{Wilkes2001}.
 Figure~\ref{fig:introduction:memgap} shows how the gap in processor and memory performance has developed from 1980 to 2010.
-The figure shows that memory performance has had a constant development through the period of about 7% increase yearly.
-The processor-memory gap made itself visible in 1986 when processor performance started increasing by about 52% each year.
+The figure shows that memory performance has had a constant development through the period of about 7\% increase yearly.
+The processor-memory gap made itself visible in 1986 when processor performance started increasing by about 52\% each year.
 If not handled the increasing processor-memory gap would become the limiting factor in processor performance, as processors as dependant on the memory system providing both code and data.
 In response to the growing gap small and fast memory structures known as caches were introduced.
 Caches are produced using different techniques than main memory, proving faster access; this comes at the cost of higher production cost and power usage.
@@ -64,14 +64,16 @@ Because caches are faster and are located closer to the processor than main memo
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{figures/introduction/dircache_read}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=.7\textwidth]{figures/introduction/dircache_read}
         \caption{Direct mapped cache. Each set contains only one block. The three most significant bits used for set addressing.}
         \label{fig:introduction:cache:dir}
     \end{subfigure}\hfill%
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{figures/introduction/2waycache_read}
-        \caption{2-way associative cache. A selector, not shown here, is used to select between line0 and line1 to produce the data output. Each set contain two blocks, and compared to the direct case, additional hardware is required to select the correct output. Two bits used to set addressing, the most significant bit ignored.}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=.8\textwidth]{figures/introduction/2waycache_read}
+        \caption{2-way associative cache. Each set contains two blocks. Two bits used for set addressing, the most significant bit ignored. Additonal hardware (not shown) required to select output between line0 and line1.}
         \label{fig:introduction:cache:2way}
     \end{subfigure}
     \caption{Simplified architecture of a direct and 2-way cache under a read operation. With 64B lines, 7-bit tags, and byte addressing.}
