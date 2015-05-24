@@ -6,3 +6,5 @@
 \todo{Experiment is done and our results show in short; Algorithms that improve performance via miss reduction gain more against LRU, algorithms that does not change miss count perform equal to the base case. Algorithms increasing misses loose compared to LRU. (These are excatly as expected, no suprises)}
 
 \todo{The interesting algorithm is UCP, which has improved performance by increasing misses, when we lower available bandwith UCP gains less over LRU. I will run an experiment with reduced L3 cache and memory bandwidth, we might find a spot where UCP cannot outperform LRU}
+
+\todo{Results show that lowering memory bus bandwidth recudes the access rate to memory, a possible theory is that we are reducing ooo exeucting and hence reduce the number of wrongly fetched cache blocks. This actually improves UCP performance vastly compared to LRU.}
