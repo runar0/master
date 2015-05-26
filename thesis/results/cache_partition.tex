@@ -98,7 +98,7 @@ Exploring the result from each of these groups individually is useful as it will
 Bandwidth bound workloads contain benchmarks that do not benefit from increased cache space.
 These are benchmarks with mainly streaming access patterns. 
 As expected the results confirms that none of the algorithms can significantly improve performance compared to LRU.
-As seen in figure~\ref{fig:results:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 0.9\% compared to LRU.
+As seen in figure~\ref{fig:results:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 4.8\% compared to LRU.
 We expect that even our bandwidth bound benchmarks will have phases with memory re-references, which means that their utility will increase.
 Based on our results, UCP seems to detect these phases and prioritize benchmarks correctly during these phases.
 By prioritizing one of the benchmarks UCP could cause an increase in misses from other benchmarks, but is expected to speed up the higher utility benchmark.

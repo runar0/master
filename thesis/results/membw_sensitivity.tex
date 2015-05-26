@@ -1,10 +1,92 @@
 \section{Memory Bus Speed Sensitivity}
-\label{sec:results:l2size_sensitivity}
+\label{sec:results:bus_sensitivity}
 
-4-core workloads; memory bus speed: 1.6GB/s, 3.2GB/s, 6.4GB/s, 12.8GB/s
+In this experiment, we explore how changes to the memory bus bandwidth effect the performance of the cache partitioning algorithms.
+With lower bandwidth, we expect that memory requests will take longer to complete, also we expect memory queue times to increase in periods with high utilization.
+However, we know that increased memory latency does not necessarily imply lower performance, as the OOO-core may be able to hide the increased memory latency.
+We also know that by increasing the memory latency we may effect how much speculative execution the processing cores does.
+As a result, we might see a change in the number of memory requests and also MPKI in our experiments.
+For this experiment, we use the same base system as in all previous experiments, and we utilize all our 4-core workloads.
+The memory bus bandwidth is varied, from the standard 6.4GB/s down to 3.2GB/s and 1.6GB/s.
 
-\todo{Experiment is done and our results show in short; Algorithms that improve performance via miss reduction gain more against LRU, algorithms that does not change miss count perform equal to the base case. Algorithms increasing misses loose compared to LRU. (These are excatly as expected, no suprises)}
+Figure~\ref{fig:results:bus}, shows average STP of all 4-core workloads for each algorithm.
+TADIP shows no sensitivity to reduced memory bandwidth, both the STP measurements shown in figure~\ref{fig:results:bus:tadip} and the MPKI measurements are about equal in all cases.
+Figure~\ref{fig:results:bus:drrip} show that DRRIP achieves slightly better performance compared to LRU with reduced memory bandwidth.
+UCP has the best speedups in this experiment, increasing from about 4.8\% in the base case to about 7\% with reduced memory bandwidth.
+The only algorithm that shows a decline in performance measured in STP is PriSM, as shown in figure~\ref{fig:results:bus:prism}.
+However, the HMS measurements show a steady increase from about 2\% better than LRU in the base case to about 4\% in the most constrained case.
+This indicates that some of the benchmarks are seeing a performance improvements, while others are slowed down enough to affect the STP measurements negatively.
+For the two final algorithms, PIPP, and PIPP-min8, we see a slight performance improvement in figures~\ref{fig:results:bus:pipp} and~\ref{fig:results:bus:pipp-min8}. 
+Most notably we see that PIPP performs as good as LRU in the most constrained case.
+PIPP-min8 performance development mimics PIPP, which has been shown to be the case in several previous experiments.
 
-\todo{The interesting algorithm is UCP, which has improved performance by increasing misses, when we lower available bandwith UCP gains less over LRU. I will run an experiment with reduced L3 cache and memory bandwidth, we might find a spot where UCP cannot outperform LRU}
 
-\todo{Results show that lowering memory bus bandwidth recudes the access rate to memory, a possible theory is that we are reducing ooo exeucting and hence reduce the number of wrongly fetched cache blocks. This actually improves UCP performance vastly compared to LRU.}
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-tadip-membus}
+        \caption{Speedup of TADIP normalized to LRU.}
+        \label{fig:results:bus:tadip}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-drrip-3-membus}
+        \caption{Speedup of DRRIP normalized to LRU.}
+        \label{fig:results:bus:drrip}
+    \end{subfigure}
+\end{figure}
+\clearpage
+\begin{figure}[!htb]
+    \ContinuedFloat
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-ucp-membus}
+        \caption{Speedup of UCP normalized to LRU.}
+        \label{fig:results:bus:ucp}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-prism-bus}
+        \caption{Speedup of PriSM normalized to LRU.}
+        \label{fig:results:bus:prism}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-pipp-membus}
+        \caption{Speedup of PIPP normalized to LRU.}
+        \label{fig:results:bus:pipp}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-stp-06_4-pipp-min8-membus}
+        \caption{Speedup of PIPP-min8 normalized to LRU.}
+        \label{fig:results:bus:pipp-min8}
+    \end{subfigure}
+    \caption{Speedup of cache partition algorithms normalized to LRU with decreasing memory bus bandwidth}
+    \label{fig:results:bus}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-mpki-06_4-prism-membus}
+        \caption{MPKI under PriSM normalized to LRU.}
+        \label{fig:results:membus:mpki-prism}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \includegraphics[width=\textwidth]{figures/results/speedup/membus-mpki-06_4-ucp-membus}
+        \caption{MPKI under UCP normalized to LRU.}
+        \label{fig:results:membus:mpki-ucp}
+    \end{subfigure}
+\end{figure}
+
+In all our experiments, we have shown that UCP outperforms the other implemented algorithms.
+Both when reducing the available memory bandwidth in this experiment, and when we reduced the size of the LLC in section~\ref{sec:results:l3size_sensitivity}, UCP has show improved performance over LRU.
+Because of this, we ran an addition experiment varying the memory bandwidth, but this time utilizing the lowest cache configuration used in section~\ref{sec:results:l3size_sensitivity}, 0.5MB.
+Because of the time constraints on this thesis, we only have results for UCP compared to LRU.
+Figure~\ref{fig:results:membus-05:ucp} shows the speedup for UCP compared to LRU with varying memory bus bandwidth.
+These results show that when we combine the high cache pressure caused by reduced LLC size, with increased memory latency, UCP can outperform LRU greatly.
+Our results show UCP performing more than 21\% better than LRU measured in STP in the most constrained case.
+Also, UCP reduces the MPKI compared by 2\% to 15\% increase compared to LRU in the most constrained case.
+
+\begin{figure}[!htb]
+    \centering
+        \includegraphics[width=0.5\textwidth]{figures/results/speedup/membus-0_5M-stp-06_4-ucp-membus}
+        \caption{Speedup of UCP normalized to LRU with reduced L3 cache.}
+        \label{fig:results:bus-05:ucp}
+\end{figure}
