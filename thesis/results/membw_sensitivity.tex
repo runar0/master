@@ -24,16 +24,25 @@ UCP has the best speedups in this experiment, increasing from about 4.8\% in the
 The only algorithm that shows a decline in performance measured in STP is PriSM.
 However, the HMS measurements for PriSM show a steady increase from about 2\% better than LRU in the base case to about 4\% in the most constrained case.
 This indicates that some of the benchmarks are seeing a performance improvement, while others are slowed down enough to affect the STP measurements negatively.
-For the two final algorithms, PIPP, and PIPP-min8, we see a slight performance improvement in figures~\ref{fig:results:bus:pipp} and~\ref{fig:results:bus:pipp-min8}. 
+For the two final algorithms, PIPP, and PIPP-min8, we see a slight performance improvement.
 Most notably we see that PIPP performs as good as LRU in the most constrained case.
 The performance development in PIPP-min8 mimics that of PIPP, which has been shown to be the case in several previous experiments.
 PIPP-min8 outperforms both PIPP and LRU.
 
 \begin{figure}[t]
     \centering
-        \includegraphics[scale=0.8]{figures/results/speedup/membus-0_5M-stp-06_4-ucp-membus}
-        \caption{Speedup of UCP normalized to LRU with reduced L3 cache.}
+        \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[scale=0.8]{figures/results/speedup/membus-0_5M-stp-06_4-ucp-membus}
+            \caption{STP.}
+            \label{fig:results:bus-05:ucp:stp}
+        \end{subfigure}%
+        \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[scale=0.8]{figures/results/speedup/membus-0_5M-hms-06_4-ucp-membus}
+            \caption{HMS.}
+            \label{fig:results:bus-05:ucp:hms}
+        \end{subfigure}
         \label{fig:results:bus-05:ucp}
+        \caption{Speedup of UCP normalized to LRU with reduced L3 cache.}
 \end{figure}
 
 
