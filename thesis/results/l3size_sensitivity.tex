@@ -31,59 +31,26 @@ With a 0.5MB L3 cache, the modified PIPP algorithm performs 4\% better than LRU 
 In the same configuration, the unmodified algorithm performs about 18\% worse compared to LRU.
 This result clearly shows the advantage of the extended block lifetime in the modified PIPP algorithm, and at the same time points an fundamental performance problem with PIPP.
 
-\begin{figure}[!htb]
+\begin{figure}[htb]
     \centering
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-tadip-l3}
-        \caption{Speedup of TADIP normalized to LRU.}
-        \label{fig:results:l3:tadip}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-drrip-3-l3}
-        \caption{Speedup of DRRIP normalized to LRU.}
-        \label{fig:results:l3:drrip}
-    \end{subfigure}
-\end{figure}
-\clearpage
-\begin{figure}[!htb]
-    \ContinuedFloat
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-ucp-l3}
-        \caption{Speedup of UCP normalized to LRU.}
-        \label{fig:results:l3:ucp}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-prism-l3}
-        \caption{Speedup of PriSM normalized to LRU.}
-        \label{fig:results:l3:prism}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-pipp-l3}
-        \caption{Speedup of PIPP normalized to LRU.}
-        \label{fig:results:l3:pipp}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-stp-04M-pipp-min8-l3}
-        \caption{Speedup of PIPP-min8 normalized to LRU.}
-        \label{fig:results:l3:pipp-min8}
-    \end{subfigure}
+    \includegraphics[scale=0.5]{figures/results/speedup/l3-stp-04M-all-l3}
     \caption{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
     \label{fig:results:l3}
 \end{figure}
 
-\begin{figure}[!htb]
-    \centering
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-prism-l3}
-        \caption{MPKI under PriSM normalized to LRU.}
-        \label{fig:results:l3:mpki-prism}
-    \end{subfigure}%
-    \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-ucp-l3}
-        \caption{MPKI under UCP normalized to LRU.}
-        \label{fig:results:l3:mpki-ucp}
-    \end{subfigure}
-\end{figure}
+%\begin{figure}[!htb]
+%    \centering
+%    \begin{subfigure}[b]{0.5\textwidth}
+%        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-prism-l3}
+%        \caption{MPKI under PriSM normalized to LRU.}
+%        \label{fig:results:l3:mpki-prism}
+%    \end{subfigure}%
+%    \begin{subfigure}[b]{0.5\textwidth}
+%        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-ucp-l3}
+%        \caption{MPKI under UCP normalized to LRU.}
+%        \label{fig:results:l3:mpki-ucp}
+%    \end{subfigure}
+%\end{figure}
 
 Next, we have PriSM, which shows a slight performance increase with the 2MB and 1MB cache, shown in figure~\ref{fig:results:l3:prism}. 
 At both 4MB and 0.5MB PriSM performs as good as LRU.
