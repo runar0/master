@@ -1,16 +1,12 @@
-
-\section{Clock Skew Sensitivity}
-\label{sec:results:csmb_sensitivity}
-
-As explained in section~\ref{sec:methodology:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
-In order to correctly simulate inter-core interactions, the simulation threads need to be kept in sync.
+As explained in section~\ref{sec:framework:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
+A method that keeps the simulation threads in sync is required to simulate inter-core interactions correctly.
 The method used to keep the threads in sync affects both simulation accuracy and simulation time.
 By having a relaxed synchronization method, one can improve simulation time, at the cost of simulation accuracy.
 In our experiments, we have used barrier synchronization with a barrier width of 100 cycles.
-Any inter-core interactions that occur between two successive barriers are not guaranteed to happen in the correct order, but events separated by a barrier will be simulated in order.
+Any inter-core interactions that occur between two successive barriers are not guaranteed to occur in the correct order, but events separated by a barrier will be simulated in the correct order.
 In other words, within a single barrier there is the possibility that all simulation threads run sequentially.
 For our work, this implies that there is a possibility that memory requests within a barrier arrives in the cache sorted by the core id, and not by time.
-Because of this possibility we expect that changing the CSMB value could have a noticeable effect on our experimentation results.
+Because of this possibility we expect that changing the clock skew minimization barrier (CSMB) value could have a noticeable effect on our experimentation results.
 
 \begin{figure}[!htb]
     \centering
@@ -34,17 +30,17 @@ Because of this possibility we expect that changing the CSMB value could have a 
 \end{figure}
 
 
-We devised and experiment to investigate how much the choice of synchronization barrier width affects our results, and also how much it affects simulation time.
-In the experiment, we vary the value of the clock skew minimization barrier (CSMB) and compare average STP, HMS and mpki values for all 4-core workloads.
+We devised an experiment to investigate how much the choice of synchronization barrier width affects our results, and also how much it affects simulation time.
+In the experiment, we vary the value of the CSMB and compare average STP, HMS and MPKI values for all 4-core workloads.
 Figure~\ref{fig:results:csmb} contains plots for both STP and HMS relative to the default 100 cycle barrier.
-From the graph, it is apparent that lowering the value below 100 cycles causes negligible variations in our average values. 
-The most noticeable is PIPP, that varies by only about 0.2\% with a tighter barrier interval.
+From the graph, it is apparent that lowering the value below 100 cycles causes negligible variations in our average results. 
+The most noticeable is PIPP; that varies by about 0.2\% with a tighter barrier interval.
 Increasing the interval to 1000 cycles results in a more noticeable difference in measurements.
-For both HMS, shown in figure~\ref{fig:results:csmb:hms}, and mpki, not shown, the trends are the same.
+For both HMS, shown in figure~\ref{fig:results:csmb:hms}, and MPKI, not shown, the trends are the same.
 
-Variance in simulation time relative to CSMB values, as shown in figure~\ref{fig:results:csmb:walltime} is as expected. 
-When lowering the barrier interval we measure an increase in average simulation time.
-Increasing the barrier value causes a slight decrease in simulation time.
+The variance in simulation walltime when we vary CSMB values, as shown in figure~\ref{fig:results:csmb:walltime}, is as expected. 
+When lowering the barrier interval we measure an increase in average walltime.
+Increasing the barrier value causes a slight decrease in walltime.
 We observe that the performance gain by increasing the barrier is small compared to the result variation. 
-When decreasing the barrier, the opposite is true; the result variation is small compared to the simulation time increase.
-These observations confirm that a barrier width of 100 cycles is a good middle ground value.
+When decreasing the barrier, the opposite is true; the result variation is small compared to the walltime increase.
+These observations suggest that a barrier width of 100 cycles is a good trade-off between accuracy and walltime.
