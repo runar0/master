@@ -1,6 +1,14 @@
 \section{L3 Cache Size Sensitivity}
 \label{sec:results:l3size_sensitivity}
 
+
+\begin{figure}[th]
+    \centering
+    \includegraphics[scale=0.7]{figures/results/speedup/l3-stp-04M-all-l3}
+    \caption{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
+    \label{fig:results:l3}
+\end{figure}
+
 In this section, we cover an experiment where we run all 4-core workloads with varying L3 cache size.
 While we have already shown in section~\ref{sec:methodology:processor_model} that our simulated model is realistic compared to current processor architectures, we want to explore how algorithm performance changes when we constrain available L3 cache.
 This experiment uses the same simulated system as in the cache partitioning experiment, section~\ref{sec:results:cache_partition}.
@@ -31,26 +39,24 @@ With a 0.5MB L3 cache, the modified PIPP algorithm performs 4\% better than LRU 
 In the same configuration, the unmodified algorithm performs about 18\% worse compared to LRU.
 This result clearly shows the advantage of the extended block lifetime in the modified PIPP algorithm, and at the same time points a fundamental performance problem with PIPP.
 
-\begin{figure}[htb]
-    \centering
-    \includegraphics[scale=0.5]{figures/results/speedup/l3-stp-04M-all-l3}
-    \caption{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
-    \label{fig:results:l3}
-\end{figure}
 
-%\begin{figure}[!htb]
-%    \centering
-%    \begin{subfigure}[b]{0.5\textwidth}
-%        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-prism-l3}
-%        \caption{MPKI under PriSM normalized to LRU.}
-%        \label{fig:results:l3:mpki-prism}
-%    \end{subfigure}%
-%    \begin{subfigure}[b]{0.5\textwidth}
-%        \includegraphics[width=\textwidth]{figures/results/speedup/l3-mpki-04M-ucp-l3}
-%        \caption{MPKI under UCP normalized to LRU.}
-%        \label{fig:results:l3:mpki-ucp}
-%    \end{subfigure}
-%\end{figure}
+\begin{figure}[th]
+    \centering
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{figures/results/speedup/l3-mpki-04M-prism-l3}
+        \caption{PriSM}
+        \label{fig:results:l3:mpki-prism}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{figures/results/speedup/l3-mpki-04M-ucp-l3}
+        \caption{UCP}
+        \label{fig:results:l3:mpki-ucp}
+    \end{subfigure}
+    \label{fig:results:l3:mpki}
+    \caption{MPKI normalized to LRU with decreasing L3 cache size.}
+\end{figure}
 
 Next, we have PriSM, which shows a slight performance increase with the 2MB and 1MB cache. 
 At both 4MB and 0.5MB PriSM performs as good as LRU.

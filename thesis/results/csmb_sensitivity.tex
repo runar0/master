@@ -1,3 +1,6 @@
+\section{Clock Skew Sensitivity}
+\label{sec:results:csmb_sensitivity}
+
 As explained in section~\ref{sec:framework:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
 A method that keeps the simulation threads in sync is required to simulate inter-core interactions correctly.
 The method used to keep the threads in sync affects both simulation accuracy and simulation time.
@@ -8,20 +11,20 @@ In other words, within a single barrier there is the possibility that all simula
 For our work, this implies that there is a possibility that memory requests within a barrier arrives in the cache sorted by the core id, and not by time.
 Because of this possibility we expect that changing the clock skew minimization barrier (CSMB) value could have a noticeable effect on our experimentation results.
 
-\begin{figure}[!htb]
+\begin{figure}[th]
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/csmb-stp-0128k-0100-csmb-4}
+        \includegraphics[width=0.8\textwidth]{figures/results/speedup/csmb-stp-0128k-0100-csmb-4}
         \caption{STP sensitivity to CSMB.}
         \label{fig:results:csmb:stp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/csmb-hms-0128k-0100-csmb-4}
+        \includegraphics[width=.8\textwidth]{figures/results/speedup/csmb-hms-0128k-0100-csmb-4}
         \caption{HMS sensitivty to CSMB.}
         \label{fig:results:csmb:hms}
     \end{subfigure}
     \begin{subfigure}[b]{0.6\textwidth}
-        \includegraphics[width=\textwidth]{figures/results/speedup/csmb-walltime-0128k-0100-csmb-4}
+        \includegraphics[width=.8\textwidth]{figures/results/speedup/csmb-walltime-0128k-0100-csmb-4}
         \caption{walltime sensitivity to CSMB.}
         \label{fig:results:csmb:walltime}
     \end{subfigure}
