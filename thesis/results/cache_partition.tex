@@ -25,10 +25,10 @@ In private mode, we use the same system as in this experiment but with only a si
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=.8\textwidth]{figures/results/speedup/avg-mpki-0128k-0100-avg}
-        \caption{mpki}
+        \caption{MPKI}
         \label{fig:results:base:avg:mpki}
     \end{subfigure}
-    \caption{Average STP, HMS and mpki normalized LRU for all workloads, grouped by number of cores.}
+    \caption{Average STP, HMS and MPKI normalized LRU for all workloads, grouped by number of cores.}
     \label{fig:results:base:avg}
 \end{figure}
 
@@ -67,10 +67,10 @@ In this same case, LRU would have favored the high access frequency one, punishi
     \end{subfigure}
     \begin{subfigure}[b]{0.6\textwidth}
         \includegraphics[width=.9\textwidth]{figures/results/speedup/avg-mpki-0128k-0100-4-avg}
-        \caption{mpki (not shown ca4 pipp 1.9)}
+        \caption{MPKI (not shown ca4 pipp 1.9)}
         \label{fig:results:base:4-avg:mpki}
     \end{subfigure}
-    \caption{Average STP, HMS and mpki relative to LRU for all 4 core workload groups.}
+    \caption{Average STP, HMS and MPKI relative to LRU for all 4 core workload groups.}
     \label{fig:results:base:4-avg} 
 \end{figure}
 
@@ -96,7 +96,7 @@ The fact that UCP can increase STP while increasing misses, and TADIP and PriSM 
 
 Our 4-core workloads consist of five distinct groups, where four of the groups contain benchmarks with a specific characteristic.
 Section~\ref{sec:methodology:benchmarks} lists each group and explain their specific characteristics.
-Figure~\ref{fig:results:base:4-avg} shows average STP, HMS and mpki normalized to LRU for these five groups.
+Figure~\ref{fig:results:base:4-avg} shows average STP, HMS and MPKI normalized to LRU for these five groups.
 Exploring the result from each of these groups individually is useful as it will show how various algorithms react to specific workload characteristics.
 
 Bandwidth bound workloads contain benchmarks that do not benefit from increased cache space.

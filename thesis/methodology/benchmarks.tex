@@ -1,5 +1,5 @@
 
-\section{Bechmarks and Workloads}
+\section{Benchmarks and Workloads}
 \label{sec:methodology:benchmarks}
 
 In this section, we will present the benchmarks we use to evaluate cache partitioning algorithms in this thesis.
@@ -16,17 +16,32 @@ Because simulating an entire benchmark is a time-consuming process, we choose to
 There are multiple ways of extracting sample intervals.
 The naive way of choosing intervals is to specify an offset and a length and use this across all benchmarks.
 However, several more advanced methods of sample selections exists, two examples are SimPoint~\cite{Hamerly2005} and SimFlex/SMARTS~\cite{Hardavellas2004, Wunderlich2003}.
-They both work in a similar manner, by dividing the instruction stream of a benchmark into equal sized intervals. 
-Intervals are then classified, and a set of them chosen to represent the entire benchmark. 
-What separates the two methods is the classification process used.
-J. Yi et al.~\cite{Yi2005} has shown that there is variation in accuracy between SimPoint and SimFlex selected intervals.
-As a result, We chose to use SimPoint because it integrates well with our selected simulator Sniper.
 
-Ideally a few sample intervals are needed per benchmark in order to get accurate simulation results.
+SimPoint analyses the benchmark and divides it into basic blocks.
+It then divides the dynamic instruction stream of the running benchmark into intervals of a set size.
+Each interval is classified by which of the basics blocks in the benchmark the interval executes.
+Finally, the intervals are clustered using k-means, and the algorithm selects the intervals closest to the centroid in each of the k-clusters to represent the benchmark.
+The value of k is configurable.
+SimPoint is run ahead of time and after it has been run an external simulator is used to simulate each of the SimPoint selected intervals.
+
+SimFlex also divides the dynamic instruction stream into intervals, but unlike SimPoint this is done while the simulator is simulating the benchmark.
+Some intervals are simulated in detail while others are simulated in a low detail fast forward mode.
+SimFlex uses statistics to calculate the variation of simulation results based on the intervals simulated in detail.
+The simulation ends after a minimum number of intervals has been simulated, and the result variation between the intervals is within a set limit.
+
+Both solutions utilize the same idea of simulation only parts of the dynamic instruction stream.
+The main difference is the selection criteria and the separation between ahead of time processing and integration with the simulator.
+J. Yi et al.~\cite{Yi2005} has shown that there little is variation in accuracy between SimPoint and SimFlex selected intervals.
+SimPoint also integrates well with our existing simulation framework.
+As a result, we chose to utilize SimPoint in our work.
+
+Ideally a few sample intervals are needed per benchmark to get accurate simulation results.
 To simplify the simulation, we chose to extract one larger interval per benchmark, in place of multiple smaller ones.
 By doing this, we are willingly increasing the error~\cite{Hamerly2004} between simulating our interval and the results obtained by simulating the entire benchmark.
-Because we are investigating performance changes due to various architectural choices, we are not that interested in correctly estimating the performance of the benchmark.
-We are rather observing the correct change, which we believe to be possible even with only a single interval.
+In our experiments, we are interested in observing performance change to our simulated intervals due to architectural changes.
+Producing results comparable to the results of a full benchmark run is not required to achieve this.
+Also, it is not obvious how to correctly combine performance metrics from multiple simulated intervals.
+Therefore, we choose to use only one interval per benchmark.
 
 The length chosen for our intervals may also affect the final results.
 As caches are empty when the simulation starts the cold cache effect, caused by compulsory misses at simulation start, may skew our results if the simulated interval is short.
@@ -39,11 +54,9 @@ All later experiments utilize these traces in place of the actual benchmark exec
 
 \subsection{Benchmark Classification}
 \label{sec:methodology:benchmarks:classification}
-\todo{Results? (This and the next subsection)}
-
 \input{figures/workloads/benchmarks.tex}
 
-In order to better understand our simulation results, we perform a benchmark classification experiment on each of the previously generated traces.
+To better understand our simulation results, we perform a benchmark classification experiment on each of the previously generated traces.
 This experiment is intended to detect various properties in each trace that may affect how they behave on our simulated architecture with various cache partitioning algorithms.
 We choose to categorize traces based on their sensitivity to the size of the LLC and the bandwidth of the bus connecting the LLC and the DRAM.
 
@@ -107,4 +120,4 @@ Table~\ref{tbl:benchmark_workloads:8-workloads} and~\ref{tbl:benchmark_workloads
 All workloads are generated randomly, but with a few predefined rules.
 No benchmark can occur twice within the same workload.
 This because we suspect that running two instances of the same benchmark, issuing the same memory operations in lock step, might cause unwanted interference that could skew our results. 
-In addition, we require that all benchmarks eligible for a workload set must be present in at least one workload in that set.
+Also, we require that all benchmarks eligible for a workload set must be present in at least one workload in that set.
