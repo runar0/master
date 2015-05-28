@@ -32,6 +32,8 @@ In private mode, we use the same system as in this experiment but with only a si
     \label{fig:results:base:avg}
 \end{figure}
 
+
+
 Figure~\ref{fig:results:base:avg:stp} shows the average speedup of all workloads normalized to LRU performance grouped by workload size.
 We observe that most of the implemented algorithms perform close to LRU for the four core workloads.
 UCP gives the best speedup of 2.1\% while PIPP performs badly with a 2.4\% performance decrease. 
@@ -50,24 +52,6 @@ Hence, we observe a total increase in misses.
 We could still see a performance benefit if the high utility applications increase in performance more than the low utility ones decrease.
 In this same case, LRU would have favored the high access frequency one, punishing the low access frequency application.
 
-With increasing core count, we increase the size of the L3 cache, but the associativity is unchanged.
-As a result, even more cores have to share the 32 blocks in each cache set.
-For some algorithms, especially PIPP, this increased cache set pressure significantly degrades performance.
-At 8-cores, PIPP has a 7.2\% performance decrease measured in STP compared to LRU.
-The modified PIPP-min8 outperforms PIPP, and even slightly outperforms LRU by 2.2\%, in the same situation.
-This is an indication that rows inserted by PIPP does not stay in the cache for long enough to see much re-use.
-The modified algorithm seems to counteract this problem by inserting with an offset of 8 blocks higher than normal PIPP.
-In the 16-core case, this effect is even more visible, with PIPP performing 45\% worse than LRU measured in STP and PIPP-min8 at only 7.6\% worse than LRU.
-DRRIP and UCP, the two best performers in the 4-core case, continues to perform well for both 8- and 16-cores.
-UCP beating LRU by 5.7\% and 6.9\% measured in STP in 8- and 16-core workloads, and DRRIP at 1.8\% and 2.6\%.
-TADIP and PriSM, which both perform equal to LRU in the 4-core case, lose some traction when core count increases.
-TADIP performs equal to LRU for 8-cores, but 3.6\% slower for 16-cores.
-PriSM cannot keep up for more than 4-cores, and performs 4.7\% and 7.6\% slower for 8- and 16-cores.
-As the number of cores increase, it might be tempting to blame TADIPs performance loss on an increased fraction of duel-sets, more duel-sets means more sets forced to use a non-optimal policy.
-However, since we scale the shared cache size linearly with increased core count while keeping the associativity static, the number of sets increase with the core count.
-Hence, the fraction of duel sets is equal in all cases.
-Neither TADIP nor PriSM caused an increase in misses, which is a good result considering they target miss-minimization.
-The fact that UCP can increase STP while increasing misses, and TADIP and PriSM decreases STP without affecting miss count is an important result that shows that miss minimization does not directly imply a speedup.
 
 \begin{figure}[th]
     \centering
@@ -89,6 +73,26 @@ The fact that UCP can increase STP while increasing misses, and TADIP and PriSM 
     \caption{Average STP, HMS and mpki relative to LRU for all 4 core workload groups.}
     \label{fig:results:base:4-avg} 
 \end{figure}
+
+
+With increasing core count, we increase the size of the L3 cache, but the associativity is unchanged.
+As a result, even more cores have to share the 32 blocks in each cache set.
+For some algorithms, especially PIPP, this increased cache set pressure significantly degrades performance.
+At 8-cores, PIPP has a 7.2\% performance decrease measured in STP compared to LRU.
+The modified PIPP-min8 outperforms PIPP, and even slightly outperforms LRU by 2.2\%, in the same situation.
+This is an indication that rows inserted by PIPP does not stay in the cache for long enough to see much re-use.
+The modified algorithm seems to counteract this problem by inserting with an offset of 8 blocks higher than normal PIPP.
+In the 16-core case, this effect is even more visible, with PIPP performing 45\% worse than LRU measured in STP and PIPP-min8 at only 7.6\% worse than LRU.
+DRRIP and UCP, the two best performers in the 4-core case, continues to perform well for both 8- and 16-cores.
+UCP beating LRU by 5.7\% and 6.9\% measured in STP in 8- and 16-core workloads, and DRRIP at 1.8\% and 2.6\%.
+TADIP and PriSM, which both perform equal to LRU in the 4-core case, lose some traction when core count increases.
+TADIP performs equal to LRU for 8-cores, but 3.6\% slower for 16-cores.
+PriSM cannot keep up for more than 4-cores, and performs 4.7\% and 7.6\% slower for 8- and 16-cores.
+As the number of cores increase, it might be tempting to blame TADIPs performance loss on an increased fraction of duel-sets, more duel-sets means more sets forced to use a non-optimal policy.
+However, since we scale the shared cache size linearly with increased core count while keeping the associativity static, the number of sets increase with the core count.
+Hence, the fraction of duel sets is equal in all cases.
+Neither TADIP nor PriSM caused an increase in misses, which is a good result considering they target miss-minimization.
+The fact that UCP can increase STP while increasing misses, and TADIP and PriSM decreases STP without affecting miss count is an important result that shows that miss minimization does not directly imply a speedup.
 
 Our 4-core workloads consist of five distinct groups, where four of the groups contain benchmarks with a specific characteristic.
 Section~\ref{sec:methodology:benchmarks} lists each group and explain their specific characteristics.
@@ -117,14 +121,6 @@ This is an expected result, as way-partitioning is designed to improve performan
 When all applications are recency-friendly, it seems that having the cores dynamically share the cache based on access frequency is a better solution.
 PriSM, which does block level partitioning, confirms this assumption as it performs as good as LRU in terms of STP and HMS, it does, however, cause a small increase in misses.
 
-The performance of compute-bound workloads is expected to be mostly unaffected by the partitioning algorithm. 
-Our results support this assumption, with the exception of PIPP, which again causes increased misses and a slight performance decrease.
-Once again, PIPP-min8 seems to remedy this, pointing to an issue with short block lifetimes in a PIPP managed cache, causing more misses.
-
-Both cache and bandwidth bound workloads and the random workloads show results that concur with the overall averages discussed earlier.
-One interesting fact to note is that both versions of PIPP and UCP are equally good and also the best performers when measuring in HMS in cache and bandwidth bound workloads.
-This result points to PIPP being able to provide speedups of individual benchmarks that is good enough to raise the average while still performing as good as LRU measured in STP.
-Most likely this indicates that applications marked as streaming are performing badly while those shielded are performing so good their performance increase raises the average.
 
 \begin{figure}[th]
     \centering
@@ -141,6 +137,16 @@ Most likely this indicates that applications marked as streaming are performing 
     \caption{Average STP and MPKI relative to LRU for cache and bandwidth bound workloads.}
     \label{fig:results:base:cabw} 
 \end{figure}
+
+The performance of compute-bound workloads is expected to be mostly unaffected by the partitioning algorithm. 
+Our results support this assumption, with the exception of PIPP, which again causes increased misses and a slight performance decrease.
+Once again, PIPP-min8 seems to remedy this, pointing to an issue with short block lifetimes in a PIPP managed cache, causing more misses.
+
+Both cache and bandwidth bound workloads and the random workloads show results that concur with the overall averages discussed earlier.
+One interesting fact to note is that both versions of PIPP and UCP are equally good and also the best performers when measuring in HMS in cache and bandwidth bound workloads.
+This result points to PIPP being able to provide speedups of individual benchmarks that is good enough to raise the average while still performing as good as LRU measured in STP.
+Most likely this indicates that applications marked as streaming are performing badly while those shielded are performing so good their performance increase raises the average.
+
 
 In all our previous findings, we have observed that UCP is raising performance while also increasing misses.
 To ensure that this result is not just an artifact of result averaging, we show the per workload STP and MPKI for the cache and bandwidth bound workloads in figure~\ref{fig:results:base:cabw}.
