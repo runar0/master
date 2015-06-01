@@ -1,8 +1,56 @@
 \section{Implementation}
 \label{sec:framework:implementation}
 
-\todo{Discuss trace driven, and CSMB}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/framework/functional_core_model}
+\caption{Partial core memory model in Sniper.}
+\label{fig:framework:implementation:core_memory}
+\end{figure}
 
-\todo{Add a block diagram showing how the core->cache implementation is sniper looks like}
+Figure~\ref{fig:framework_implementation:core_memory} shows an overview of the Sniper memory simulation.
+The core class handles simulating the execution of instructions; this also includes simulating memory accesses to get and store instructions and data.
+Each core as a memory manager instance which again, in our case, has four cache controllers.
+A cache controller represents a single cache.
+For shared caches the cache controller instance in all but core 0 is a proxy, any calls to the proxy cache controllers is directed to the main controller at core 0.
 
-\todo{Explain how we can extend this implementation with new algorithms}
+When a memory request is sent by the core to the memory manager, the manager will issue the request to caches in order until it finds the data. 
+If none of the caches have the requested data, the request is handled by the main memory simulation, which is out of the scope of this discussion.
+Each cache controller knows its response latency and handles updating of the simulation time during each requests.
+In other words, the classes from Core down to CacheController is responsible for a mix of functional and performance simulation.
+
+Each cache controller has a cache instance, which is a purely functional cache model.
+The cache class has methods for reading and writing to the cache, and each method returns whether the request was a hit or a miss.
+This return value is then used by the cache controller to update the performance simulation by updating the simulation time.
+Each cache is built from several CacheSet instances, each representing a single set, and possibly a single CacheSetInfo instance.
+By modifying how the CacheSet operates, cache partitioning algorithms can be implemented.
+The CacheSetInfo instance is available to all cache sets and enables implementation of cache schemes that share data between cache sets.
+
+In the original Sniper implementation, only the block tag requested is made available to the CacheSet. 
+While this is enough to implement simple schemes, such as LRU and TADIP, we need more information to implement cache partitioning schemes such as UCP.
+We have therefore modified Sniper by adding a data structure that is sent from the core when it initiates a memory request, all the way down to the cache set.
+This data structure allows us to pass arbitrary data from the core to the cache set, allowing for more complex schemes.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figures/framework/algorithms}
+\caption{Implemented algorithms and their relations.}
+\label{fig:framework:implementation:algorithms}
+\end{figure}
+
+Of the schemes presented in chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; LRU, TADIP, DRRIP, PriSM, UCP, and PIPP.
+
+Figure~\ref{fig:framework:implementation:algorithms} shows how the five implemented algorithms relate to each other, and the base CacheSet class.
+LRU, which was included in Sniper, and the two set dueling schemes TADIP and DRRIP, are all implemented as direct sub-classes of the CacheSet class.
+Based on the CacheSet class we have also implemented a cache with shadow tags.
+By default, the shadow tags do full sampling of the cache, but we made this configurable.
+PriSM, which requires access statistics for each core, is implemented on top of the shadow tag implementation.
+Also, we create a UMON implementation on top of the shadow tag; this adds the utility calculating and block assigning functionality needed by both UCP and PIPP.
+UCP and PIPP, are then implemented on top of the UMON base class.
+
+Our implementation using inheritance reduces the number of code lines required when we implement multiple algorithms that share several properties.
+By reducing the number of code lines required, we improve implementation time, and we reduce the chance of bug causing issues in our simulations.
+Implementing additional algorithms in this framework requires only an understanding of how the algorithm works, as all of the simulator groundwork is already in place.
+This makes the framework strongly suitable for future research.
+
+\todo{Summarize the variables used in each relevant algorithm based on the existing content}
