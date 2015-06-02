@@ -2,15 +2,28 @@
 \chapter{Discussion}
 \label{cpt:discussion}
 
-\todo{We have assumed uniform access to L3, even with 16 cores, this is not a realistic model as it would required a huge crossbar of sorts...}
+\section{Parameter Fitting and Lack of Implementation Details}
 
-\section{Lack of implementation details}
+All of the algorithms we have implemented and evaluated in this thesis have one or more parameters controlling its operation.
+As chapter~\ref{cpt:framework} explains, we have mainly opted to use parameter values from the original papers.
+Each of the original papers has attempted to show how their algorithm performs better that LRU and the current best theoretical algorithm.
+It is fair to assume that the authors have chosen parameter values that are fitted to provide good results on their benchmarks.
+Because none of the papers uses the same benchmark set, and none of the benchmark sets matches the one we used in this thesis, there is a potential optimization opportunity here.
 
-\todo{We should mention the lack of implementation details available for some of the implemented algorithms. We had to make some assumptions along the way that will have an effect on our results compared to those of the original authors.}
+By performing experiments selecting the property values that give the best overall performance on our workloads we could potentially improved performance of several algorithms.
+Even though it might seem like an unfair comparison, comparing algorithms with nonoptimal parameter values, we still choose to not fit parameters to our benchmarks.
+The reasoning behind this is that an algorithm has to not only perform well under benchmarking, but also under a real world scenario.
+In this case, one cannot reliably fit parameters because the workload is not known ahead of time.
+Hence, running the algorithms using the authors selected parameter values on an unknown workload set might give results closer to a real life scenario.
+Also by fitting parameters, one might end up overfitting.
+In this case, the parameters result in a good performance on the workload set, but performance on all other workloads decreases.
+We feel this would also be an unfair comparsion.
 
-\section{Parameter Fitting}
+As mentioned in section~\ref{sec:framework:algorithms} we also had to make some assumptions in our implementations.
+These assumptions were necessary due to missing or unclear implementation details in the original papers.
+While we made all attempts to keep our implementation identical to the algorithm described by the original authors, there is still a chance some of our algorithms function slightly different due to one of these assumptions.
+As a result, our performance evaluations results may not follow those of the original papers.
 
-\todo{We have used the parameters given in their original papers, the parameters a possibly fitted towards the original authors workloads. We could most likely have acheived better speedups if we had fitted the parameters to our workloads. But then again is that better, given that we cannot fit to all possible workloads?}
 
 
 \section{Clock Skew Synchronization Barrier}
@@ -39,3 +52,16 @@ This seems to be an unlikely situation, and our experiment supports this assumpt
 The experiment only did a sensitivity analysis of 4-core workloads. 
 We chose to do this because repeating it for 8- and 16-cores would have been unpractical given the time constraints of this work. 
 However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been the same in these cases.
+
+
+\section{Uniform LLC Access}
+
+In section~\ref{sec:methodology:processor_model} we present the processor model used on our experiments.
+Our architecture, as shown in figure~\ref{fig:processor_model}, assumes a uniform access time to the LLC.
+This assumption is reasonable for 4 and even 8 core processors and requires a uniform access method between the L2 caches and the LLC.
+One possible solution is a crossbar.
+However, scaling this architecture to 16 cores is somewhat unreasonable as the crossbar grows exponentially.
+This can be seen in newer 18 core Intel i7 where the last level cache is distributed around the chip and interconnected using ring interconnects~\cite{Hruska2014}.
+This solution results in non-uniform access to the LLC.
+Due to this fact, we chose not to simulate 32 and higher core workloads, even thought our simulation framework supports it.
+
