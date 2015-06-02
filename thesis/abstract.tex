@@ -1,6 +1,16 @@
 
 \section*{Abstract}
 
+The performance gap between processors and main memory has been growing over the last decades.
+Fast memory structures know as caches were introduced to mitigate some of the effects of this gap.
+After processor producers reached the limits of single core processors performance in the early 2000-s, multicore processors have become common.
+Multicore processors commonly share cache space between cores, and algorithms that manage access to shared cache structures have become an important research topic.
+Many researchers have presented algorithms that are supposed to improve the performance of multicore processors by modifying cache policies.
+In this thesis, we present and evaluate several recent and important works in the cache management field.
+We present a simulation framework for evaluation of various cache management algorithms, based on the Sniper simulation system.
+Several of the recently suggested algorithms are implemented and evaluated against the commonly used Least Recently Used (LRU) replacement policy.
+Our results suggest that LRU replacement in many cases is sufficient, and few of the evaluated algorithms consistently outperforms LRU.
+We also show that Utility Cache Partitioning, the oldest evaluated alternative to LRU, is the best performer for all our workloads.
 
 \clearpage
 
