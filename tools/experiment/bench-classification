@@ -124,8 +124,10 @@ for benchmark in benchmarks:
 
 	plt.savefig(path.join(args.out, '%s.png' % (benchmark)), frameon=False, bbox_inches='tight')
 	plt.clf()
+	plt.cla()
 
 classified = { 'co': [], 'bw': [], 'ca': [], 'ca-bw': []}
+benchmark_values = {}
 # Classify benchmarks
 for benchmark in benchmarks:
 	print "Benchmark: %s" % benchmark
@@ -157,6 +159,8 @@ for benchmark in benchmarks:
 	memSense = meanMemDiff <= 0.925 if stdMemDiff < 0.1 else meanMemDiff <= 0.8
 
 	print "\tMemory%s\t: MEAN: %.3f STD: %.3f" % ("*" if memSense else " ", meanMemDiff, stdMemDiff)
+
+	benchmark_values[benchmark] = {'cache': meanCacheDiff, 'memory': meanMemDiff}
 
 	if cacheSense:
 		if memSense:
@@ -199,6 +203,39 @@ f.write("\\caption{Benchmark Classifications}\n")
 f.write("\\label{tbl:benchmarks_workloads:benchmark_classification}\n")
 f.write("\\end{table}\n")
 f.close()
+
+
+# Create a 2d plot
+#print benchmark_values
+
+# Minimum memory and cache value, used for normalization
+#mincache = min([data['cache'] for _,data in benchmark_values.items()])
+#minmemory = min([data['memory'] for _,data in benchmark_values.items()])
+
+#plt.clf()
+#fig,ax = plt.subplots()
+#handles = []
+#benchmarks = []
+#for benchmark,data in benchmark_values.items():
+#	i = 0
+#	if benchmark in classified['ca']:
+#		i = 1
+#	elif benchmark in classified['co']:
+#		i = 2
+#	elif benchmark in classified['bw']:
+#		i = 3
+#	benchmarks.append(benchmark)
+#	handles.append(plt.scatter([(data['cache']-mincache)/(1-mincache)], [(data['memory']-minmemory)/(1-minmemory)], color=cm.Set1(0.25*i)))
+
+
+#plt.legend(handles, benchmarks, bbox_to_anchor=(1.05, 1), loc=2)
+#ax = plt.gca()
+#plt.axis([0, 1, 0, 1])
+#ax.set_ylabel("Average cache Sensitivity")
+#ax.set_xlabel("Average cache Sensitivity")
+
+#plt.show()
+
 
 import random
 import math
