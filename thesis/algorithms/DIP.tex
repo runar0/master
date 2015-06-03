@@ -3,13 +3,13 @@
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{\textwidth}
+    \begin{subfigure}[b]{0.50\textwidth}
         \includegraphics[width=\textwidth]{figures/algorithms/DIP_architecture}
         \caption{Set-dueling architecture.}
         \label{fig:algorithms:dip:set_dueling}
     \end{subfigure}    
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[]{figures/algorithms/DIP_atd_architecture}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=.9\textwidth]{figures/algorithms/DIP_atd_architecture}
         \caption{ATD architecture.}
         \label{fig:algorithms:dip:atd}
     \end{subfigure}
@@ -50,6 +50,13 @@ The main advantage of using an ATD is that all available information is used whe
 Also, the entire cache will always use the best algorithm, where in set-dueling a fraction of the sets will always run the worst performing algorithm.
 The difference between using an ATD and cache dueling sets in terms of misses were shown to be small in the original paper.
 On their benchmarks, they measured an average decrease in misses by 22.3\% using ATDs, compared to a 21.3\% decrease when using 32 duel-sets~\cite{Qureshi2007}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.65\textwidth]{figures/algorithms/DIP}
+    \caption[DIP managed 4-way cache set.]{DIP managed 4-way cache set. (Assuming BIP insertion)}
+    \label{fig:algorithms:lru_example}
+\end{figure}
 
 
 \todo{Example insertions in BIP mode}

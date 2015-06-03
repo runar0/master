@@ -3,14 +3,14 @@
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[b]{0.5\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/algorithms/TADIP-I}
-        \caption{Cache managed by TADIP-Isolated.}
+        \caption{Cache managed by TADIP-I.}
         \label{fig:algorithms:tadip:isolated}
     \end{subfigure}
-    \begin{subfigure}[b]{0.5\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/algorithms/TADIP-F}
-        \caption{Cache managed by TADIP-Feedback.}
+        \caption{Cache managed by TADIP-F.}
         \label{fig:algorithms:tadip:feedback}
     \end{subfigure}    
     \caption{Two alternate duel set organizations for TADIP.}
@@ -58,15 +58,11 @@ If both BIP and LIP are false, then the set is a normal follower set and utilize
 It follows from the algorithms that the original authors use a total of 32 duel sets spread evenly throughout the cache.
 
 \begin{algorithm}[ht]
-\begin{equation}
-LIP = set\_no[11:7] + core\_id == set\_no[6:0]
-\end{equation}
-\begin{equation}
-BIP = set\_no[11:7] + core\_id + cores == set\_no[6:0]
-\end{equation}
-\begin{equation}
-FOLLOWER = !LIP + !BIP
-\end{equation}
-\caption{TADIP duel set selection}
+\caption{TADIP duel set selection.}
 \label{alg:algorithms:tadip:set_selection}
+\begin{algorithmic}[1]
+\State $LIP\gets set\_no[11:7] + core\_id == set\_no[6:0]$
+\State $BIP\gets set\_no[11:7] + core\_id + cores == set\_no[6:0]$
+\State $FOLLOWER\gets !LIP + !BIP$
+\end{algorithmic}
 \end{algorithm}
