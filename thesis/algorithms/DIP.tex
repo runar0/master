@@ -4,19 +4,19 @@
 \begin{figure}
     \centering
     \begin{subfigure}[b]{\textwidth}
-	    \includegraphics[width=\textwidth]{figures/algorithms/DIP_architecture}
-	    \caption{Set-dueling architecture.}
-    	\label{fig:algorithms:dip:set_dueling}
-	\end{subfigure}	
+        \includegraphics[width=\textwidth]{figures/algorithms/DIP_architecture}
+        \caption{Set-dueling architecture.}
+        \label{fig:algorithms:dip:set_dueling}
+    \end{subfigure}    
     \begin{subfigure}[b]{0.3\textwidth}
-	    \includegraphics[]{figures/algorithms/DIP_atd_architecture}
-	    \caption{ATD architecture.}
-	    \label{fig:algorithms:dip:atd}
-	\end{subfigure}
-	\caption{Two DIP organizations.}
+        \includegraphics[]{figures/algorithms/DIP_atd_architecture}
+        \caption{ATD architecture.}
+        \label{fig:algorithms:dip:atd}
+    \end{subfigure}
+    \caption{Two DIP organizations.}
 \end{figure}
 
-Dynamic Insertion Policy (DIP)~\cite{Qureshi2007} was originally proposed by M. K. Qureshi et al. in 2007.
+Dynamic Insertion Policy (DIP)~\cite{Qureshi2007} was originally proposed in 2007.
 The DIP algorithm views the cache set as a stack, as in LRU.
 Replacement and promotion policies are equal to LRU, DIP evicts the block at the LRU position, and following a cache hit a block moves to the MRU position.
 In contrast to LRU, DIP is a combination of two insertion policies, the standard LRU insertion policy (LIP) and Binominal Insertion Policy (BIP).
@@ -25,26 +25,32 @@ BIP inserts new blocks either at the LRU position or with a small probability, $
 The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
 By mostly inserting at the LRU position the BIP insertion policy can theoretically handle trashing memory access patterns.
-BIP inserts most of the new blocks in the LRU position, and the upper part of the LRU stack can contain blocks that have been re-referenced.
+When most new blocks enter at the LRU position, the upper parts of the LRU stack can contain blocks that have been re-referenced.
 In a trashing access pattern, this results in part of the working set residing in the upper part of the stack while the rest are inserted at the LRU position and evicted at the next miss.
 By sometimes inserting at the MRU position BIP will give blocks not referenced by the next miss a chance to stay in the cache. 
 Inserting at the MRU position will also force stale cache blocks in the upper part of the stack to move towards the LRU position.
 
-The authors of DIP present several methods to detect the best replacement algorithm, one of them is set-dueling.
+The authors of DIP present several methods to detect the best of the two replacement algorithm, one of them is set-dueling.
 Set-dueling is implemented by having some sets of the cache always use BIP and some always use LIP.
 A counter tracks the performance of the dueling sets.
-Misses in LRU sets will increment the counter and misses in BIP sets will decrement the counter.
-The MSB of the counter can then be used to select the optimal algorithm.
-If the MSB is one, an overweight of misses in LRU sets are occurring, and BIP is the optimal algorithm. 
-If the MSB is zero, then an overweight of BIP misses are occurring, and LRU is the optimal algorithm.
-Figure~\ref{fig:algorithms:dip:set_dueling} shows the set dueling and algorithm selection architecture suggested by M. K. Qureshi et al.
+Misses in LIP sets will increment the counter and misses in BIP sets will decrement the counter.
+The most significant bit (MSB) of the counter can then be used to select the best performing of the two algorithms.
+If the MSB is one, an overweight of misses in LIP sets are occurring, and BIP is the best performing algorithm. 
+If the MSB is zero, then an overweight of BIP misses are occurring, and LIP is the best performing algorithm.
+Figure~\ref{fig:algorithms:dip:set_dueling} shows the set dueling and algorithm selection architecture.
 In the figure sets 0 and 5 are dueling sets for LIP while 3 and 6 are dueling sets for BIP.
 All other sets are follower sets, meaning that they utilize the algorithm indicated by the selection logic.
 
-Another solution is to utilize two Auxilliary Tag Directories (ATDs), as shown in figure~\ref{fig:algorithms:dip:atd}.
-An ATD is equal to the caches tag directory; it keeps track of blocks present but does not store any data.
+Another solution is to utilize two Auxilliary Tag Directories (ATDs), as shown in Figure~\ref{fig:algorithms:dip:atd}.
+An ATD is equal to the cache's tag directory; it keeps track of blocks present but does not store any data.
 ATDs are, for this reason, cheaper than a full cache, but still requires more storage than dual-sets that use the existing cache.
-As the figure shows, the two ATDs run one algorithm each, all operations on the main cache execute in parallel on the ATDs as well.
-The same counter architecture controlled by misses in either ATD is used to select the optimal algorithm for the main cache.
+As the figure shows, the two ATDs run one algorithm each and all operations on the main cache execute in parallel on the ATDs.
+The same counter architecture controlled by misses in either ATD is used to select the best performing algorithm for the main cache.
 The main advantage of using an ATD is that all available information is used when selecting between BIP and LIP.
-Also, the entire cache will always use the best algorithm, where in set-dueling a fraction of the sets will always run the non-optimal algorithm.
+Also, the entire cache will always use the best algorithm, where in set-dueling a fraction of the sets will always run the worst performing algorithm.
+The difference between using an ATD and cache dueling sets in terms of misses were shown to be small in the original paper.
+On their benchmarks, they measured an average decrease in misses by 22.3\% using ATDs, compared to a 21.3\% decrease when using 32 duel-sets~\cite{Qureshi2007}.
+
+
+\todo{Example insertions in BIP mode}
+\todo{Resize architecture figures}
