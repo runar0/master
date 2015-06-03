@@ -671,11 +671,11 @@ aliases = [
 # Partition algorithms to plot
 algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 
-genSpeedup = True
+genSpeedup = False
 genCsmbComp = False
 genL2Comp = False
 genL3Comp = False
-genPubYearComp = False
+genPubYearComp = True
 
 results = load_results(rundir, aliases);
 
@@ -725,18 +725,21 @@ if genPubYearComp:
 	}
 	result = generate_pubyear_comparison(results)
 
-	data = [(years[algorithm], values['4']['stp']) for algorithm,values in result.items()]
-  	data = [list(t) for t in zip(*data)]
+	stp = [(years[algorithm], values['4']['stp']) for algorithm,values in result.items()]
+  	stp = [list(t) for t in zip(*stp)]
+  	hms = [(years[algorithm], values['4']['hms']) for algorithm,values in result.items()]
+  	hms = [list(t) for t in zip(*hms)]
 
-  	pp.pprint(data)
   	fig,ax = plt.subplots()
-	plt.plot(data[0], data[1], 'ro', color=cm.Blues(0.5))
+	stp_handle = plt.plot(stp[0], stp[1], 'ro', color=cm.Blues(0.25))
+	hms_handle = plt.plot(hms[0], hms[1], 'ro', color=cm.Blues(0.75))
+	plt.legend([stp_handle[0], hms_handle[0]], ['stp', 'hms'], ncol=2)
 	ax = plt.gca()
 	ax.get_xaxis().get_major_formatter().set_useOffset(False)
 	plt.axis([2005, 2013, 0.95, 1.1])
 	ax.set_xticks([2006, 2008, 2009, 2010, 2012])
-	ax.set_ylabel("STP relative to LRU")
-	ax.set_xticklabels(['ucp\n(2006)', 'tadip\n(2008)', 'pipp\n(2009)', 'drrip\n(2010)', 'prism\n(2010)'], rotation=45)
+	ax.set_ylabel("STP/HMS normalized to LRU")
+	ax.set_xticklabels(['ucp\n(2006)', 'tadip\n(2008)', 'pipp\n(2009)', 'drrip\n(2010)', 'prism\n(2012)'], rotation=45)
 
 	fig.set_size_inches((2.5+5.0, 2.5))
 	plt.savefig('%s/year-comp.png' % (args.out), frameon=False, bbox_inches='tight')
