@@ -51,13 +51,19 @@ Also, the entire cache will always use the best algorithm, where in set-dueling 
 The difference between using an ATD and cache dueling sets in terms of misses were shown to be small in the original paper.
 On their benchmarks, they measured an average decrease in misses by 22.3\% using ATDs, compared to a 21.3\% decrease when using 32 duel-sets~\cite{Qureshi2007}.
 
+Figure~\ref{fig:algorithms:bip_example} shows an example cache set managed by DIP.
+In the example, we assume BIP insertion with no insertions at the MRU position.
+In the inital state, there are four blocks; A, B, C, and D.
+A is at the MRU position and D is at the LRU position.
+The first request is for C; this is a hit, and C is promoted to the MRU position, A and B are pushed towards the LRU position.
+Then follows a request for E, which is a miss.
+DIP evicts D at the LRU position and E is inserted in its place.
+Then follows two requests to D; the first request is a miss causing E to be evicted and D to be inserted at the LRU position.
+The second request is a hit and promotes D to MRU, pushing all other blocks one step towards the LRU position.
+
 \begin{figure}[ht]
     \centering
     \includegraphics[width=.65\textwidth]{figures/algorithms/DIP}
     \caption[DIP managed 4-way cache set.]{DIP managed 4-way cache set. (Assuming BIP insertion)}
-    \label{fig:algorithms:lru_example}
+    \label{fig:algorithms:bip_example}
 \end{figure}
-
-
-\todo{Example insertions in BIP mode}
-\todo{Resize architecture figures}
