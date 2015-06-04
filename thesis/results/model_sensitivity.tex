@@ -2,7 +2,7 @@
 \section{Processor Model Parameter Sensitivity}
 \label{sec:results:model_sensitivity}
 
-As detailed in the processor model section~\ref{sec:methodology:processor_model} we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
+As detailed in the processor model Section~\ref{sec:methodology:processor_model} we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
 An experiment was devised, with the goal of gaining a better understanding and improved confidence in this model.
 Of the properties used to define the model, we selected a total of five we believe to have an important impact on the performance of the simulated core.
 We then varied each of the properties in isolation, keeping the others constant.
@@ -57,7 +57,7 @@ Unlike the MSHRs, we do not expect the value of os and ol to effect performance.
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
 Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
 In addition, both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
-The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
+The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in Figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 
 
 When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.

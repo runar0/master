@@ -3,7 +3,7 @@
 \label{sec:results:cache_partition}
 
 This section describes an experiment that will compare the various implemented cache partitioning algorithms both against LRU and against each other.
-When executing this experiment, we utilize the base system configuration as previously detailed in table~\ref{tbl:processor_model:properties}.
+When executing this experiment, we utilize the base system configuration as previously detailed in Table~\ref{tbl:processor_model:properties}.
 The L2 cache size is set to 128k per core, and the L3 cache size is set to 4MB, 8MB or 16MB for respectively 4-, 8- and 16-core workloads.
 Each workload is simulated until all benchmarks in that workload have completed at least once. 
 The first time a benchmark completes we store its statistics.
@@ -38,9 +38,9 @@ Figure~\ref{fig:results:base:avg:stp} shows the average speedup of all workloads
 We observe that most of the implemented algorithms perform close to LRU for the four core workloads.
 UCP gives the best speedup of 2.1\% while PIPP performs badly with a 2.4\% performance decrease. 
 The modified version of PIPP, PIPP-min8, performs as good as LRU.
-When considering the harmonic mean of speedups as shown in figure~\ref{fig:results:base:avg:hms} we observe that all algorithms perform as good or better than LRU.  
+When considering the harmonic mean of speedups as shown in Figure~\ref{fig:results:base:avg:hms} we observe that all algorithms perform as good or better than LRU.  
 Most noticeably is PIPP which in terms of HMS is equal to LRU.
-As explained in section~\ref{sec:methodology:metrics} STP  is a measure of the overall speedup of all benchmarks in the workload, and a decrease indicates that completing all of them is slower.
+As explained in Section~\ref{sec:methodology:metrics} STP  is a measure of the overall speedup of all benchmarks in the workload, and a decrease indicates that completing all of them is slower.
 HMS, however, measures the average speedup of each benchmark.
 Because PIPP is as good as LRU measured in HMS, it would indicate that individual benchmarks on average runs equal under PIPP and LRU.
 Figure~\ref{fig:results:base:avg:mpki} shows L3 cache misses, and as expected there is a significant increase, 20\%, in misses for PIPP compared to LRU, which explains the bad performance. 
@@ -102,7 +102,7 @@ Exploring the result from each of these groups individually is useful as it will
 Bandwidth bound workloads contain benchmarks that do not benefit from increased cache space.
 These are benchmarks with mainly streaming access patterns. 
 As expected the results confirms that none of the algorithms can significantly improve performance compared to LRU.
-As seen in figure~\ref{fig:results:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 4.8\% compared to LRU.
+As seen in Figure~\ref{fig:results:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 4.8\% compared to LRU.
 We expect that even our bandwidth bound benchmarks will have phases with memory re-references, which means that their utility will increase.
 Based on our results, UCP seems to detect these phases and prioritize benchmarks correctly during these phases.
 By prioritizing one of the benchmarks UCP could cause an increase in misses from other benchmarks, but is expected to speed up the higher utility benchmark.
@@ -149,7 +149,7 @@ Most likely this indicates that applications marked as streaming are performing 
 
 
 In all our previous findings, we have observed that UCP is raising performance while also increasing misses.
-To ensure that this result is not just an artifact of result averaging, we show the per workload STP and MPKI for the cache and bandwidth bound workloads in figure~\ref{fig:results:base:cabw}.
+To ensure that this result is not just an artifact of result averaging, we show the per workload STP and MPKI for the cache and bandwidth bound workloads in Figure~\ref{fig:results:base:cabw}.
 As expected, the STP measurements show UCP providing a speedup in four out of five workloads.
 In the fifth workload, cabw01, UCP performs as good as LRU.
 When considering the MPKI measurements, we observe that UCP increase misses by at least 30\% in the four workloads where performance is best.

@@ -15,7 +15,7 @@ The UMON is the core of the UCP algorithm.
 It consists of one ATD per core sharing the cache. 
 The ATD is managed by normal LRU replacement and has one access counter per way.
 Whenever a cache request hits in the ATD, the access counter representing the way the block was in is incremented.
-In other words, UMON uses the stack property of LRU, as explained in section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
+In other words, UMON uses the stack property of LRU, as explained in Section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
 In addition to the ATDs, there is a monitor circuit that uses the access counters to caclulate a new global partition at set intervals.
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 

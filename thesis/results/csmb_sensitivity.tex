@@ -1,7 +1,7 @@
 \section{Clock Skew Sensitivity}
 \label{sec:results:csmb_sensitivity}
 
-As explained in section~\ref{sec:framework:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
+As explained in Section~\ref{sec:framework:simulator} one of the techniques that make Sniper faster than conventional cycle-accurate simulators, such as gem5, is the use of multiple simulation threads that each simulate one processor core.
 A method that keeps the simulation threads in sync is required to simulate inter-core interactions correctly.
 The method used to keep the threads in sync affects both simulation accuracy and simulation time.
 By having a relaxed synchronization method, one can improve simulation time, at the cost of simulation accuracy.
@@ -39,9 +39,9 @@ Figure~\ref{fig:results:csmb} contains plots for both STP and HMS relative to th
 From the graph, it is apparent that lowering the value below 100 cycles causes negligible variations in our average results. 
 The most noticeable is PIPP; that varies by about 0.2\% with a tighter barrier interval.
 Increasing the interval to 1000 cycles results in a more noticeable difference in measurements.
-For both HMS, shown in figure~\ref{fig:results:csmb:hms}, and MPKI, not shown, the trends are the same.
+For both HMS, shown in Figure~\ref{fig:results:csmb:hms}, and MPKI, not shown, the trends are the same.
 
-The variance in simulation walltime when we vary CSMB values, as shown in figure~\ref{fig:results:csmb:walltime}, is as expected. 
+The variance in simulation walltime when we vary CSMB values, as shown in Figure~\ref{fig:results:csmb:walltime}, is as expected. 
 When lowering the barrier interval we measure an increase in average walltime.
 Increasing the barrier value causes a slight decrease in walltime.
 We observe that the performance gain by increasing the barrier is small compared to the result variation. 

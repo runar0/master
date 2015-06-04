@@ -54,7 +54,7 @@ Because inter-core interactions may be out-of-order, the memory bus model is a s
 Both of these limitations introduces an error source in our simulations, but previous work~\cite{Carlson2011a, Olsen2014} has shown that results are still comparable to cycle-accurate simulations.
 To reduce clock skewing caused by having multiple simulation threads, we utilize a 100 cycle barrier synchronization.
 Barrier synchronization implies that all simulated cores must wait every 100 cycles for all other cores to catch up.
-In section~\ref{sec:results:csmb_sensitivity} we cover an experiment where we measure the effect of various synchronization barriers on our results.
+In Section~\ref{sec:results:csmb_sensitivity} we cover an experiment where we measure the effect of various synchronization barriers on our results.
 
 \subsection{Cache Modelleing}
 In the following sections, we describe how CACTI~\cite{Shivakumar2001} was used to estimate the access latency for each of our caches. 

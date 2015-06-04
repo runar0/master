@@ -21,7 +21,7 @@ The authors of CLU propose a simplification where there are $m = log_2 k$ ATDs; 
 A linear increase between the sample points is assumed when calculating the final utility curve.
 It should be noted that the storage overhead of m ATDs in total is less than twice the overhead of the single ATD($k$) required to sample the LRU curve.
 
-CLU uses the two curves first to allocate ways to each core using the same algorithm as shown for UCP in section~\ref{sec:algorithms:ucp}.
+CLU uses the two curves first to allocate ways to each core using the same algorithm as shown for UCP in Section~\ref{sec:algorithms:ucp}.
 The only difference is that the algorithm uses either the LRU or BIP value when estimating utility given an allocation, depending on which algorithm performs best.
 During runtime, CLU works like UCP.
 The only exception is that the core's ways are managed by either LRU or BIP, depending on which algorithm has the best utility value for the number of ways currently assigned to that core.

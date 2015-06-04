@@ -2,8 +2,8 @@
 \label{sec:results:l2size_sensitivity}
 
 In this section, we investigate how increasing the size of the private cache affects the performance of the cache partitioning algorithms.
-We ran the same experiment as in section~\ref{sec:results:cache_partition}, but with varying L2 sizes.
-The L2 configurations are as shown in table~\ref{tbl:processor_model:l2}, to summarize we utilize cache sizes of 128k, 256k, 512k, and 1024k.
+We ran the same experiment as in Section~\ref{sec:results:cache_partition}, but with varying L2 sizes.
+The L2 configurations are as shown in Table~\ref{tbl:processor_model:l2}, to summarize we utilize cache sizes of 128k, 256k, 512k, and 1024k.
 As in previous experiments, we set the L3 size depending on the workload size.
 In this experiment, we only utilize the three random workload groups.
 We do this to be able to aggregate and compare 4-core results to 8- and 16-core results.
@@ -68,19 +68,19 @@ We note that, in this case, increasing the L2 size seems to cause a further decr
 We expect that TADIP will react slower to changes in application phases as memory filtering increases, because of the counter architecture used to switch between algorithms.
 This effect does not seem to have a noticeable impact on results for the 4- and 8-core runs, but we assume it is causing the visible decrease in performance for the 16-core runs.
 
-DRRIP as already covered outperforms LRU, figure~\ref{fig:results:l2:drrip} confirms this.
+DRRIP as already covered outperforms LRU, Figure~\ref{fig:results:l2:drrip} confirms this.
 The figure also shows that increasing the L2 size causes a reduction in DRRIP performance.
 We know that DRRIP uses a step-wise promotion policy where each successive access promoted a block one position.
 Naturally less information about success reuse will be available to the shared level as filtering in the private levels increase.
 It is consequently not unexpected that DRRIP suffers from increased filtering by private cache levels.
 From the figure, we note that DRRIP seems to be slightly less sensitive to small changes in L2 size with increasing core count, but in all cases a 1024k L2 causes DRRIP performance to mimic LRU performance.
 
-In contrast to the previous algorithms, UCP performance increases with L2 cache size in all workloads, as seen in figure~\ref{fig:results:l2:ucp}.
+In contrast to the previous algorithms, UCP performance increases with L2 cache size in all workloads, as seen in Figure~\ref{fig:results:l2:ucp}.
 We know that UCP uses a utility algorithm as the mechanism for allocating ways to cores. 
 The input to this algorithm changes when we increase filtering of requests to the shared cache level.
 As a result, the allocation of ways to cores is also expected to change, but this is the intended mechanism of UCP and should not negatively affect performance.
 UCP uses LRU to manage replacement for each core, but UCP under normal circumstances only allows a core to evict one of its own blocks. 
-We have already covered that this is why UCP outperforms LRU in the base configuration, in section~\ref{sec:results:cache_partition}. 
+We have already covered that this is why UCP outperforms LRU in the base configuration, in Section~\ref{sec:results:cache_partition}. 
 As filtering increases at the private level, we notice that UCP increases its performance compared to LRU. 
 We expect that this is because, with increased private cache, more requests from recency-friendly applications can be satisfied by the private levels and less information reaches the shared level.
 Trashing and streaming applications will still have its requests propagate to the shared cache, largely independent of the size of the private cache. 
@@ -95,11 +95,11 @@ For both 4- and 16-core workloads we observe an increase in performance compared
 In the 8-core results we see the same trend between the smallest and largest L2 configuration, but we unexpectedly observe a performance drop for 256k and 512k configurations. 
 It is unclear what causes this performance drop, and further work is required to analyze this.
 
-Finally figure~\ref{fig:results:l2:pipp} show the performance of PIPP, and figure~\ref{fig:results:l2:pipp-min8} shows the performance of the modified PIPP algorithm.
+Finally Figure~\ref{fig:results:l2:pipp} show the performance of PIPP, and Figure~\ref{fig:results:l2:pipp-min8} shows the performance of the modified PIPP algorithm.
 Since PIPP uses the same utility algorithm as UCP and also aims to achieve the same allocations as UCP, we expect them to show similar trends.
 This expectation somewhat holds true for the 4-core case, where there is a slight upward trend with increasing L2 size.
 However, PIPP underperforms compared to LRU in all workloads, and with increasing core count performance drops significantly.
-We expect the short lifetime of blocks in PIPP managed caches to be the cause of this, as covered in section~\ref{sec:results:cache_partition}.
+We expect the short lifetime of blocks in PIPP managed caches to be the cause of this, as covered in Section~\ref{sec:results:cache_partition}.
 The modified PIPP algorithm shows a performance development much closer to what is expected, at least for 4- and 8-core workloads.
 We observe the same increase in performance with increased L2 cache size as seen in the UCP case. 
 In the 16-core workloads, the performance trend is still as expected, but the modified algorithm performs worse than LRU.

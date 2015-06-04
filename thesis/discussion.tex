@@ -5,7 +5,7 @@
 \section{Parameter Fitting and Lack of Implementation Details}
 
 All of the algorithms we have implemented and evaluated in this thesis have one or more parameters controlling its operation.
-As chapter~\ref{cpt:framework} explains, we have mainly opted to use parameter values from the original papers.
+As Chapter~\ref{cpt:framework} explains, we have mainly opted to use parameter values from the original papers.
 Each of the original papers has attempted to show how their algorithm performs better that LRU and the current best theoretical algorithm.
 It is fair to assume that the authors have chosen parameter values that are fitted to provide good results on their benchmarks.
 Because none of the papers uses the same benchmark set, and none of the benchmark sets matches the one we used in this thesis, there is a potential optimization opportunity here.
@@ -19,7 +19,7 @@ Also by fitting parameters, one might end up overfitting.
 In this case, the parameters result in a good performance on the workload set, but performance on all other workloads decreases.
 We feel this would also be an unfair comparsion.
 
-As mentioned in section~\ref{sec:framework:algorithms} we also had to make some assumptions in our implementations.
+As mentioned in Section~\ref{sec:framework:algorithms} we also had to make some assumptions in our implementations.
 These assumptions were necessary due to missing or unclear implementation details in the original papers.
 While we made all attempts to keep our implementation identical to the algorithm described by the original authors, there is still a chance some of our algorithms function slightly different due to one of these assumptions.
 As a result, our performance evaluations results may not follow those of the original papers.
@@ -29,7 +29,7 @@ As a result, our performance evaluations results may not follow those of the ori
 \section{Clock Skew Synchronization Barrier}
 
 One of the advantages of Sniper is the use of multiple simulation threads~\cite{Carlson2011a}.
-We covered how this could improve performance in section~\ref{sec:methodology:simulator}, but this speed improvement does naturally decrease accuracy.
+We covered how this could improve performance in Section~\ref{sec:methodology:simulator}, but this speed improvement does naturally decrease accuracy.
 In the context of this thesis, there are two effects of having multiple
 simulation threads that could bias our results.
 The problem relates to the ordering of memory events.
@@ -56,8 +56,8 @@ However, as we scale the number of sets in the cache linearly with the number of
 
 \section{Uniform LLC Access}
 
-In section~\ref{sec:methodology:processor_model} we present the processor model used on our experiments.
-Our architecture, as shown in figure~\ref{fig:processor_model}, assumes a uniform access time to the LLC.
+In Section~\ref{sec:methodology:processor_model} we present the processor model used on our experiments.
+Our architecture, as shown in Figure~\ref{fig:processor_model}, assumes a uniform access time to the LLC.
 This assumption is reasonable for 4 and even 8 core processors and requires a uniform access method between the L2 caches and the LLC.
 One possible solution is a crossbar.
 However, scaling this architecture to 16 cores is somewhat unreasonable as the crossbar grows exponentially.

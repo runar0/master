@@ -6,9 +6,9 @@ This section covers the assumptions we have had to make when implementing algori
 
 In the DRRIP paper, the authors specify that they make use of set dueling when detecting whether SRRIP or BRRIP is the current best algorithm.
 The authors do not provide any information about how they select which sets are dueling sets and which are follower sets.
-We choose to use the same algorithm for set classification as used by the authors of TADIP, shown in section~\ref{sec:algorithms:tadip}.
+We choose to use the same algorithm for set classification as used by the authors of TADIP, shown in Section~\ref{sec:algorithms:tadip}.
 
-As mentioned in section~\ref{sec:framework:implementation} we have built a generic shadow tag, or auxiliary tag directory, implementation.
+As mentioned in Section~\ref{sec:framework:implementation} we have built a generic shadow tag, or auxiliary tag directory, implementation.
 We choose to use full sampling in all algorithms that make use of this implementation, PriSM, UCP, and PIPP.
 While previous work has shown that the estimation error when using dynamic sampling with a sufficient number of sets~\cite{} is negligible, we still opted for full sampling in all our experiments.
 By doing full sampling, we eliminate the error source caused by imperfect data and allow the focus of our experiment to be on the decisions made by the algorithm instead.

@@ -10,13 +10,13 @@
 \end{figure}
 
 In this section, we cover an experiment where we run all 4-core workloads with varying L3 cache size.
-While we have already shown in section~\ref{sec:methodology:processor_model} that our simulated model is realistic compared to current processor architectures, we want to explore how algorithm performance changes when we constrain available L3 cache.
-This experiment uses the same simulated system as in the cache partitioning experiment, section~\ref{sec:results:cache_partition}.
+While we have already shown in Section~\ref{sec:methodology:processor_model} that our simulated model is realistic compared to current processor architectures, we want to explore how algorithm performance changes when we constrain available L3 cache.
+This experiment uses the same simulated system as in the cache partitioning experiment, Section~\ref{sec:results:cache_partition}.
 We use four different L3 sizes; 4MB, 2MB, 1MB, and 0.5MB.
 When we reduce the size of the shared cache level, we keep the associativity constant.
 As a result, we have fewer sets in the cache and hence, more addresses map to the same set.
 Table~\ref{tbl:processor_model:l3} shows detailed information about the two larger configurations.
-The details for the two smaller configurations are equal to the L2 configurations of the same size, shown in table~\ref{tbl:processor_model:l2}, but with an associativity of 32.
+The details for the two smaller configurations are equal to the L2 configurations of the same size, shown in Table~\ref{tbl:processor_model:l2}, but with an associativity of 32.
 Fewer sets cause increased pressure on each set.
 We expect to see some of the algorithms further their improvement over LRU in this situation.
 Also, we expect PIPP, which already has shown bad performance compared to LRU, to continue this trend.
@@ -29,7 +29,7 @@ In our implementation, we scale the number of duel-sets relative to the total nu
 Hence, for both DRRIP and TADIP the fraction of duel sets is constant across the various L3 configurations.
 
 As expected the performance of PIPP decreases as the set pressure increases.
-We have previously, in section~\ref{sec:results:cache_partition}, postulated that the potentially short lifetime of blocks in a PIPP managed cache may be the cause of the performance decrease compared to LRU.
+We have previously, in Section~\ref{sec:results:cache_partition}, postulated that the potentially short lifetime of blocks in a PIPP managed cache may be the cause of the performance decrease compared to LRU.
 This experiment further shows that when the number of accesses to a single set increases the performance of PIPP further decreases compared to LRU.
 The MPKI in the 0.5MB cases, not shown here, is over 50\% worse than the LRU case, compared to only 20\% worse in the 4MB case.
 PIPP-min8, a modified version of PIPP, have previously been shown to improve performance over normal PIPP replacement.
@@ -63,9 +63,9 @@ At both 4MB and 0.5MB PriSM performs as good as LRU.
 Figure~\ref{fig:results:l3:mpki-prism} shows the MPKI for PriSM.
 From this figure, we observe that PriSM in all configurations causes the same number of misses as LRU.
 This is true even when PriSM shows an performance increase measured in STP.
-Finally, we observe a performance increase by UCP in figure~\ref{fig:results:l3}. 
+Finally, we observe a performance increase by UCP in Figure~\ref{fig:results:l3}. 
 In previous sections (\ref{sec:results:cache_partition} and \ref{sec:results:l2size_sensitivity}) we have shown that UCP is the top performer of our algorithms when measured in STP.
 This is also the case in this experiment.
 We observe that UCP increases performance compared to LRU in both the 2MB and 1MB case, in the 0.5MB case is comparable to the 1MB case.
-Interestingly, figure~\ref{fig:results:l3:mpki-ucp} shows that while UCP increases performance compared to LRU it also causes more misses, shown by an increase in MPKI.
-Previous experiments have also shown this effect, as seen in section~\ref{sec:results:cache_partition}.
+Interestingly, Figure~\ref{fig:results:l3:mpki-ucp} shows that while UCP increases performance compared to LRU it also causes more misses, shown by an increase in MPKI.
+Previous experiments have also shown this effect, as seen in Section~\ref{sec:results:cache_partition}.
