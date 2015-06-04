@@ -2,25 +2,6 @@
 \chapter{Cache Management Algorithms}
 \label{cpt:algorithms}
 
-\begin{table}[!htb]
-\begin{tabular}{|p{1.4cm}|p{0.5cm}|p{0.8cm}|p{1.2cm}|p{1.2cm}|p{1.2cm}|p{1.2cm}|p{1.0cm}|}
-\hline
-\multicolumn{1}{|c|}{Name} & \multicolumn{1}{c|}{Year} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Repl.} & \multicolumn{1}{c|}{Insert.} & \multicolumn{1}{c|}{Promo.} & \multicolumn{1}{c|}{Hardware}    & \multicolumn{1}{c|}{Partition}     \\
-\multicolumn{1}{|c|}{}          & \multicolumn{1}{c|}{}          & \multicolumn{1}{c|}{aware}  & \multicolumn{1}{c|}{policy}      & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{overhead\footnotemark}  & \multicolumn{1}{c|}{}       \\ \hline
-DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter, set dueling    & No            \\ \hline
-TADIP                           & 2008                          & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter per core, set dueling  & No          \\ \hline
-DRRIP                           & 2010                          & Yes                         & LRU approx.                      & SRRIP/ BRRIP                    & Frequency promotion            & 1 counter per core, set dueling  & No          \\ \hline
-NUCache                         & 2011                         & No                          & LRU + DeliWays     & LRU                            & Promote to MRU                 & NUTrack                            & No    \\ \hline
-UCP                             & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON 1 ATD per core   & Yes                \\ \hline
-PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Frequency promotion            & UMON 1 ATD per core, random generator & Yes \\ \hline
-PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                            & Promote to MRU                 & 1 ATD per core                       & Yes  \\ \hline
-CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                & Yes  \\ \hline
-\end{tabular}
-\caption{Overview of Cache Management Algorithms.}
-\label{tbl:algorithms}
-\end{table}
-\footnotetext{Simplified hardware overhead compared to a LRU managed cached.}
-\clearpage
 
 A cache management algorithm manages the storage space in a cache.
 It decides where to store new data blocks and which of the existing blocks are evicted to make room for new blocks.
@@ -30,7 +11,6 @@ Some have advanced optimization goals such as quality of service (QoS) while oth
 Algorithms proposed for shared caches may in general be divided into two groups, those that explicitly divide storage space between cores sharing the cache and those that do not.
 The term cache replacement algorithm is often used to describe algorithms that do not divide the storage space while the term cache partitioning algorithm describe algorithms that do divide the space.
 Throughout this paper, we will use the two terms interchangeably.
-
 
 The field of cache management is well researched, and there exists a large number of proposed algorithms.
 In this thesis, we present a few recently proposed algorithms based on some of their characteristics and compare their performance.
@@ -42,6 +22,25 @@ Also, we only consider algorithms that target conventional caches, as they are d
 This limitation makes the comparison of results from different algorithms easier.
 Also, we avoid having to extend our simulator with a new cache type, which would be unfeasible given the time constraints of this thesis.
 
+\begin{table}[thb]
+\begin{tabular}{|p{1.4cm}|p{0.5cm}|p{0.8cm}|p{1.2cm}|p{1.2cm}|p{1.4cm}|p{1.2cm}|p{1.0cm}|}
+\hline
+\multicolumn{1}{|c|}{Name} & \multicolumn{1}{c|}{Year} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Repl.} & \multicolumn{1}{c|}{Insert.} & \multicolumn{1}{c|}{Promo.} & \multicolumn{1}{c|}{Hardware}    & \multicolumn{1}{c|}{Partition}     \\
+\multicolumn{1}{|c|}{}          & \multicolumn{1}{c|}{}          & \multicolumn{1}{c|}{aware}  & \multicolumn{1}{c|}{policy}      & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{overhead\footnotemark}  & \multicolumn{1}{c|}{}       \\ \hline
+DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter, set dueling    & No            \\ \hline
+TADIP                           & 2008                          & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & 1 counter per core, set dueling  & No          \\ \hline
+DRRIP                           & 2010                          & Yes                         & LRU approx.                      & SRRIP/ BRRIP                    & Frequency promotion            & 1 counter per core, set dueling  & No          \\ \hline
+NUCache                         & 2011                         & No                          & LRU + DeliWays     & LIP                            & Promote to MRU                 & NUTrack                            & No    \\ \hline
+UCP                             & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON 1 ATD per core   & Yes                \\ \hline
+PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Frequency promotion            & UMON 1 ATD per core, random generator & Yes \\ \hline
+PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                            & Promote to MRU                 & 1 ATD per core                       & Yes  \\ \hline
+CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                & Yes  \\ \hline
+\end{tabular}
+\caption{Overview of Cache Management Algorithms.}
+\label{tbl:algorithms}
+\end{table}
+\clearpage
+
 It is possible to divide all algorithms included in this evaluation into three distinct policies:
 \begin{itemize}
 \item The replacement policy specifies which block a cache set evicts when inserting a new block into that set.
@@ -52,6 +51,9 @@ In the following sections, we will explain how each of the selected cache partit
 
 \section{Cache Replacement Algorithms}
 This section covers cache replacement algorithms, or algorithms that do not explicitly divide the available cache space between cores.
+
+
+\footnotetext{Simplified hardware overhead compared to a LRU managed cached.}
 
 \input{algorithms/LRU.tex}
 \input{algorithms/DIP.tex}
