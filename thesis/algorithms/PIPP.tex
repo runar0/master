@@ -32,6 +32,15 @@ By inserting at this fixed position, PIPP attempts to limit the interference the
 Blocks from streaming applications have a reduced chance of promotion after an access, $p_{stream} = \frac{1}{128}$.
 In the case where all cores are streaming, and there are no cores to protect, PIPP inserts all blocks at the LRU position.
 
+Figure~\ref{fig:algorithms:pipp_example} shows an example cache set managed by PIPP shared by two cores.
+Both cores are allocated two blocks, and initially core 0 owns three blocks in the set; A, C, and D.
+In this example we assume all hits cause a block promotion.
+The first request is for C by core 0; this is a hit, and the block is promoted, effectivly swapping block B and C.
+Next is a request for E by core 0; this is a miss.
+E is inserted at the second to last position of the cache set, as the core is allocated two blocks, causing D to be evicted and B to move to the LRU position.
+Finally, a request for F is made by core 1; again it is inserted at the second to last position, evicting B.
+Note that after the initial request for C, the state of the two upper blocks do not change.
+
 \begin{figure}[ht]
     \centering
     \includegraphics[width=.65\textwidth]{figures/algorithms/PIPP}

@@ -40,6 +40,18 @@ By doing this, the UMON will keep historical data for future decisions while pri
     \label{fig:algorithms:ucp_example}
 \end{figure}
 
+Figure~\ref{fig:algorithms:ucp_example} show an example cache set managed by UCP shared by two cores.
+We assume that both cores are allocated two blocks.
+Initially, core 0 has three blocks in the cache as indicated by the blue background color; A, C, and D.
+The first request is by core 0 for block C; this is a hit causing the block to be promoted to MRU, pushing A and B towards the LRU position.
+Next is a request for E by core 0, this is a miss.
+Because core 0 already has more than the number of allocated blocks in the cache, the block closest to LRU owned by core 0 is evicted, D in this case.
+Finally, a request for F is made by core 1; this is also an miss.
+Because core 1 has less than the number of allocated blocks in the cache, a block not owned by core 1 is to be evicted.
+As a result, B owned by core 1 at the LRU position is saved, and rather A at the next to LRU position is evicted.
+
+
+
 \begin{algorithm}[ht]
 \caption{UMON Lookahead Algorithm.}
 \label{alg:algorithms:ucp}
@@ -77,6 +89,3 @@ By doing this, the UMON will keep historical data for future decisions while pri
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
-
-
-\todo{Example here}
