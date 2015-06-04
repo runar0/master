@@ -33,6 +33,13 @@ The rest of the algorithm is simply a greedy algorithm selecting the best core e
 After a reallocation of cache ways, the ATD counters are all halved.
 By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.65\textwidth]{figures/algorithms/UCP}
+    \caption[UCP managed 4-way cache set.]{UCP managed 4-way cache set. (Two cores each allocated two blocks)}
+    \label{fig:algorithms:ucp_example}
+\end{figure}
+
 \begin{algorithm}[ht]
 \caption{UMON Lookahead Algorithm.}
 \label{alg:algorithms:ucp}

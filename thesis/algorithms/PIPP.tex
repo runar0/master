@@ -33,4 +33,9 @@ By inserting at this fixed position, PIPP attempts to limit the interference the
 Blocks from streaming applications have a reduced chance of promotion after an access, $p_{stream} = \frac{1}{128}$.
 In the case where all cores are streaming, and there are no cores to protect, PIPP uses the value 0 for $\pi_{stream}$.
 
-\todo{Example}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.65\textwidth]{figures/algorithms/PIPP}
+    \caption[PIPP managed 4-way cache set.]{PIPP managed 4-way cache set. (Two cores each allocated two blocks)}
+    \label{fig:algorithms:pipp_example}
+\end{figure}
