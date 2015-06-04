@@ -1,37 +1,37 @@
 \subsection{UCP}
 \label{sec:algorithms:ucp}
 
-Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented by M. Qureshi and Y. Patt in 2006. 
+Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented in 2006. 
 UCP uses the concept of utility when assigning ways to a core.
-Using a utility monitor (UMON), UCP calculates the number of ways assigned to each core.
+Using a utility monitor (UMON), UCP divides the ways in the cache between the cores.
 UCP then uses the same insertion and promotion policy as LRU.
-The replacement policy is as in LRU with two modifications:
+The replacement policy is as in LRU but with two modifications:
 First if the number of blocks owned by the requesting core is less than the number of ways assigned to it, then the least recently used block that is not assigned to the requester core is replaced.
-If however the number of blocks owned is greater than or equal to the number of assigned ways the replacement algorithm selects the  least recently used block of those owned by the requester.
-As a result, the division between cores in each set move towards the global allocation on cache misses, allowing cores to use more than allocated if other cores do not utilize their allocated space.
+If however the number of blocks owned is greater than or equal to the number of assigned ways the replacement algorithm selects the least recently used block of those owned by the requester.
+This replacement policy ensures that the division between cores in each set move toward the global allocation following cache misses.
+At the same time, a core may use more blocks that it is currently assigned, given that the space is not clamed by any other core.
 
 The UMON is the core of the UCP algorithm.
 It consists of one ATD per core sharing the cache. 
 The ATD is managed by normal LRU replacement and has one access counter per way.
-Whenever a cache request hits in the ATD the access counter index by the LRU stack position of that block is incremented.
-In other words, UMON uses the stack property of LRU to find the hit rate of all valid partition sizes.
-In addition to the ATDs, there is a monitor circuit that has access to the counters and using them calculates how to partition the cache at set intervals. 
+Whenever a cache request hits in the ATD, the access counter representing the way the block was in is incremented.
+In other words, UMON uses the stack property of LRU, as explained in section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
+In addition to the ATDs, there is a monitor circuit that uses the access counters to caclulate a new global partition at set intervals.
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
-Algorithm~\ref{alg:algorithms:ucp} is the Lookahead Algorithm they propose.
-This algorithm is the one the original authors propose for situations with more than two cores sharing a cache.
-The algorithm assigns cache ways based on an increase in marginal utility.
+On of them is a Lookahead Algorithm suitable when there are more than two cores sharing a cache.
+The Lookahead Algorithm assigns ways based on an increase in marginal utility; it is given in Algorithm~\ref{alg:algorithms:ucp}.
 While there are more ways to distribute, the algorithm calculates the maximum marginal utility achievable by each core. 
 The core with the highest value wins and is assigned as many ways as needed to achieve the increase.
 The algorithm continue until all ways have been assigned.
-Lines 27-28 calculate the actual marginal utility. 
-First the number of misses prevented by increasing the allocation from a to be is found.
-With the counters available the algorithm can simply sum the values of counters a to $b-1$, as the number of hits in the new sets must equal the number of misses prevented.
-To find the marginal utility, this value is then divided by the number of sets introduced.
-The rest of the algorithm is simply a greedy algorithm selecting the best core each iteration.
+Lines 27-28 calculate the marginal utility. 
+First the number of misses prevented by increasing the allocation from a to b is found.
+Due to the stack property of LRU, this is simply done by summing the access counters for ways $a$ to $b-1$.
+The number of misses is then divided by the number of sets introduced, to find the marginal utility.
+The rest of the algorithm is simply a greedy algorithm selecting the highest marginal utility at each iteration.
 After a reallocation of cache ways, the ATD counters are all halved.
-By doing this, the UMON will keep historical data for future decisions, while prioritizing data from the current period.
+By doing this, the UMON will keep historical data for future decisions while prioritizing data from the current period.
 
 \begin{figure}[ht]
     \centering
@@ -61,7 +61,7 @@ By doing this, the UMON will keep historical data for future decisions, while pr
 
 \Function{get\_max\_mu}{$i, alloc, balance$}
     \State $max\_mu\gets 0$
-    \For{ii = 1; ii <= balance; ii++}
+    \For{$ii = 1; ii <= balance; ii++$}
         \State $mu\gets \Call{get\_mu\_value}{p, alloc, alloc+ii}$
         \If{$mu \ge max\_mu$}
             \State $max\_mu\gets mu$
@@ -77,3 +77,6 @@ By doing this, the UMON will keep historical data for future decisions, while pr
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
+
+
+\todo{Example here}

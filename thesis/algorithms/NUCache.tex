@@ -6,7 +6,7 @@
     \centering
     \includegraphics[width=.65\textwidth]{figures/algorithms/NUCache}
     \caption[NUCache managed 4-way cache set.]{NUCache managed 4-way cache set. (M=2)}
-    \label{fig:algorithms:drrip_example}
+    \label{fig:algorithms:nucache_example}
 \end{figure}
 
 Next Use Cache (NUCache)~\cite{Manikantan2011} was first proposed in 2011.
@@ -48,3 +48,18 @@ If, after moving the new block into the DeliWays, the number of DeliWays blocks 
 Otherwise, the new LRU block in the MainWays is evaluated.
 Because of this implementation the MainWays may use the entire cache if no DeliWays are in use, at the same time the DeliWays cannot exceed $M$.
 This allows for an efficient use of every cache set.
+
+Figure~\ref{fig:algorithms:nucache_example} shows an example cache set managed by NUCache with M set to 2.
+Initially, there are four blocks, A, B, C, and D.
+A and B are in the MainWays, indicated by the blue background.
+While, C and D are in the DeliWays, as indicated by the yellow background.
+Block B is eligible for insertion into the DeliWays, no other blocks in the example are eligible for the DeliWays.
+The first request is for block C, this is a hit.
+C is not promoted as it is a part of the FIFO managed DeliWays.
+Next is a request for E, and this is a miss.
+The cache first attempts to evict B, but B is eligible for DeliWays and is not evicted.
+After B enters the DeliWays, it contains a total of 3 blocks, this is one more than the upper limit of 2, and hence the first in, D, is evicted.
+E is then inserted at the MRU position.
+Next is a request for D; this is also a miss, and A at the LRU position is evicted.
+The final request is also for D, causing no change as D is already at the MRU position.
+

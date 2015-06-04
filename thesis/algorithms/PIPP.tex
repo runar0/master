@@ -2,7 +2,7 @@
 \subsection{PIPP}
 \label{sec:algorithms:pipp}
 
-Promotion/Insertion Pseduo-Partitioning~\cite{Xie2009} (PIPP) proposed by Y. Xie and G. Loh in 2009 is an algorithm based on a slightly modified UMON circuit and a novel insertion and promotion policy.
+Promotion/Insertion Pseduo-Partitioning~\cite{Xie2009} (PIPP) proposed in 2009 is an algorithm based on a slightly modified UMON circuit and a novel insertion and promotion policy.
 The UMON changes are to enable stream detection.
 Where the UCP algorithm only handles streaming applications indirectly, by assigning few ways because of a low hit rate in the ATDs, PIPP's UMON actively detects streaming applications.
 Stream detection is implemented by adding a counter that counts the total number of cache misses in the ATD.
@@ -11,27 +11,26 @@ An application is then deemed to be streaming if either the number of misses or 
 PIPP like UCP views the cache set as an LRU stack.
 The replacement policy is as in LRU, but the insertion and promotion policy is novel.
 The insertion policy inserts new blocks $\pi_n$ blocks from the LRU position. 
-Here $\pi_n$ is the number of ways assigned to the nth core.
+Here $\pi_n$ is the number of ways assigned to the $n^{th}$ core.
 In a 4-way cache dual-core setup where both cores are assigned two ways, PIPP will insert all new blocks from either core in the second to last position in the stack. 
 In this situation, the two top positions in the cache stack can only be reached by a cache block through promotion.
-Block promotion in PIPP works similar promotion in DRRIP. 
-On access, a block has a chance, $p_{prom} = \frac{3}{4}$, to move one position upwards in the stack unless it is already at the MRU position.
+On a cache access, a block has a chance, $p_{prom} = \frac{3}{4}$, to move one position upwards in the stack unless it is already at the MRU position.
 
-Where the insertion policy of UCP ensures that a core cannot claim more cache blocks than it needs, the PIPP policies do not enforce this.
+On insertion, the PIPP policy does not consider how many blocks is owned by the requesting core, this is unlike UPC's insertion policy that prevents a core for claiming more ways that what it is assigned.
 However, cores with more ways assigned to it will insert its blocks higher up in the stack. 
 The core with the highest number of ways assigned will not have any insertion competition pushing its blocks out of the cache.
 The only way blocks from this core can be pushed out is by other blocks from the same core, or by blocks from other cores that are re-referenced repeatably.
-While two cores with the same allocations will both have an equal chance of keeping their blocks in the cache, as they both insert at the same position.
+Two cores with the same allocations will both have an equal chance of keeping their blocks in the cache, as they both insert at the same position.
 Statistically a core with a lower allocation, inserting at a lower position in the stack, should also on average own fewer blocks in the cache compared to a core with a higher allocation.
-However, the access frequency of cores can cause a core with a low allocation to own most or all blocks in some cache sets if the other cores access this set at a much slower rate.
 This way PIPP obtains what the original authors call pseudo partitioning, where overall a higher allocation will statistically result in more cache space.
+However, the access frequency of cores can cause a core with a low allocation to own most of or all blocks in the cache if the other cores have a much lower access frequency.
 
 When the UMON detects a core that is streaming PIPP will no longer insert blocks from this core at the position given by the allocation.
 A special insertion position, $\pi_{stream}$, is used for all streaming cores.
 $\pi_{stream}$ is set to the number of cores currently streaming. 
-By inserting at this fixed position, PIPP attempts to limit the interference the streaming core has on the other cores.
+By inserting at this fixed position, PIPP attempts to limit the interference the streaming core has on the non-streaming cores.
 Blocks from streaming applications have a reduced chance of promotion after an access, $p_{stream} = \frac{1}{128}$.
-In the case where all cores are streaming, and there are no cores to protect, PIPP uses the value 0 for $\pi_{stream}$.
+In the case where all cores are streaming, and there are no cores to protect, PIPP inserts all blocks at the LRU position.
 
 \begin{figure}[ht]
     \centering
