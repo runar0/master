@@ -33,30 +33,30 @@
 Throughout this thesis, we utilize a CMP model simulated on Sniper~\cite{Carlson2011a}. 
 In our model, each processing core has two levels of private cache, the L1 data and code caches and a unified L2 cache.
 Additionally there is a third cache level, L3, which is shared by all cores. 
-The private caches are managed by an LRU replacement policy, and the replacement policy of the third cache level varies throughout our experiments.
+The private caches are managed by LRU, and the replacement policy of the third cache level varies throughout our experiments.
 Figure~\ref{fig:processor_model} shows an overview of the simulated architecture and Table~\ref{tbl:processor_model:properties} contains an overview of the system properties.
 
 As the sniper simulation system implements a Nehalem core model, all our processor core properties are based on Intel's Nehalem architecture~\cite{Thomadakis2011}. 
 The first level cache size is also selected based on the Nehalem architecture. 
 We do note that in more recent architectures such as Intel's Haswell~\cite{Jain2013} the core properties have changed compared to the older Nehalem, but the size of the first level cache remains the same.
 The reason being that with increasing cache size the access latency also increases. 
-This in turn can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions and data.
+Increased latency can cause problems if the first level cache is unable to feed the processor pipeline with a sufficient stream of instructions and data.
 
 For our second cache layer, we have selected four different size configurations.
 We will use these configurations to evaluate how private cache size affects shared cache behavior.
 Our third level cache has three configurations.
 During our experiment, we will choose a configuration based on the number of cores used.
-For 4-, 8- and 16-core simulations we will respectively use a 4M, 8M, and 16M L3 configuration.
+For 4-, 8- and 16-core simulations we will respectively use a 4MB, 8MB, and 16MB L3 configuration.
 
-Snipers memory model is very limited compared to models in cycle-accurate simulators, such as gem5.
+Sniper's memory model is very limited compared to models in cycle-accurate simulators, such as gem5.
 In our processor model each memory request completes in a constant 100ns, there is no simulation of row and column access delays.
 Because inter-core interactions may be out-of-order, the memory bus model is a statistical model that attempts to estimate queuing delays based on a history window.
-Both of these limitations introduces an error source in our simulations, but previous work~\cite{Carlson2011a, Olsen2014} has shown that results are still comparable to cycle-accurate simulations.
+Both of these limitations introduce an error source in our simulations, but previous work~\cite{Carlson2011a, Olsen2014} has shown that results are still comparable to cycle-accurate simulations.
 To reduce clock skewing caused by having multiple simulation threads, we utilize a 100 cycle barrier synchronization.
 Barrier synchronization implies that all simulated cores must wait every 100 cycles for all other cores to catch up.
 In Section~\ref{sec:results:csmb_sensitivity} we cover an experiment where we measure the effect of various synchronization barriers on our results.
 
-\subsection{Cache Modelleing}
+\subsection{Cache Models}
 In the following sections, we describe how CACTI~\cite{Shivakumar2001} was used to estimate the access latency for each of our caches. 
 When using CACTI we model each cache with parallel access to the tag directory and data.
 We also opted for high-performance storage cells over the power saving ones that CACTI also supports.
@@ -91,12 +91,12 @@ When choosing a first level cache size, we must consider that first level caches
 Having a hit latency of more than 2-3 cycles in a first level cache will be a limiting factor in the overall processor design.
 We can observe that first level cache sizes have remained constant between Intel's Nehalem~\cite{Thomadakis2011} and the newer Haswell~\cite{Jain2013} architectures.
 We have for this reason opted to simulate only a single size configuration at this cache level.
-Both the first level caches have a size of 32kB; divided into sets of 4 and 8 lines for the instruction and data caches respectively. 
+Both the first level caches have a size of 32kB, divided into sets of 4 and 8 lines for the instruction and data caches respectively. 
 Both caches have 64-bytes long cache lines.
-Table~\ref{tbl:processor_model:l1} summaries these values as well as the best bank count and access latency for the tag directory and data as estimated by CACTI. 
+Table~\ref{tbl:processor_model:l1} summarizes these values as well as the best bank count and access latency for the tag directory and data as estimated by CACTI. 
 We define the best bank count to be the one that provides lowest access latency for data and tag directory measured in cycles.
 
-We convert the access latency to cycles assuming a period of 0.3ns, equal to a clock speed of 3GHz.
+We convert the access latency to cycles assuming a period of 0.33ns, equal to a clock speed of 3GHz.
 For example, a tag access latency of 0.16ns equals one cycle while a data access latency of 0.38ns equals two cycles.
 
 
@@ -121,11 +121,11 @@ For example, a tag access latency of 0.16ns equals one cycle while a data access
 \end{table}
 
 For the unified second level cache we have modeled four different sizes; 128kB, 256kB, 512kB, and 1024kB. 
-In all configurations, there are 8 lines in each set and each line is 64-bytes long.
-Using CACTI, we have found the best number of banks per size configuration and the corresponding access latencies.
+In all configurations, there are 8 lines in each set and each line is 64-byte long.
+Using CACTI, we have found the best number of banks per size configuration and the corresponding access latency.
 Table~\ref{tbl:processor_model:l2} summarises these values. 
-Again we have converted access times to cycle assuming a 0.3ns period.
-As expected we observe an access latency increase when the cache size increases.
+Again we have converted access times to cycles assuming a 0.33ns period.
+As expected we observe an increased access latency as the cache size increases.
 
 \subsubsection{L3 Cache}
 \begin{table}[ht]

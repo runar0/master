@@ -8,7 +8,7 @@ By having a relaxed synchronization method, one can improve simulation time, at 
 In our experiments, we have used barrier synchronization with a barrier width of 100 cycles.
 Any inter-core interactions that occur between two successive barriers are not guaranteed to occur in the correct order, but events separated by a barrier will be simulated in the correct order.
 In other words, within a single barrier there is the possibility that all simulation threads run sequentially.
-For our work, this implies that there is a possibility that memory requests within a barrier arrives in the cache sorted by the core id, and not by time.
+For our work, this implies that there is a possibility that memory requests within a barrier is sent to the cache sorted by the core id, rather than by time.
 Because of this possibility we expect that changing the clock skew minimization barrier (CSMB) value could have a noticeable effect on our experimentation results.
 
 \begin{figure}[th]

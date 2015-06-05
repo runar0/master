@@ -16,7 +16,7 @@ It consists of one ATD per core sharing the cache.
 The ATD is managed by normal LRU replacement and has one access counter per way.
 Whenever a cache request hits in the ATD, the access counter representing the way the block was in is incremented.
 In other words, UMON uses the stack property of LRU, as explained in Section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
-In addition to the ATDs, there is a monitor circuit that uses the access counters to caclulate a new global partition at set intervals.
+In addition to the ATDs, there is a monitor circuit that uses the access counters to calculate a new global partition at set intervals.
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
@@ -32,6 +32,15 @@ The number of misses is then divided by the number of sets introduced, to find t
 The rest of the algorithm is simply a greedy algorithm selecting the highest marginal utility at each iteration.
 After a reallocation of cache ways, the ATD counters are all halved.
 By doing this, the UMON will keep historical data for future decisions while prioritizing data from the current period.
+
+Because the lookahead algorithm is greedy, finding a case where it makes a non-optimal choice is rather easy.
+Consider a case with two cores, and two ways left to assign.
+By assigning one way to core 0 it will receive 10 more hits, 2 ways offers no improvement.
+Assigning one way to core 1 causes no additional hits, but if given two way it will receive 18 hits.
+In this case, the marginal utility is 10 for core 0 and 9 for core 1.
+The algorithm assigns one way to core 0, and in the next iteration both have zero utility and it does not matter which is assigned the last way.
+In this case, the algorithm saved 10 misses while it could have saved 18.
+In order to guarantee optimal decisions the algorithm would have to do an exhaustive search of the solution space, but this is infeasible as it requires a lot more resources than the simplified greedy algorithm.
 
 \begin{figure}[ht]
     \centering

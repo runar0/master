@@ -2,8 +2,8 @@
 \section{Benchmarks and Workloads}
 \label{sec:methodology:benchmarks}
 
-In this section, we will present the benchmarks we use to evaluate cache partitioning algorithms in this thesis.
-We explain how the we extracted simulation traces from benchmarks and how we classified those traces based on their sensitivity to changes in available cache space and memory bandwidth. 
+In this section, we will present the benchmarks used to evaluate cache partitioning algorithms in this thesis.
+We explain how we extracted simulation traces from benchmarks and how we classified those traces based on their sensitivity to changes in available cache space and memory bandwidth. 
 Finally, we explain how we created 4-, 8-, and 16-core workloads based on those benchmark traces.
 
 \subsection{Benchmarks and Sample Extraction}
@@ -14,7 +14,7 @@ We choose this suite because it is the newest of the CPU benchmark suites from S
 Unless otherwise stated all benchmarks use the first reference input set.
 Because simulating an entire benchmark is a time-consuming process, we choose to extract a sample interval used to represent each benchmark.
 There are multiple ways of extracting sample intervals.
-The naive way of choosing intervals is to specify an offset and a length and use this across all benchmarks.
+The naive way is to specify an offset and a length and use this across all benchmarks.
 However, several more advanced methods of sample selections exists, two examples are SimPoint~\cite{Hamerly2005} and SimFlex/SMARTS~\cite{Hardavellas2004, Wunderlich2003}.
 
 SimPoint analyses the benchmark and divides it into basic blocks.
@@ -29,9 +29,9 @@ Some intervals are simulated in detail while others are simulated in a low detai
 SimFlex uses statistics to calculate the variation of simulation results based on the intervals simulated in detail.
 The simulation ends after a minimum number of intervals has been simulated, and the result variation between the intervals is within a set limit.
 
-Both solutions utilize the same idea of simulation only parts of the dynamic instruction stream.
+Both solutions utilize the same idea of simulating only parts of the dynamic instruction stream.
 The main difference is the selection criteria and the separation between ahead of time processing and integration with the simulator.
-J. Yi et al.~\cite{Yi2005} has shown that there little is variation in accuracy between SimPoint and SimFlex selected intervals.
+J. Yi et al.~\cite{Yi2005} have shown that there is little variation in accuracy between SimPoint and SimFlex selected intervals.
 SimPoint also integrates well with our existing simulation framework.
 As a result, we chose to utilize SimPoint in our work.
 
@@ -39,8 +39,8 @@ Ideally a few sample intervals are needed per benchmark to get accurate simulati
 To simplify the simulation, we chose to extract one larger interval per benchmark, in place of multiple smaller ones.
 By doing this, we are willingly increasing the error~\cite{Hamerly2004} between simulating our interval and the results obtained by simulating the entire benchmark.
 In our experiments, we are interested in observing performance change to our simulated intervals due to architectural changes.
-Producing results comparable to the results of a full benchmark run is not required to achieve this.
-Also, it is not obvious how to correctly combine performance metrics from multiple simulated intervals.
+Producing results comparable to the results of the full benchmark run is not required to achieve this.
+Also, it is not obvious how to correctly combine performance metrics used in this thesis from multiple simulated intervals.
 Therefore, we choose to use only one interval per benchmark.
 
 The length chosen for our intervals may also affect the final results.
@@ -48,7 +48,7 @@ As caches are empty when the simulation starts the cold cache effect, caused by 
 Additionally, as we are experimenting with cache partitioning algorithms, we believe that a certain number of instructions are needed for our results to stabilize.
 Finally, by increasing the number of instructions we are also increasing the time required to simulate a benchmark.
 We choose to extract 250M instruction intervals using SimPoint.
-This number of instructions will make the cold cache effect neglishable~\cite{Hamerly2005,Hamerly2004,Olsen2014} while we keep the simulation time relatively low.
+This number of instructions will make the cold cache effect negligible~\cite{Hamerly2005,Hamerly2004,Olsen2014} while we keep the simulation time relatively low.
 We generate an instruction trace using Sniper for each SimPoint extracted interval.
 All later experiments utilize these traces in place of the actual benchmark executable.
 
@@ -99,8 +99,8 @@ For each group, we define rules used to detect benchmarks in that group.
 
 We set the classification limits based on manual observation of benchmark behavior. 
 We noted that benchmarks that are bandwidth dependent, in general, had a higher performance loss when we halved the available bandwidth compared to cache sensitive when we halved the cache size.
-We also noted that the average performance drop for some benchmarks were dominated by one sample point, in these cases the standard deviation also rose. 
-As a result, we applied higher cutoff limits when the standard deviation was high compared to the general case.
+We also noted that one sample point dominates the average performance drop for some benchmarks, in these cases the standard deviation also rose. 
+To prevent false positives, we applied higher cutoff limits when the standard deviation was high compared to the general case.
 Table~\ref{tbl:benchmarks_workloads:benchmark_classification} lists all benchmarks and their classification according to the above rules.
 
 

@@ -2,7 +2,7 @@
 \section{Processor Model Parameter Sensitivity}
 \label{sec:results:model_sensitivity}
 
-As detailed in the processor model Section~\ref{sec:methodology:processor_model} we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
+As detailed in the processor model overview, in Section~\ref{sec:methodology:processor_model}, we have based our simulated processor core on the Nehalem~\cite{Thomadakis2011} architecture.
 An experiment was devised, with the goal of gaining a better understanding and improved confidence in this model.
 Of the properties used to define the model, we selected a total of five we believe to have an important impact on the performance of the simulated core.
 We then varied each of the properties in isolation, keeping the others constant.
@@ -43,30 +43,30 @@ In this case, it might be necessary to tweak the model until we find one that is
        ~ % Fill page, prevents latex from placing a single line of text under the figure
 \end{figure}
 
-Figure~\ref{fig:results:processor_model} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status hold registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
+Figure~\ref{fig:results:processor_model} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status holding registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
 Outstanding loads and stores specify the number of outstanding memory requests the core can have active in the rob.
 The number of L1 MSHRs decide how many outstanding cache misses the first level cache can handle before it has to block on a miss.
 The size of the rob and rs together decide how many instructions can be live during execution.  
 Increasing the number of live instructions can increase the amount of instruction-level parallelism (ILP) the processor can extract from the program while possibly increasing the cost of a branch miss prediction.
 
 For two of the memory related properties; os and ol, we observe no improvement nor decrease in performance for the values we explored.
-When we increase the last memory related parameter; MSHR, we do observe a slight performance change.
-With an increasing number of MSHRs, the cache and hence the core can have more outstanding memory requests. 
+When we increase the last memory related parameter, MSHR, we do observe a slight performance change.
+With an increasing number of MSHRs, the cache and hence the core can handle more outstanding memory requests. 
 As a result, the core will be able to exploit more ILP, and a slight performance improvement is observed. 
-Unlike the MSHRs, we do not expect the value of os and ol to effect performance. 
+Unlike the MSHRs, we do not expect the value of os and ol to affect performance. 
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
-Equally there must be more than 32 stores per 128 instructions for an increase os limit to be beneficial.
-In addition, both os and ol is limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
+Equally there must be more than 32 stores per 128 instructions for an increased os limit to be beneficial.
+Also, both os and ol are limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
 The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in Figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 
 
 When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.
 Figures~\ref{fig:results:processor_model:rob}~and~\ref{fig:results:processor_model:rs} show an average performance increase of about 2\% with more rob entries, and about a 3\% increase with more rs entries.
-We observe that these increases come at the cost of a respectively 75\% and 50\% storage increase.
-In addition, we observe that the standard deviation in both cases is about the same as the average performance increase.
+We observe that these increases come at the cost of a 75\% and 50\% storage increase respectively.
+Also, we observe that the standard deviation in both cases is about the same as the average performance increase.
 
 When reviewed, these results lead us to conclude that the processor model we have presented, based on the Nehalem architecture, is stable and that we have no obvious performance gains from small adjustments.
-As a result, we decide to continue use of this model for the rest of our experiments without making any adjustments.
+As a result, we decide to continue using this model for the rest of our experiments without making any adjustments.
 
 Considering that we base our model on an actual architecture and that our simulator strives to simulate the core model of that same architecture, it is not a far-fetched result observing little sensitivity to property changes.
 During the design process of the architecture, it is natural to expect that the designers made a conscious choice between speed and area using a similar analysis.
