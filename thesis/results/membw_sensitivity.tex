@@ -41,8 +41,8 @@ PIPP-min8 outperforms both PIPP and LRU.
             \caption{HMS.}
             \label{fig:results:bus-05:ucp:hms}
         \end{subfigure}
-        \label{fig:results:bus-05:ucp}
         \caption{Speedup of UCP normalized to LRU with reduced L3 cache.}
+        \label{fig:results:bus-05:ucp}
 \end{figure}
 
 
@@ -50,7 +50,7 @@ In all our experiments, we have shown that UCP outperforms the other implemented
 Both when reducing the available memory bandwidth in this experiment, and when we reduced the size of the LLC in Section~\ref{sec:results:l3size_sensitivity}, UCP has show improved performance over LRU.
 Because of this, we ran an additional experiment varying the memory bandwidth, but this time utilizing the lowest cache configuration used in Section~\ref{sec:results:l3size_sensitivity}, 0.5MB.
 Because of the time constraints on this thesis, we only have results for UCP compared to LRU.
-Figure~\ref{fig:results:membus-05:ucp} shows the speedup for UCP compared to LRU with varying memory bus bandwidth.
+Figure~\ref{fig:results:bus-05:ucp} shows the speedup for UCP compared to LRU with varying memory bus bandwidth.
 These results show that when we combine the high cache pressure caused by reduced LLC size, with increased memory latency, UCP can outperform LRU greatly.
 Our results show UCP performing more than 21\% better than LRU measured in STP in the most constrained case.
 Also, UCP reduces the MPKI increase by 2\%, to a 15\% increase compared to LRU in the most constrained case.

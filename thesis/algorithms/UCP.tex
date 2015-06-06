@@ -66,7 +66,7 @@ As a result, B owned by core 1 at the LRU position is saved, and rather A at the
 \label{alg:algorithms:ucp}
 \begin{algorithmic}[1]
 \State $balance\gets N$ /* Number of ways */
-\State $allocations[i]\gets 0$  /* for each core $i$ */
+\State $allocations[i]\gets 0$ /* for each core $i$ */
 \While {$balance$}
     \ForAll {$cores\ i$}
         \State $alloc\gets allocatations[i]$

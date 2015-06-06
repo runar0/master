@@ -47,7 +47,7 @@ Figure~\ref{fig:results:base:avg:mpki} shows L3 cache misses, and as expected th
 The modified PIPP algorithm has a lower increase of 6.7\%.
 UCP, which is the highest performer in terms of STP and HMS, gives the third highest miss increase at 3.2\% more misses than LRU. 
 
-The increase in both misses and performance for UCP could be an artifact of the lookahead algorithm, as shown in detail in Section~\ref{sec:algorithm:ucp}.
+The increase in both misses and performance for UCP could be an artifact of the lookahead algorithm, as shown in detail in Section~\ref{sec:algorithms:ucp}.
 If there is a core, which has relatively few cache accesses per allocation period and also only accesses a small number of different blocks.
 Then, this core will have a high initial marginal utility as only a few ways are needed to provide hits for most accesses.
 Then on the other side of the spectrum there might be a core with many accesses, spread across all cache ways.
