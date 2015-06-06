@@ -15,6 +15,15 @@ We also show that Utility Cache Partitioning, the oldest evaluated alternative t
 \clearpage
 
 \section*{Sammendrag}
-\todo{Translate abstract}
+Ytelsesforskjellen mellom prosessorer og hovedminne har økt gjennom de siste tiår.
+Raske minnestrukturer kjent som hurtigbuffer vart introdusert for å redusere effekten av den økende forskjellen.
+Etter at produsenter møtte grensen for enkjerneprosessorytelse på starten av 2000-tallet har flerkjerneprosessorer blitt vanlige.
+Flerkjerneprosessorer deler vanligvis noe hurtigbuffer mellom kjernene, og algoritmer som kontrolerer kjernenes tilgang til det delte området har blitt et viktig forskningsområdet.
+Flere forskere har presenter algoritmer som skal kunne øke ytelsen til flerkjerneprosessorer ved å endre algoritmen som styrer hurtigbufferet.
+I denne avhandlingen presenterer og evaluerer vi flere nylig publiserte og viktige arbeid som omhandler kontroll av delt hurtigbuffer.
+Vi presenterer et simuleringssystem som vi bruker til å evaluerer flere algorithmer, basert på simuleringssystemet Sniper.
+Feler av de nylige presenterte algoritmene er implementer og evaluert mot den ofte brukte algorithmen algoritmen Least Recently Used (LRU).
+Våre resultat viser til at LRU i flere tilfeller er tilstrekkelig, og at få av de implementerte algoritmene kan konsekvent produsere bedre resultat enn LRU.
+Vi viser også at Utility Cache Partition, den eldste av de implementerte alternativet til LRU, gir best resultat på alle våre testprogrammer.
 
 \clearpage

@@ -2,9 +2,12 @@
 \chapter{Discussion}
 \label{cpt:discussion}
 
+In this chapter we discuss various shortcomings in our implementation, our simulator framework, and our processor model.
+We explain why various choices were made and what might have influced our final results.
+
 \section{Parameter Fitting and Lack of Implementation Details}
 
-All of the algorithms we have implemented and evaluated in this thesis have one or more parameters controlling its operation.
+All of the algorithms we have implemented and evaluated in this thesis have one or more parameter controlling its operation.
 As Chapter~\ref{cpt:framework} explains, we have mainly opted to use parameter values from the original papers.
 Each of the original papers has attempted to show how their algorithm performs better that LRU and the current best theoretical algorithm.
 It is fair to assume that the authors have chosen parameter values that are fitted to provide good results on their benchmarks.
@@ -17,7 +20,7 @@ In this case, one cannot reliably fit parameters because the workload is not kno
 Hence, running the algorithms using the authors selected parameter values on an unknown workload set might give results closer to a real life scenario.
 Also by fitting parameters, one might end up overfitting.
 In this case, the parameters result in a good performance on the workload set, but performance on all other workloads decreases.
-We feel this would also be an unfair comparsion.
+We feel this would also be an unfair comparison.
 
 As mentioned in Section~\ref{sec:framework:algorithms} we also had to make some assumptions in our implementations.
 These assumptions were necessary due to missing or unclear implementation details in the original papers.
@@ -29,19 +32,19 @@ As a result, our performance evaluations results may not follow those of the ori
 \section{Clock Skew Synchronization Barrier}
 
 One of the advantages of Sniper is the use of multiple simulation threads~\cite{Carlson2011a}.
-We covered how this could improve performance in Section~\ref{sec:methodology:simulator}, but this speed improvement does naturally decrease accuracy.
+We detailed how this could improve performance in Section~\ref{sec:methodology:simulator}, and also how this speed improvement could result in decreased accuracy.
 In the context of this thesis, there are two effects of having multiple
 simulation threads that could bias our results.
 The problem relates to the ordering of memory events.
-With multiple simulation threads, the only guarantee the simulator gives regarding the ordering of memory events from different cores is that events from different intervals execute in the correct order.
+With multiple simulation threads, the only guarantee the simulator gives regarding the ordering of memory events from different cores are that events from different intervals execute in the correct order.
 The order of events from different cores within the same interval depends on the os scheduler.
-The worst case would be if the os schedule all simulation threads serially and hence memory events would be sorted by time but grouped by origin core.
+In the worst case the os scheduler may schedule all simulation threads serially, this will cause the ordering of memory events to be by core id and not by time.
 All the implemented cache partition algorithms assume that memory requests are in order, and this inaccuracy will break this assumption.
-In addition to the effects on the cache partitioning, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the authors autumn project~\cite{Olsen2014}.
+In addition to the effects on the cache partitioning, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the author's autumn project~\cite{Olsen2014}.
 
-Section~\ref{sec:results:csmb_sensitivity} presents an experiment where we attempted to vary the CSMB interval, and we evaluate the performance using changes in measure STP and HMS.
+Section~\ref{sec:results:csmb_sensitivity} presents an experiment where we attempted to vary the CSMB interval, and we evaluate the performance using changes in measured STP and HMS.
 The results of this experiment showed that there is little change when lowering the CSMB from the default value of 100 cycles all the way to 1 cycle.
-This would indicate that although the potential issues outlined above are serious, they seem to not effect results when we synchronize every 100 cycles.
+This would indicate that although the potential issues outlined above are serious, they seem to not affect results when we synchronize every 100 cycles.
 The cache used in this experiment and all other four core experiments is 4MB with 32 blocks per set.
 In other words, there are 2048 sets.
 For out of order memory accesses to have an impact on our accuracy there would have to be at least one of the 2048 sets accessed by two cores within the same interval.
@@ -51,17 +54,17 @@ This seems to be an unlikely situation, and our experiment supports this assumpt
 
 The experiment only did a sensitivity analysis of 4-core workloads. 
 We chose to do this because repeating it for 8- and 16-cores would have been unpractical given the time constraints of this work. 
-However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been the same in these cases.
+However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been simular also for 8- and 16- cores.
 
 
 \section{Uniform LLC Access}
 
 In Section~\ref{sec:methodology:processor_model} we present the processor model used on our experiments.
-Our architecture, as shown in Figure~\ref{fig:processor_model}, assumes a uniform access time to the LLC.
-This assumption is reasonable for 4 and even 8 core processors and requires a uniform access method between the L2 caches and the LLC.
+Our architecture, as shown in Figure~\ref{fig:processor_model}, assumes a uniform access latency to the LLC.
+All the algorithms presented in this thesis also assume uniform access latency to the LLC or rather does not take into account non-unform access latency when assigning cache space.
+This assumption of uniform access latency is reasonable for 4- and 8-core processors and requires a uniform access method between the L2 caches and the LLC.
 One possible solution is a crossbar.
 However, scaling this architecture to 16 cores is somewhat unreasonable as the crossbar grows exponentially.
-This can be seen in newer 18 core Intel i7 where the last level cache is distributed around the chip and interconnected using ring interconnects~\cite{Hruska2014}.
+This is visible in the newer 18 core Intel i7 where the last level cache is distributed around the chip and interconnected using ring interconnects~\cite{Hruska2014}.
 This solution results in non-uniform access to the LLC.
 Due to this fact, we chose not to simulate 32 and higher core workloads, even thought our simulation framework supports it.
-
