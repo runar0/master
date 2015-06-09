@@ -32,10 +32,10 @@ This decrease is observed because improving single core performance became harde
 By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards chip multiprocessors (CMPs)~\cite{Sutter2005}.
 CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
 This development is based on Pollack's rule~\cite{Borkar2007}, which states that performance increases proportionally to the square root of the area, and that power usage increases proportionally to the area.
-Consider having two cores, one large highly complex core, and a simpler core at half the size.
+Consider having two cores, one large highly complex core, and a simple core at half the size.
 The performance of the larger core will by Pollack's rule be worse than the combined performance\footnotemark of the two smaller while having roughly the same power consumption.
 \footnotetext{Single thread performance is only increased by creating more complex cores; multithreading techniques are required in software to take advantage of CMPs performance increase.}
-Moving to simpler and smaller cores allowed manufacturers to continue overall performance improvements while keeping below the power wall.
+Moving to simpler and smaller cores allowed manufacturers to continue overall performance improvements while staying below the power wall.
 With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
 Today CMPs are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
@@ -136,7 +136,7 @@ This is the assumption that recently accesses memory addresses have a higher pro
 A recency-friendly access pattern is one that causes no misses under an algorithm that always keeps the most recently used blocks in the cache.
 Figure~\ref{fig:algorithms:rf_pattern} illustrates an example memory access pattern that is said to be recency-friendly.
 Because the pattern repeats and $k$ is less than the number of ways we know that the least recently used block will always be referenced before being evicted, if we assume a recency-assumption based algorithm.
-Hence, the algorithm will be able to provide hits for every access after the initial repetition and the pattern is recency-friendly.
+Hence, the algorithm will be able to provide hits for every access after the initial repetition, and the pattern is recency-friendly.
 
 \begin{figure}[ht]
 \centering

@@ -5,7 +5,7 @@
 \begin{figure}[th]
     \centering
     \includegraphics[scale=0.7]{figures/results/speedup/l3-stp-04M-all-l3}
-    \caption[Speedup wtih decreasing L3 size]{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
+    \caption[Speedup with decreasing L3 size]{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
     \label{fig:results:l3}
 \end{figure}
 
@@ -23,7 +23,7 @@ Also, we expect PIPP, which already has shown bad performance compared to LRU, t
 
 Before showing the results of this experiment, we will briefly discuss a special case that arises in this experiment.
 When we set the L3 cache to 0.5MB, we have a situation where the sum of the L2 caches equals the L3 cache.
-This is an extreme case in a inclusive cache architecture because when the L2 caches are fully utilized there is no spare room in the L3 cache.
+This is an extreme case in an inclusive cache architecture because when the L2 caches are fully utilized there is no spare room in the L3 cache.
 In a real processor, it would not make sense to have an L3 of this size.
 We still experiment with this configuration, as interesting results may arise in situations where the L2 caches are not fully utilized, such as in a mixed workload with streaming and recency-friendly applications.
 

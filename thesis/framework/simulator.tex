@@ -11,7 +11,7 @@ The other candidate, Sniper, is based on interval simuation~\cite{Genbrugge2010}
 Interval simulation allows it to simulate benchmarks significantly faster than gem5~\cite{Carlson2011a, Olsen2014} at the cost of reduced accuracy.
 
 Sniper is multithreaded, and each simulated core runs in a separate simulation thread.
-This separation allows Sniper to take advantage of today's multicore processors to speed up simulation.
+This separation allows Sniper to take advantage of today's multicore processors to speed up the simulation.
 On the other hand, gem5 performs all simulation in a single thread.
 By having multiple simulation threads, there is a chance of clock skewing~\cite{Carlson2011a} during simulations in Sniper.
 Clock skewing is when one core simulates faster or slower than the others, making the clock values in each core different.

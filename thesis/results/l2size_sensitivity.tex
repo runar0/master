@@ -28,39 +28,39 @@ We expect this increased filtering of requests to have an impact on the performa
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-legend-stp-0128k-tadip-l2}
-        \caption{Speedup of TADIP relative to LRU.}
+        \caption{Speedup of TADIP normalized to LRU.}
         \label{fig:results:l2:tadip}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-drrip-3-l2}
-        \caption{Speedup of DRRIP relative to LRU.}
+        \caption{Speedup of DRRIP normalized to LRU.}
         \label{fig:results:l2:drrip}
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-ucp-l2}
-        \caption{Speedup of UCP relative to LRU.}
+        \caption{Speedup of UCP normalized to LRU.}
         \label{fig:results:l2:ucp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-prism-l2}
-        \caption{Speedup of PriSM relative to LRU.}
+        \caption{Speedup of PriSM normalized to LRU.}
         \label{fig:results:l2:prism}
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-pipp-l2}
-        \caption{Speedup of PIPP relative to LRU.}
+        \caption{Speedup of PIPP normalized to LRU.}
         \label{fig:results:l2:pipp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-pipp-min8-l2}
-        \caption{Speedup of PIPP-min8 relative to LRU.}
+        \caption{Speedup of PIPP-min8 normalized to LRU.}
         \label{fig:results:l2:pipp-min8}
     \end{subfigure}
-    \caption[Speedup with increasing L2 size]{Speedup of cache partition algorithms relative to LRU with increasing private L2 size}
+    \caption[Speedup with increasing L2 size]{Speedup of cache partition algorithms normalized to LRU with increasing private L2 size}
     \label{fig:results:l2}
 \end{figure}
 
-Figure~\ref{fig:results:l2:tadip} shows the speedup of TADIP compared to LRU measured in STP. 
+Figure~\ref{fig:results:l2:tadip} shows the speedup of TADIP normalized to LRU measured in STP. 
 As seen previously, TADIP performs as good as LRU in both 4- and 8-core workloads with a 128kB L2 cache.
 With increasing L2 cache size TADIP steadily outperforms LRU with between 0.1\% and 0.6\% depending on the configuration. 
 At 16-cores, TADIP underperforms compared to LRU, as previously shown.

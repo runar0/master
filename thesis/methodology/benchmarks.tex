@@ -17,7 +17,7 @@ There are multiple ways of extracting sample intervals.
 The naive way is to specify an offset and a length and use this across all benchmarks.
 However, several more advanced methods of sample selections exists, two examples are SimPoint~\cite{Hamerly2005} and SimFlex/SMARTS~\cite{Hardavellas2004, Wunderlich2003}.
 
-SimPoint analyses the benchmark and divides it into basic blocks.
+SimPoint analyzes the benchmark and divides it into basic blocks.
 It then divides the dynamic instruction stream of the running benchmark into intervals of a set size.
 Each interval is classified by which of the basics blocks in the benchmark the interval executes.
 Finally, the intervals are clustered using k-means, and the algorithm selects the intervals closest to the centroid in each of the k-clusters to represent the benchmark.

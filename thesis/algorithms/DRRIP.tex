@@ -49,6 +49,6 @@ Initially, there are four blocks A, B, C and D with re-reference intervals 3, 1,
 First an access hits the C block, and its value decrements to 0.
 Next a miss to block E occurs, block A has a re-reference interval of 3 and is evicted, E is assigned a re-reference interval of 2.
 Then a miss to block D occurs, as no blocks have a re-reference interval of 3 all values are incremented by one.
-After one incremenetation E now has an interval of 3 and is evicted.
+After one incrementation E now has an interval of 3 and is evicted.
 Then follows a hit to block D, causing its re-reference value to decrease by one.
 The last row contains the final state of all blocks.

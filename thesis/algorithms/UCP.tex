@@ -9,7 +9,7 @@ The replacement policy is as in LRU but with two modifications:
 First if the number of blocks owned by the requesting core is less than the number of ways assigned to it, then the least recently used block that is not assigned to the requester core is replaced.
 If however the number of blocks owned is greater than or equal to the number of assigned ways the replacement algorithm selects the least recently used block of those owned by the requester.
 This replacement policy ensures that the division between cores in each set move toward the global allocation following cache misses.
-At the same time, a core may use more blocks that it is currently assigned, given that the space is not clamed by any other core.
+At the same time, a core may use more blocks that it is currently assigned, given that the space is not claimed by any other core.
 
 The UMON is the core of the UCP algorithm.
 It consists of one ATD per core sharing the cache. 
@@ -53,7 +53,7 @@ Figure~\ref{fig:algorithms:ucp_example} show an example cache set managed by UCP
 We assume that both cores are allocated two blocks.
 Initially, core 0 has three blocks in the cache as indicated by the blue background color; A, C, and D.
 The first request is by core 0 for block C; this is a hit causing the block to be promoted to MRU, pushing A and B towards the LRU position.
-Next is a request for E by core 0, this is a miss.
+Next is a request for E by core 0; this is a miss.
 Because core 0 already has more than the number of allocated blocks in the cache, the block closest to LRU owned by core 0 is evicted, D in this case.
 Finally, a request for F is made by core 1; this is also an miss.
 Because core 1 has less than the number of allocated blocks in the cache, a block not owned by core 1 is to be evicted.

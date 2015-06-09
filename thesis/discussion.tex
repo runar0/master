@@ -2,7 +2,7 @@
 \chapter{Discussion}
 \label{cpt:discussion}
 
-In this chapter we discuss various shortcomings in our implementation, our simulator framework, and our processor model.
+In this chapter, we discuss various shortcomings in our implementation, our simulator framework, and our processor model.
 We explain why various choices were made and what might have influenced our final results.
 
 \section{Parameter Fitting and Lack of Implementation Details}
@@ -54,7 +54,7 @@ This seems to be an unlikely situation, and our experiment supports this assumpt
 
 The experiment only did a sensitivity analysis of 4-core workloads. 
 We chose to do this because repeating it for 8- and 16-cores would have been unpractical given the time constraints of this work. 
-However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been simular also for 8- and 16- cores.
+However, as we scale the number of sets in the cache linearly with the number of cores, there is no reason to doubt that the results would have been similar also for 8- and 16- cores.
 
 We note that in the most constrained case in the in the L3 sensitivity experiment, in section~\ref{sec:results:l3size_sensitivity}, there are only 256 sets in the cache.
 With this reduced number of cache sets the effects of the clock skew, as investigated in section~\ref{sec:results:csmb_sensitivity}, might become more visible.

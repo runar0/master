@@ -56,7 +56,7 @@ If this is the case, UCP will first allocate ways to cache all the blocks access
 On the other hand, LRU would have prioritized the second core because it has a higher access frequency.
 By shielding the blocks of the first core UCP saves all misses caused by this core, but the other core will miss more compared to the LRU case.
 In total UCP might cause more misses than LRU.
-The overall speedup might, however, be positive if the first core gains more from having a few less misses than the other core loses from having more.
+The overall speedup might, however, be positive if the first core gains more from having fewer misses than the other core loses from having more.
 
 
 \begin{figure}[th]

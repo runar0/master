@@ -4,7 +4,7 @@
 Probabilistic Shared Cache Management (PriSM)~\cite{Manikantan2012} was first presented in 2012.
 PriSM is a framework for cache management with optimization algorithms targetting multiple performance goals.
 The original paper presents hit maximization, fairness and QoS goals.
-We will focus on the hit maximization, or miss minimization, algorithm as all other algorithms in this thesis also targets this goal.
+We will focus on the hit maximization algorithm , or miss minimization algorithm, as all other algorithms in this thesis also targets this goal.
 PriSM utilizes ATDs to estimate private cache performance for each of the cores.
 The ATD will keep track of total misses and hits.
 It will not track hits per cache way like the ATDs in UCP and PIPP.
@@ -32,7 +32,7 @@ If the core has a non-zero eviction probability, then this formula extends into 
 As noted, PriSM defines three optimization targets, each one of these is responsible for calculating the optimal $T_i$ that will fulfill the optimization target.
 Rearranging the above formula for $E_i$ yields: $E_i = (C_i - T_i) * N/W + M_i$.
 Algorithm~\ref{alg:algorithms:prism} shows how $T_i$ values are calculated for hit maximization.
-It is a relatively simple algorithm that will adjust the target occupancy based on current occupancy and the potential for gaining more hits.
+It is a relatively simple algorithm that will adjust the target occupancy based on the current occupancy and the potential for gaining more hits.
 
 \begin{algorithm}[ht]
 \caption{PriSM Hit Maximization.}

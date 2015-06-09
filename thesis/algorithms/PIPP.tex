@@ -16,7 +16,7 @@ In a 4-way cache dual-core setup where both cores are assigned two ways, PIPP wi
 In this situation, the two top positions in the cache stack can only be reached by a cache block through promotion.
 On a cache access, a block has a chance, $p_{prom} = \frac{3}{4}$, to move one position upwards in the stack unless it is already at the MRU position.
 
-On insertion, the PIPP policy does not consider how many blocks are owned by the requesting core, this is unlike UPC's insertion policy that prevents a core form claiming more ways that what it is assigned.
+On insertion, the PIPP policy does not consider how many blocks are owned by the requesting core, this is unlike UPC's insertion policy that prevents a core from claiming more ways that what it is assigned.
 However, cores with more ways assigned to it will insert its blocks higher up in the stack. 
 The core with the highest number of ways assigned will not have any insertion competition pushing its blocks out of the cache.
 The only way blocks from this core can be pushed out is by other blocks from the same core, or by blocks from other cores that are re-referenced repeatably.
@@ -35,7 +35,7 @@ In the case where all cores are streaming, and there are no cores to protect, PI
 Figure~\ref{fig:algorithms:pipp_example} shows an example cache set managed by PIPP shared by two cores.
 Both cores are allocated two blocks, and initially core 0 owns three blocks in the set; A, C, and D.
 In this example we assume all hits cause a block promotion.
-The first request is for C by core 0; this is a hit, and the block is promoted, effectivly swapping block B and C.
+The first request is for C by core 0; this is a hit, and the block is promoted, effectively swapping block B and C.
 Next is a request for E by core 0; this is a miss.
 E is inserted at the second to last position of the cache set, as the core is allocated two blocks, causing D to be evicted and B to move to the LRU position.
 Finally, a request for F is made by core 1; again it is inserted at the second to last position, evicting B.
