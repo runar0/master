@@ -1,0 +1,3376 @@
+diff --git a/common/core/core.cc b/common/core/core.cc
+index 0fb4bbb..be3b5fc 100644
+--- a/common/core/core.cc
++++ b/common/core/core.cc
+@@ -367,13 +367,19 @@ Core::initiateMemoryAccess(MemComponent::component_t mem_component,
+ 
+       LOG_PRINT("Start InitiateSharedMemReq: ADDR(0x%x), offset(%u), curr_size(%u)", curr_addr_aligned, curr_offset, curr_size);
+ 
++      ExtraMemoryRequestInfo info;
++      info.pc = eip;
++      info.address = curr_addr_aligned;
++      info.core_id = m_core_id;
++
+       HitWhere::where_t this_hit_where = getMemoryManager()->coreInitiateMemoryAccess(
+                mem_component,
+                lock_signal,
+                mem_op_type,
+                curr_addr_aligned, curr_offset,
+                data_buf ? curr_data_buffer_head : NULL, curr_size,
+-               modeled);
++               modeled,
++               &info);
+ 
+       if (hit_where != (HitWhere::where_t)mem_component)
+       {
+diff --git a/common/core/core.h b/common/core/core.h
+index 0960975..b07408b 100644
+--- a/common/core/core.h
++++ b/common/core/core.h
+@@ -81,6 +81,15 @@ class Core
+          MEM_MODELED_RETURN,    /* Count + time + return data to construct DynamicInstructionInfo */
+       };
+ 
++      struct ExtraMemoryRequestInfo {
++         // PC that caused the memory request
++         IntPtr pc;
++         // Memory address requested
++         IntPtr address;
++         // Core the request originates from
++         core_id_t core_id;
++      };
++
+       static const char * CoreStateString(State state);
+ 
+       Core(SInt32 id);
+diff --git a/common/core/memory_subsystem/cache/cache.cc b/common/core/memory_subsystem/cache/cache.cc
+index 596f1b6..630190a 100644
+--- a/common/core/memory_subsystem/cache/cache.cc
++++ b/common/core/memory_subsystem/cache/cache.cc
+@@ -13,6 +13,7 @@ Cache::Cache(
+    UInt32 cache_block_size,
+    String replacement_policy,
+    cache_t cache_type,
++   UInt32 shared_cores,
+    hash_t hash,
+    FaultInjector *fault_injector,
+    AddressHomeLookup *ahl)
+@@ -21,14 +22,15 @@ Cache::Cache(
+    m_enabled(false),
+    m_num_accesses(0),
+    m_num_hits(0),
++   m_core_id(core_id),
+    m_cache_type(cache_type),
+    m_fault_injector(fault_injector)
+ {
+-   m_set_info = CacheSet::createCacheSetInfo(name, cfgname, core_id, replacement_policy, m_associativity);
++   m_set_info = CacheSet::createCacheSetInfo(name, cfgname, core_id, replacement_policy, m_associativity, num_sets, cache_block_size, shared_cores, hash);
+    m_sets = new CacheSet*[m_num_sets];
+    for (UInt32 i = 0; i < m_num_sets; i++)
+    {
+-      m_sets[i] = CacheSet::createCacheSet(cfgname, core_id, replacement_policy, m_cache_type, m_associativity, m_blocksize, m_set_info);
++      m_sets[i] = CacheSet::createCacheSet(cfgname, core_id, replacement_policy, m_cache_type, m_associativity, m_blocksize, m_set_info, i);
+    }
+ 
+    #ifdef ENABLE_SET_USAGE_HIST
+@@ -82,7 +84,7 @@ Cache::invalidateSingleLine(IntPtr addr)
+ 
+ CacheBlockInfo*
+ Cache::accessSingleLine(IntPtr addr, access_t access_type,
+-      Byte* buff, UInt32 bytes, SubsecondTime now, bool update_replacement)
++      Byte* buff, UInt32 bytes, SubsecondTime now, bool update_replacement, Core::ExtraMemoryRequestInfo *info)
+ {
+    //assert((buff == NULL) == (bytes == 0));
+ 
+@@ -105,11 +107,11 @@ Cache::accessSingleLine(IntPtr addr, access_t access_type,
+       if (m_fault_injector)
+          m_fault_injector->preRead(addr, set_index * m_associativity + line_index, bytes, (Byte*)m_sets[set_index]->getDataPtr(line_index, block_offset), now);
+ 
+-      set->read_line(line_index, block_offset, buff, bytes, update_replacement);
++      set->read_line(line_index, block_offset, buff, bytes, update_replacement, info);
+    }
+    else
+    {
+-      set->write_line(line_index, block_offset, buff, bytes, update_replacement);
++      set->write_line(line_index, block_offset, buff, bytes, update_replacement, info);
+ 
+       // NOTE: assumes error occurs in memory. If we want to model bus errors, insert the error into buff instead
+       if (m_fault_injector)
+@@ -123,7 +125,7 @@ void
+ Cache::insertSingleLine(IntPtr addr, Byte* fill_buff,
+       bool* eviction, IntPtr* evict_addr,
+       CacheBlockInfo* evict_block_info, Byte* evict_buff,
+-      SubsecondTime now, CacheCntlr *cntlr)
++      SubsecondTime now, CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    IntPtr tag;
+    UInt32 set_index;
+@@ -131,9 +133,10 @@ Cache::insertSingleLine(IntPtr addr, Byte* fill_buff,
+ 
+    CacheBlockInfo* cache_block_info = CacheBlockInfo::create(m_cache_type);
+    cache_block_info->setTag(tag);
++   cache_block_info->setOwner(info != NULL ? info->core_id : 9000);
+ 
+    m_sets[set_index]->insert(cache_block_info, fill_buff,
+-         eviction, evict_block_info, evict_buff, cntlr);
++         eviction, evict_block_info, evict_buff, cntlr, info);
+    *evict_addr = tagToAddress(evict_block_info->getTag());
+ 
+    if (m_fault_injector) {
+diff --git a/common/core/memory_subsystem/cache/cache.h b/common/core/memory_subsystem/cache/cache.h
+index d8e975a..c205891 100644
+--- a/common/core/memory_subsystem/cache/cache.h
++++ b/common/core/memory_subsystem/cache/cache.h
+@@ -24,6 +24,8 @@ class Cache : public CacheBase
+       UInt64 m_num_accesses;
+       UInt64 m_num_hits;
+ 
++      core_id_t m_core_id;
++
+       // Generic Cache Info
+       cache_t m_cache_type;
+       CacheSet** m_sets;
+@@ -45,6 +47,7 @@ class Cache : public CacheBase
+             UInt32 associativity, UInt32 cache_block_size,
+             String replacement_policy,
+             cache_t cache_type,
++            UInt32 shared_cores,
+             hash_t hash = CacheBase::HASH_MASK,
+             FaultInjector *fault_injector = NULL,
+             AddressHomeLookup *ahl = NULL);
+@@ -54,10 +57,10 @@ class Cache : public CacheBase
+ 
+       bool invalidateSingleLine(IntPtr addr);
+       CacheBlockInfo* accessSingleLine(IntPtr addr,
+-            access_t access_type, Byte* buff, UInt32 bytes, SubsecondTime now, bool update_replacement);
++            access_t access_type, Byte* buff, UInt32 bytes, SubsecondTime now, bool update_replacement, Core::ExtraMemoryRequestInfo *info);
+       void insertSingleLine(IntPtr addr, Byte* fill_buff,
+             bool* eviction, IntPtr* evict_addr,
+-            CacheBlockInfo* evict_block_info, Byte* evict_buff, SubsecondTime now, CacheCntlr *cntlr = NULL);
++            CacheBlockInfo* evict_block_info, Byte* evict_buff, SubsecondTime now, CacheCntlr *cntlr = NULL, Core::ExtraMemoryRequestInfo *info = NULL);
+       CacheBlockInfo* peekSingleLine(IntPtr addr);
+ 
+       CacheBlockInfo* peekBlock(UInt32 set_index, UInt32 way) const { return m_sets[set_index]->peekBlock(way); }
+@@ -68,6 +71,7 @@ class Cache : public CacheBase
+ 
+       void enable() { m_enabled = true; }
+       void disable() { m_enabled = false; }
++      
+ };
+ 
+ template <class T>
+diff --git a/common/core/memory_subsystem/cache/cache_base.h b/common/core/memory_subsystem/cache/cache_base.h
+index 5c3b2c4..8994556 100644
+--- a/common/core/memory_subsystem/cache/cache_base.h
++++ b/common/core/memory_subsystem/cache/cache_base.h
+@@ -57,6 +57,11 @@ class CacheBase
+          SRRIP,
+          SRRIP_QBS,
+          RANDOM,
++         TADIP,
++         UCP,
++         PIPP,
++         DRRIP,
++         PriSM,
+          NUM_REPLACEMENT_POLICIES
+       };
+ 
+diff --git a/common/core/memory_subsystem/cache/cache_block_info.cc b/common/core/memory_subsystem/cache/cache_block_info.cc
+index 041c53e..5b27865 100644
+--- a/common/core/memory_subsystem/cache/cache_block_info.cc
++++ b/common/core/memory_subsystem/cache/cache_block_info.cc
+@@ -24,7 +24,7 @@ const char* CacheBlockInfo::getOptionName(option_t option)
+ CacheBlockInfo::CacheBlockInfo(IntPtr tag, CacheState::cstate_t cstate, UInt64 options):
+    m_tag(tag),
+    m_cstate(cstate),
+-   m_owner(0),
++   m_owner(~0),
+    m_used(0),
+    m_options(options)
+ {}
+diff --git a/common/core/memory_subsystem/cache/cache_block_info.h b/common/core/memory_subsystem/cache/cache_block_info.h
+index 4e856b0..cef9bf7 100644
+--- a/common/core/memory_subsystem/cache/cache_block_info.h
++++ b/common/core/memory_subsystem/cache/cache_block_info.h
+@@ -62,11 +62,14 @@ class CacheBlockInfo
+       static const char* getOptionName(option_t option);
+ };
+ 
++class UMON;
++
+ class CacheCntlr
+ {
+    public:
+       virtual bool isInLowerLevelCache(CacheBlockInfo *block_info) { return false; }
+       virtual void incrementQBSLookupCost() {}
++      virtual UMON* getUMON() { return NULL; }
+ };
+ 
+ #endif /* __CACHE_BLOCK_INFO_H__ */
+diff --git a/common/core/memory_subsystem/cache/cache_set.cc b/common/core/memory_subsystem/cache/cache_set.cc
+index c81ce9a..fa1e695 100644
+--- a/common/core/memory_subsystem/cache/cache_set.cc
++++ b/common/core/memory_subsystem/cache/cache_set.cc
+@@ -7,6 +7,12 @@
+ #include "cache_set_random.h"
+ #include "cache_set_round_robin.h"
+ #include "cache_set_srrip.h"
++#include "cache_set_tadip.h"
++#include "cache_set_ucp.h"
++#include "cache_set_pipp.h"
++#include "cache_set_drrip.h"
++#include "cache_set_shadow.h"
++#include "cache_set_prism.h"
+ #include "cache_base.h"
+ #include "log.h"
+ #include "simulator.h"
+@@ -41,7 +47,7 @@ CacheSet::~CacheSet()
+ }
+ 
+ void
+-CacheSet::read_line(UInt32 line_index, UInt32 offset, Byte *out_buff, UInt32 bytes, bool update_replacement)
++CacheSet::read_line(UInt32 line_index, UInt32 offset, Byte *out_buff, UInt32 bytes, bool update_replacement, Core::ExtraMemoryRequestInfo *info)
+ {
+    assert(offset + bytes <= m_blocksize);
+    //assert((out_buff == NULL) == (bytes == 0));
+@@ -50,11 +56,11 @@ CacheSet::read_line(UInt32 line_index, UInt32 offset, Byte *out_buff, UInt32 byt
+       memcpy((void*) out_buff, &m_blocks[line_index * m_blocksize + offset], bytes);
+ 
+    if (update_replacement)
+-      updateReplacementIndex(line_index);
++      updateReplacementIndex(line_index, info);
+ }
+ 
+ void
+-CacheSet::write_line(UInt32 line_index, UInt32 offset, Byte *in_buff, UInt32 bytes, bool update_replacement)
++CacheSet::write_line(UInt32 line_index, UInt32 offset, Byte *in_buff, UInt32 bytes, bool update_replacement, Core::ExtraMemoryRequestInfo *info)
+ {
+    assert(offset + bytes <= m_blocksize);
+    //assert((in_buff == NULL) == (bytes == 0));
+@@ -63,7 +69,7 @@ CacheSet::write_line(UInt32 line_index, UInt32 offset, Byte *in_buff, UInt32 byt
+       memcpy(&m_blocks[line_index * m_blocksize + offset], (void*) in_buff, bytes);
+ 
+    if (update_replacement)
+-      updateReplacementIndex(line_index);
++      updateReplacementIndex(line_index, info);
+ }
+ 
+ CacheBlockInfo*
+@@ -96,11 +102,11 @@ CacheSet::invalidate(IntPtr& tag)
+ }
+ 
+ void
+-CacheSet::insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* eviction, CacheBlockInfo* evict_block_info, Byte* evict_buff, CacheCntlr *cntlr)
++CacheSet::insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* eviction, CacheBlockInfo* evict_block_info, Byte* evict_buff, CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // This replacement strategy does not take into account the fact that
+    // cache blocks can be voluntarily flushed or invalidated due to another write request
+-   const UInt32 index = getReplacementIndex(cntlr);
++   const UInt32 index = getReplacementIndex(cntlr, info);
+    assert(index < m_associativity);
+ 
+    assert(eviction != NULL);
+@@ -135,7 +141,7 @@ CacheSet*
+ CacheSet::createCacheSet(String cfgname, core_id_t core_id,
+       String replacement_policy,
+       CacheBase::cache_t cache_type,
+-      UInt32 associativity, UInt32 blocksize, CacheSetInfo* set_info)
++      UInt32 associativity, UInt32 blocksize, CacheSetInfo* set_info, UInt32 set_no)
+ {
+    CacheBase::ReplacementPolicy policy = parsePolicyType(replacement_policy);
+    switch(policy)
+@@ -163,9 +169,24 @@ CacheSet::createCacheSet(String cfgname, core_id_t core_id,
+       case CacheBase::SRRIP_QBS:
+          return new CacheSetSRRIP(cfgname, core_id, cache_type, associativity, blocksize, dynamic_cast<CacheSetInfoLRU*>(set_info), getNumQBSAttempts(policy, cfgname, core_id));
+ 
++      case CacheBase::DRRIP:
++         return new CacheSetDRRIP(cfgname, core_id, cache_type, associativity, blocksize, set_no, dynamic_cast<CacheSetInfoDRRIP*>(set_info));
++
+       case CacheBase::RANDOM:
+          return new CacheSetRandom(cache_type, associativity, blocksize);
+ 
++      case CacheBase::TADIP:
++         return new CacheSetTADIP(cache_type, associativity, blocksize, set_no, dynamic_cast<CacheSetInfoTADIP*>(set_info));
++
++      case CacheBase::UCP:
++         return new CacheSetUCP(cache_type, associativity, blocksize, set_no, dynamic_cast<CacheSetInfoUMON*>(set_info));
++
++      case CacheBase::PIPP:
++         return new CacheSetPIPP(cache_type, associativity, blocksize, set_no, dynamic_cast<CacheSetInfoPIPP*>(set_info));
++
++      case CacheBase::PriSM:
++         return new CacheSetPriSM(cache_type, associativity, blocksize, set_no, Sim()->getCfg()->getBool(cfgname + "/prism_empty_insert"), dynamic_cast<CacheSetInfoPriSM*>(set_info));
++
+       default:
+          LOG_PRINT_ERROR("Unrecognized Cache Replacement Policy: %i",
+                policy);
+@@ -176,7 +197,7 @@ CacheSet::createCacheSet(String cfgname, core_id_t core_id,
+ }
+ 
+ CacheSetInfo*
+-CacheSet::createCacheSetInfo(String name, String cfgname, core_id_t core_id, String replacement_policy, UInt32 associativity)
++CacheSet::createCacheSetInfo(String name, String cfgname, core_id_t core_id, String replacement_policy, UInt32 associativity, UInt32 num_sets, UInt32 blocksize, UInt32 shared_cores, CacheBase::hash_t hash_function)
+ {
+    CacheBase::ReplacementPolicy policy = parsePolicyType(replacement_policy);
+    switch(policy)
+@@ -186,6 +207,16 @@ CacheSet::createCacheSetInfo(String name, String cfgname, core_id_t core_id, Str
+       case CacheBase::SRRIP:
+       case CacheBase::SRRIP_QBS:
+          return new CacheSetInfoLRU(name, cfgname, core_id, associativity, getNumQBSAttempts(policy, cfgname, core_id));
++      case CacheBase::DRRIP:
++         return new CacheSetInfoDRRIP(name, cfgname, core_id, associativity, num_sets);
++      case CacheBase::TADIP:
++         return new CacheSetInfoTADIP(name, cfgname, core_id, associativity, num_sets);
++      case CacheBase::UCP:
++         return new CacheSetInfoUMON(name, cfgname, core_id, associativity, blocksize, num_sets, shared_cores, hash_function);  
++      case CacheBase::PIPP:     
++         return new CacheSetInfoPIPP(name, cfgname, core_id, associativity, blocksize, num_sets, shared_cores, hash_function);    
++      case CacheBase::PriSM:
++         return new CacheSetInfoPriSM(name, cfgname, core_id, associativity, blocksize, num_sets, shared_cores, hash_function);
+       default:
+          return NULL;
+    }
+@@ -227,6 +258,17 @@ CacheSet::parsePolicyType(String policy)
+       return CacheBase::SRRIP_QBS;
+    if (policy == "random")
+       return CacheBase::RANDOM;
++   if (policy == "tadip")
++      return CacheBase::TADIP;
++   if (policy == "ucp")
++      return CacheBase::UCP;
++   if (policy == "pipp")
++      return CacheBase::PIPP;
++   if (policy == "drrip")
++      return CacheBase::DRRIP;
++   if (policy == "prism")
++      return CacheBase::PriSM;
++
+ 
+    LOG_PRINT_ERROR("Unknown replacement policy %s", policy.c_str());
+ }
+diff --git a/common/core/memory_subsystem/cache/cache_set.h b/common/core/memory_subsystem/cache/cache_set.h
+index d842948..9b18753 100644
+--- a/common/core/memory_subsystem/cache/cache_set.h
++++ b/common/core/memory_subsystem/cache/cache_set.h
+@@ -7,6 +7,7 @@
+ #include "lock.h"
+ #include "random.h"
+ #include "log.h"
++#include "core.h"
+ 
+ #include <cstring>
+ 
+@@ -16,6 +17,8 @@ class CacheSetInfo
+ {
+    public:
+       virtual ~CacheSetInfo() {}
++
++      virtual void updateAccessCounter(UInt32 set_no, core_id_t requester, bool core_hit) {};
+ };
+ 
+ // Everything related to cache sets
+@@ -23,8 +26,8 @@ class CacheSet
+ {
+    public:
+ 
+-      static CacheSet* createCacheSet(String cfgname, core_id_t core_id, String replacement_policy, CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfo* set_info = NULL);
+-      static CacheSetInfo* createCacheSetInfo(String name, String cfgname, core_id_t core_id, String replacement_policy, UInt32 associativity);
++      static CacheSet* createCacheSet(String cfgname, core_id_t core_id, String replacement_policy, CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfo* set_info = NULL, UInt32 set_no = 0);
++      static CacheSetInfo* createCacheSetInfo(String name, String cfgname, core_id_t core_id, String replacement_policy, UInt32 associativity, UInt32 num_sets = 1, UInt32 blocksize = 64, UInt32 shared_cores = 1, CacheBase::hash_t hash_function = CacheBase::HASH_MASK);
+       static CacheBase::ReplacementPolicy parsePolicyType(String policy);
+       static UInt8 getNumQBSAttempts(CacheBase::ReplacementPolicy, String cfgname, core_id_t core_id);
+ 
+@@ -45,19 +48,19 @@ class CacheSet
+       UInt32 getAssociativity() { return m_associativity; }
+       Lock& getLock() { return m_lock; }
+ 
+-      void read_line(UInt32 line_index, UInt32 offset, Byte *out_buff, UInt32 bytes, bool update_replacement);
+-      void write_line(UInt32 line_index, UInt32 offset, Byte *in_buff, UInt32 bytes, bool update_replacement);
++      void read_line(UInt32 line_index, UInt32 offset, Byte *out_buff, UInt32 bytes, bool update_replacement, Core::ExtraMemoryRequestInfo *info);
++      void write_line(UInt32 line_index, UInt32 offset, Byte *in_buff, UInt32 bytes, bool update_replacement, Core::ExtraMemoryRequestInfo *info);
+       CacheBlockInfo* find(IntPtr tag, UInt32* line_index = NULL);
+       bool invalidate(IntPtr& tag);
+-      void insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* eviction, CacheBlockInfo* evict_block_info, Byte* evict_buff, CacheCntlr *cntlr = NULL);
++      void insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* eviction, CacheBlockInfo* evict_block_info, Byte* evict_buff, CacheCntlr *cntlr = NULL, Core::ExtraMemoryRequestInfo *info = NULL);
+ 
+       CacheBlockInfo* peekBlock(UInt32 way) const { return m_cache_block_info_array[way]; }
+ 
+       char* getDataPtr(UInt32 line_index, UInt32 offset = 0);
+       UInt32 getBlockSize(void) const { return m_blocksize; }
+ 
+-      virtual UInt32 getReplacementIndex(CacheCntlr *cntlr) = 0;
+-      virtual void updateReplacementIndex(UInt32) = 0;
++      virtual UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info) = 0;
++      virtual void updateReplacementIndex(UInt32, Core::ExtraMemoryRequestInfo *info) = 0;
+ 
+       bool isValidReplacement(UInt32 index);
+ };
+diff --git a/common/core/memory_subsystem/cache/cache_set_drrip.cc b/common/core/memory_subsystem/cache/cache_set_drrip.cc
+new file mode 100644
+index 0000000..cd37dbe
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_drrip.cc
+@@ -0,0 +1,199 @@
++#include "cache_set_drrip.h"
++#include "simulator.h"
++#include "config.hpp"
++#include "stats.h"
++#include "log.h"
++#include "math.h"
++
++// DRRIP: Dynamic Re-reference Interval Prediction policy
++
++CacheSetInfoDRRIP::CacheSetInfoDRRIP(String name, String cfgname, core_id_t core_id, UInt32 associativity, UInt32 num_sets) : 
++   m_num_sets(num_sets),
++   m_master_core(core_id)
++{
++   m_shared_cores = Sim()->getCfg()->getInt(cfgname + "/shared_cores");
++
++   m_policy_counters = new int[m_shared_cores];
++   m_stat_srrip_switch = new UInt64[m_shared_cores];
++   m_stat_brrip_switch = new UInt64[m_shared_cores];
++   m_time_of_last_switch = new SubsecondTime[m_shared_cores];
++   m_time_in_srrip = new SubsecondTime[m_shared_cores];
++   m_time_in_brrip = new SubsecondTime[m_shared_cores];
++
++   for(core_id_t i = 0; i < m_shared_cores; i++) {
++      m_policy_counters[i] = 0x1FF;
++      m_stat_srrip_switch[i] = m_stat_brrip_switch[i] = 0;
++
++      registerStatsMetric(name, m_master_core+i, "switch-to-srrip", &m_stat_srrip_switch[i]);
++      registerStatsMetric(name, m_master_core+i, "switch-to-brrip", &m_stat_brrip_switch[i]);
++      registerStatsMetric(name, m_master_core+i, "time-in-srrip", &m_time_in_srrip[i]);
++      registerStatsMetric(name, m_master_core+i, "time-in-brrip", &m_time_in_brrip[i]);
++   }
++
++   rng = new Random();
++
++   int width = log2(num_sets);
++   int counter_width = log2(16); // TODO Move to configuration
++
++   LOG_ASSERT_ERROR(width >= counter_width*2, "Too few sets to accomidate DRRIP");
++
++   setno_higher_offset = (width - counter_width);
++   setno_higher_filter = (int(pow(2, counter_width)) - 1) << (setno_higher_offset);
++   setno_lower_filter = (num_sets - 1) ^ setno_higher_filter;
++}
++
++CacheSetInfoDRRIP::~CacheSetInfoDRRIP()
++{
++   delete[] m_policy_counters;
++   delete rng;
++}
++
++// Hash function implementation
++CacheSetInfoDRRIP::policy_t CacheSetInfoDRRIP::getSetPolicy(UInt32 set_no, core_id_t core_id)
++{
++   int upper = (set_no & setno_higher_filter) >> setno_higher_offset;
++   int lower = set_no & setno_lower_filter;
++
++   if ((upper + core_id) == lower) {
++      return SRRIP;
++   } else if ((upper + core_id + m_shared_cores) == lower) {
++      return BRRIP;
++   } else {
++      if (m_policy_counters[core_id] & 0x200) {
++         return BRRIP;
++      }
++      return SRRIP;
++   }
++}
++
++bool CacheSetInfoDRRIP::isOwner(UInt32 set_no, core_id_t core_id)
++{
++   int upper = (set_no & setno_higher_filter) >> setno_higher_offset;
++   int lower = set_no & setno_lower_filter;
++
++   return (upper + core_id) == lower || (upper + core_id + m_shared_cores) == lower;
++}
++
++void CacheSetInfoDRRIP::updateAccessCounter(UInt32 set_no, core_id_t requester, bool cache_hit)
++{
++   if (!cache_hit) {
++      if (isOwner(set_no, requester)) {
++         // Miss in SRRIP set -> +1, miss in BRRIP set -> -1
++         int direction = getSetPolicy(set_no, requester) == SRRIP ?  +1 : -1;
++
++         int nval = m_policy_counters[requester] + direction;
++         if (nval >= 0 && nval <= 1024) 
++         {
++            if ((m_policy_counters[requester] & 0x200) != (nval & 0x200)) {
++               SubsecondTime period = Sim()->getCoreManager()->getCoreFromID(m_master_core)->getPerformanceModel()->getElapsedTime() - m_time_of_last_switch[requester];
++               m_time_of_last_switch[requester] = Sim()->getCoreManager()->getCoreFromID(m_master_core)->getPerformanceModel()->getElapsedTime();
++
++               //std::cout << "Core " << requester << " changed state to " << (nval&0x200 ? "BRRIP" : "SRRIP") << "\n";
++               if ((nval&0x200) > 0) {
++                  m_stat_brrip_switch[requester]++;               
++                  m_time_in_brrip[requester] += period;
++               } else {
++                  m_stat_srrip_switch[requester]++;    
++                  m_time_in_srrip[requester] += period;           
++               }
++            }
++            m_policy_counters[requester] = nval;
++         }
++
++      }
++   }
++}
++
++UInt8 CacheSetInfoDRRIP::getPosition(UInt32 set_no, core_id_t requester, UInt8 srrip_pos, UInt8 brrip_pos)
++{
++   auto policy = getSetPolicy(set_no, requester);
++
++   if (policy == BRRIP) {
++         // Only insert at brrip pos 1/32th of the time
++         if (rng->next(32) == 0) {
++            return brrip_pos;
++         }
++   }
++
++   // srrip position for SRRIP sets or if a BRRIP set falls through
++   return srrip_pos;
++}
++
++
++CacheSetDRRIP::CacheSetDRRIP(
++      String cfgname, core_id_t core_id,
++      CacheBase::cache_t cache_type,
++      UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoDRRIP* set_info)
++   : CacheSet(cache_type, associativity, blocksize)
++   , m_rrip_numbits(Sim()->getCfg()->getIntArray(cfgname + "/drrip/bits", core_id))
++   , m_rrip_max((1 << m_rrip_numbits) - 1)
++   , m_srrip_insert(m_rrip_max - 1)
++   , m_brrip_insert(m_rrip_max - 2)
++   , m_replacement_pointer(0)
++   , m_set_no(set_no)
++   , m_set_info(set_info)
++{
++   assert(sizeof(UInt8)*8 >= m_rrip_numbits);
++
++   m_rrip_bits = new UInt8[m_associativity];
++   for (UInt32 i = 0; i < m_associativity; i++)
++      m_rrip_bits[i] = m_rrip_max;
++}
++
++CacheSetDRRIP::~CacheSetDRRIP()
++{
++   delete [] m_rrip_bits;
++}
++
++UInt32
++CacheSetDRRIP::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
++{
++   LOG_ASSERT_ERROR(info != NULL, "ExtraMemoryRequestInfo not set");
++   
++   UInt8 insert_position = m_set_info->getPosition(m_set_no, info->core_id, m_srrip_insert, m_brrip_insert);
++   m_set_info->updateAccessCounter(m_set_no, info->core_id, false);
++
++   // Original paper always starts at the leftmost position
++   m_replacement_pointer = 0;
++
++   for(UInt32 j = 0; j <= m_rrip_max; ++j)
++   {
++      for (UInt32 i = 0; i < m_associativity; i++)
++      {
++         if (m_rrip_bits[m_replacement_pointer] >= m_rrip_max)
++         {
++            // We choose the first non-touched line as the victim (note that we start searching from the replacement pointer position)
++            UInt8 index = m_replacement_pointer;
++
++            m_replacement_pointer = (m_replacement_pointer + 1) % m_associativity;
++            // Prepare way for a new line: set prediction to 'long'
++            m_rrip_bits[index] = insert_position;
++
++            LOG_ASSERT_ERROR(isValidReplacement(index), "DRRIP selected an invalid replacement candidate" );
++
++            return index;
++         }
++
++         m_replacement_pointer = (m_replacement_pointer + 1) % m_associativity;
++      }
++
++      // Increment all RRIP counters until one hits RRIP_MAX
++      for (UInt32 i = 0; i < m_associativity; i++)
++      {
++         if (m_rrip_bits[i] < m_rrip_max)
++         {
++            m_rrip_bits[i]++;
++         }
++      }
++   }
++
++   LOG_PRINT_ERROR("Error finding replacement index");
++}
++
++void
++CacheSetDRRIP::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
++{
++   m_set_info->updateAccessCounter(m_set_no, info->core_id, true);
++   if (m_rrip_bits[accessed_index] > 0)
++      m_rrip_bits[accessed_index]--;
++}
+diff --git a/common/core/memory_subsystem/cache/cache_set_drrip.h b/common/core/memory_subsystem/cache/cache_set_drrip.h
+new file mode 100644
+index 0000000..0f01816
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_drrip.h
+@@ -0,0 +1,76 @@
++#ifndef CACHE_SET_DRRIP_H
++#define CACHE_SET_DRRIP_H
++
++#include "cache_set.h"
++#include "cache_set_lru.h"
++
++#include "random.h"
++#include "simulator.h"
++#include "core_manager.h"
++#include "performance_model.h"
++#include "dvfs_manager.h"
++
++class CacheSetInfoDRRIP : public CacheSetInfo
++{
++
++   public:
++      enum policy_t {
++         SRRIP,
++         BRRIP
++      };
++
++      CacheSetInfoDRRIP(String name, String cfgname, core_id_t core_id, UInt32 associativity, UInt32 num_sets);
++      virtual ~CacheSetInfoDRRIP();
++      
++      void updateAccessCounter(UInt32 set_no, core_id_t requester, bool core_hit);
++
++      UInt8 getPosition(UInt32 set_no, core_id_t requester, UInt8 srrip_pos, UInt8 brrip_pos);
++
++   private:
++      UInt32 m_num_sets;
++      core_id_t m_master_core;
++      core_id_t m_shared_cores;
++
++      int* m_policy_counters;
++
++      UInt64* m_stat_srrip_switch;
++      UInt64* m_stat_brrip_switch;
++
++      SubsecondTime* m_time_of_last_switch;
++      SubsecondTime* m_time_in_srrip;
++      SubsecondTime* m_time_in_brrip;
++      
++      Random* rng;
++      
++
++      int setno_lower_filter;
++      int setno_higher_filter;
++      int setno_higher_offset;
++
++      policy_t getSetPolicy(UInt32 set_no, core_id_t requester);
++      bool isOwner(UInt32 set_no, core_id_t core_id);
++};
++
++class CacheSetDRRIP : public CacheSet
++{
++   public:
++      CacheSetDRRIP(String cfgname, core_id_t core_id,
++            CacheBase::cache_t cache_type,
++            UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoDRRIP* set_info);
++      ~CacheSetDRRIP();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++      const UInt8 m_rrip_numbits;
++      const UInt8 m_rrip_max;
++      const UInt8 m_srrip_insert;
++      const UInt8 m_brrip_insert;
++      UInt8* m_rrip_bits;
++      UInt8  m_replacement_pointer;
++      const UInt32 m_set_no;
++      CacheSetInfoDRRIP* m_set_info;
++};
++
++#endif /* CACHE_SET_DRRIP_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_lru.cc b/common/core/memory_subsystem/cache/cache_set_lru.cc
+index 6307fa5..5189e7e 100644
+--- a/common/core/memory_subsystem/cache/cache_set_lru.cc
++++ b/common/core/memory_subsystem/cache/cache_set_lru.cc
+@@ -22,10 +22,10 @@ CacheSetLRU::~CacheSetLRU()
+ }
+ 
+ UInt32
+-CacheSetLRU::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetLRU::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // First try to find an invalid block
+-   for (UInt32 i = 0; i < m_associativity; i++)
++   /*for (UInt32 i = 0; i < m_associativity; i++)
+    {
+       if (!m_cache_block_info_array[i]->isValid())
+       {
+@@ -33,7 +33,7 @@ CacheSetLRU::getReplacementIndex(CacheCntlr *cntlr)
+          moveToMRU(i);
+          return i;
+       }
+-   }
++   }*/
+ 
+    // Make m_num_attemps attempts at evicting the block at LRU position
+    for(UInt8 attempt = 0; attempt < m_num_attempts; ++attempt)
+@@ -50,6 +50,10 @@ CacheSetLRU::getReplacementIndex(CacheCntlr *cntlr)
+       }
+       LOG_ASSERT_ERROR(index < m_associativity, "Error Finding LRU bits");
+ 
++      // Runar: Breaking here
++      moveToMRU(index);
++      return index;
++
+       bool qbs_reject = false;
+       if (attempt < m_num_attempts - 1)
+       {
+@@ -77,8 +81,14 @@ CacheSetLRU::getReplacementIndex(CacheCntlr *cntlr)
+    LOG_PRINT_ERROR("Should not reach here");
+ }
+ 
++UInt8
++CacheSetLRU::getLRUBit(UInt32 accessed_index)
++{
++   return m_lru_bits[accessed_index];
++}
++
+ void
+-CacheSetLRU::updateReplacementIndex(UInt32 accessed_index)
++CacheSetLRU::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    m_set_info->increment(m_lru_bits[accessed_index]);
+    moveToMRU(accessed_index);
+diff --git a/common/core/memory_subsystem/cache/cache_set_lru.h b/common/core/memory_subsystem/cache/cache_set_lru.h
+index 5c3a304..e62e8ca 100644
+--- a/common/core/memory_subsystem/cache/cache_set_lru.h
++++ b/common/core/memory_subsystem/cache/cache_set_lru.h
+@@ -33,8 +33,10 @@ class CacheSetLRU : public CacheSet
+             UInt32 associativity, UInt32 blocksize, CacheSetInfoLRU* set_info, UInt8 num_attempts);
+       virtual ~CacheSetLRU();
+ 
+-      virtual UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      virtual UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++      UInt8 getLRUBit(UInt32 accessed_index);
+ 
+    protected:
+       const UInt8 m_num_attempts;
+diff --git a/common/core/memory_subsystem/cache/cache_set_mru.cc b/common/core/memory_subsystem/cache/cache_set_mru.cc
+index 057f07f..b89a318 100644
+--- a/common/core/memory_subsystem/cache/cache_set_mru.cc
++++ b/common/core/memory_subsystem/cache/cache_set_mru.cc
+@@ -19,7 +19,7 @@ CacheSetMRU::~CacheSetMRU()
+ }
+ 
+ UInt32
+-CacheSetMRU::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetMRU::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // Invalidations may mess up the LRU bits
+ 
+@@ -27,7 +27,7 @@ CacheSetMRU::getReplacementIndex(CacheCntlr *cntlr)
+    {
+       if (!m_cache_block_info_array[i]->isValid())
+       {
+-         updateReplacementIndex(i);
++         updateReplacementIndex(i, 0);
+          return i;
+       }
+    }
+@@ -39,7 +39,7 @@ CacheSetMRU::getReplacementIndex(CacheCntlr *cntlr)
+       {
+          if (m_lru_bits[i] == target && isValidReplacement(i))
+          {
+-            updateReplacementIndex(i);
++            updateReplacementIndex(i, 0);
+             return i;
+          }
+       }
+@@ -50,7 +50,7 @@ CacheSetMRU::getReplacementIndex(CacheCntlr *cntlr)
+ }
+ 
+ void
+-CacheSetMRU::updateReplacementIndex(UInt32 accessed_index)
++CacheSetMRU::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    for (UInt32 i = 0; i < m_associativity; i++)
+    {
+diff --git a/common/core/memory_subsystem/cache/cache_set_mru.h b/common/core/memory_subsystem/cache/cache_set_mru.h
+index 21b1aae..bb73d71 100644
+--- a/common/core/memory_subsystem/cache/cache_set_mru.h
++++ b/common/core/memory_subsystem/cache/cache_set_mru.h
+@@ -10,8 +10,8 @@ class CacheSetMRU : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetMRU();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       UInt8* m_lru_bits;
+diff --git a/common/core/memory_subsystem/cache/cache_set_nmru.cc b/common/core/memory_subsystem/cache/cache_set_nmru.cc
+index bb8ea05..bc2c6ff 100644
+--- a/common/core/memory_subsystem/cache/cache_set_nmru.cc
++++ b/common/core/memory_subsystem/cache/cache_set_nmru.cc
+@@ -21,7 +21,7 @@ CacheSetNMRU::~CacheSetNMRU()
+ }
+ 
+ UInt32
+-CacheSetNMRU::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetNMRU::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // Invalidations may mess up the LRU bits
+ 
+@@ -29,7 +29,7 @@ CacheSetNMRU::getReplacementIndex(CacheCntlr *cntlr)
+    {
+       if (!m_cache_block_info_array[i]->isValid())
+       {
+-         updateReplacementIndex(i);
++         updateReplacementIndex(i, 0);
+          return i;
+       }
+    }
+@@ -41,7 +41,7 @@ CacheSetNMRU::getReplacementIndex(CacheCntlr *cntlr)
+          // We choose the first line that is not MRU as the victim (note that we start searching from the replacement pointer position)
+          UInt8 index = m_replacement_pointer;
+          m_replacement_pointer = (m_replacement_pointer + 1) % m_associativity;
+-         updateReplacementIndex(index);
++         updateReplacementIndex(i, 0);
+          return index;
+       }
+ 
+@@ -52,7 +52,7 @@ CacheSetNMRU::getReplacementIndex(CacheCntlr *cntlr)
+ }
+ 
+ void
+-CacheSetNMRU::updateReplacementIndex(UInt32 accessed_index)
++CacheSetNMRU::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    for (UInt32 i = 0; i < m_associativity; i++)
+    {
+diff --git a/common/core/memory_subsystem/cache/cache_set_nmru.h b/common/core/memory_subsystem/cache/cache_set_nmru.h
+index a9a5c4d..91bab29 100644
+--- a/common/core/memory_subsystem/cache/cache_set_nmru.h
++++ b/common/core/memory_subsystem/cache/cache_set_nmru.h
+@@ -10,8 +10,8 @@ class CacheSetNMRU : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetNMRU();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       UInt8* m_lru_bits;
+diff --git a/common/core/memory_subsystem/cache/cache_set_nru.cc b/common/core/memory_subsystem/cache/cache_set_nru.cc
+index 8ee7275..608310c 100644
+--- a/common/core/memory_subsystem/cache/cache_set_nru.cc
++++ b/common/core/memory_subsystem/cache/cache_set_nru.cc
+@@ -22,7 +22,7 @@ CacheSetNRU::~CacheSetNRU()
+ }
+ 
+ UInt32
+-CacheSetNRU::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetNRU::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // Invalidations may mess up the LRU bits
+ 
+@@ -32,7 +32,7 @@ CacheSetNRU::getReplacementIndex(CacheCntlr *cntlr)
+       {
+          // If there is an invalid line(s) in the set, regardless of the LRU bits of other lines, we choose the first invalid line to replace
+          // Mark our newly-inserted line as recently used
+-         updateReplacementIndex(i);
++         updateReplacementIndex(i, 0);
+          return i;
+       }
+    }
+@@ -46,7 +46,7 @@ CacheSetNRU::getReplacementIndex(CacheCntlr *cntlr)
+          m_replacement_pointer = (m_replacement_pointer + 1) % m_associativity;
+ 
+          // Mark our newly-inserted line as recently used
+-         updateReplacementIndex(index);
++         updateReplacementIndex(i, 0);
+          return index;
+       }
+ 
+@@ -57,7 +57,7 @@ CacheSetNRU::getReplacementIndex(CacheCntlr *cntlr)
+ }
+ 
+ void
+-CacheSetNRU::updateReplacementIndex(UInt32 accessed_index)
++CacheSetNRU::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    m_lru_bits[accessed_index] = 1;
+    m_num_bits_set++;
+diff --git a/common/core/memory_subsystem/cache/cache_set_nru.h b/common/core/memory_subsystem/cache/cache_set_nru.h
+index d38657c..e18ff9d 100644
+--- a/common/core/memory_subsystem/cache/cache_set_nru.h
++++ b/common/core/memory_subsystem/cache/cache_set_nru.h
+@@ -10,8 +10,8 @@ class CacheSetNRU : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetNRU();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       UInt8* m_lru_bits;
+diff --git a/common/core/memory_subsystem/cache/cache_set_pipp.cc b/common/core/memory_subsystem/cache/cache_set_pipp.cc
+new file mode 100644
+index 0000000..5315173
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_pipp.cc
+@@ -0,0 +1,125 @@
++#include <iostream>
++#include <sstream>
++#include <algorithm>
++
++#include "log.h"
++#include "stats.h"
++#include "config.hpp"
++
++#include "cache_set_pipp.h"
++
++CacheSetInfoPIPP::CacheSetInfoPIPP(String name, String cfgname, 
++         core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++         CacheBase::hash_t hash_function)
++   : CacheSetInfoUMON(name, cfgname, core_id, associativity, cache_block_size, num_sets, shared_cores, hash_function)
++   , m_min_insert_pos(Sim()->getCfg()->getInt(cfgname + "/pipp_min_insert"))
++{
++
++}
++
++
++CacheSetPIPP::CacheSetPIPP(
++      CacheBase::cache_t cache_type,
++      UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoPIPP *info) :
++   CacheSetUMON(cache_type, associativity, blocksize, info),
++   m_set_no(set_no),
++   m_info(info)
++{
++   m_lru_bits = new UInt8[m_associativity];
++   for (UInt32 i = 0; i < m_associativity; i++)
++      m_lru_bits[i] = i;
++
++   rng = new Random();
++}
++
++CacheSetPIPP::~CacheSetPIPP()
++{
++   delete [] m_lru_bits;
++}
++
++UInt32
++CacheSetPIPP::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
++{   
++   LOG_ASSERT_ERROR(info != NULL, "ExtraMemoryRequestInfo not set");
++   CacheSetUMON::getReplacementIndex(cntlr, info);
++   
++   auto requester = info->core_id;
++
++   // UMON may allocate 0, but we need to store so we change that to 1
++   auto allocation = getUMON()->getAllocation(requester);
++   allocation = allocation > 0 ? allocation : 1;
++
++   int insertpos = m_associativity - allocation;
++
++   if (getUMON()->isStreaming(requester)) {
++      if (getUMON()->isAllStreaming()) {
++         insertpos = 0;
++      } else {
++         insertpos = m_associativity - getUMON()->countStreamingCores();
++      }
++   }
++
++   // Apply offset, capping at 0
++   if (insertpos < m_info->m_min_insert_pos) {
++      insertpos = 0;
++   } else {
++      insertpos -= m_info->m_min_insert_pos;
++   }
++
++   int index = 0;
++   int max_bit = 0;
++
++   // Locate LRU
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] > max_bit && isValidReplacement(i))
++      {
++         max_bit = m_lru_bits[i];
++         index = i;
++      }
++   }
++
++   // Shift every block at insertion position and out one down
++   for (UInt32 y = 0; y < m_associativity; y++)
++   {
++      if (m_lru_bits[y] >= insertpos)
++         m_lru_bits[y] ++;
++   }
++
++   // Move to insert position and return
++   m_lru_bits[index] = insertpos;
++   return index;
++}
++
++// Promote a used block
++void
++CacheSetPIPP::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
++{
++   CacheSetUMON::updateReplacementIndex(accessed_index, info);
++   bool promote = false;
++
++   // TODO Move to config
++   if (!getUMON()->isStreaming(info->core_id)) {
++      // Promote 3/4 normally      
++      promote = rng->next(4) < 3;
++   } else {
++      // promote 1/128 when streaming
++      promote = rng->next(128) == 0;
++   }
++
++   if (promote) {
++      int original = m_lru_bits[accessed_index];
++
++      // Promote unless already at MRU
++      if (original > 0) {
++         int target = original - 1;
++         for(UInt32 i = 0; i < m_associativity; i++) {
++            if (m_lru_bits[i] == target) {
++               m_lru_bits[i] = original;
++               m_lru_bits[accessed_index] = target;
++               break;
++            }
++         }
++      }
++   }
++}
+diff --git a/common/core/memory_subsystem/cache/cache_set_pipp.h b/common/core/memory_subsystem/cache/cache_set_pipp.h
+new file mode 100644
+index 0000000..1dc91b9
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_pipp.h
+@@ -0,0 +1,46 @@
++#ifndef CACHE_SET_PIPP_H
++#define CACHE_SET_PIPP_H
++
++#include "cache_set_umon.h"
++
++#include "simulator.h"
++#include "core_manager.h"
++#include "performance_model.h"
++#include "dvfs_manager.h"
++#include "random.h"
++
++class CacheSetInfoPIPP : public CacheSetInfoUMON
++{
++   public:
++      CacheSetInfoPIPP(String name, String cfgname, 
++         core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++         CacheBase::hash_t hash_function);
++
++      UInt64 m_min_insert_pos;
++
++};
++
++class CacheSetPIPP : public CacheSetUMON
++{
++   public:
++      CacheSetPIPP(CacheBase::cache_t cache_type,
++            UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoPIPP *info);
++      ~CacheSetPIPP();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++      void moveToMRU(UInt32 accessed_index);
++
++      UInt8* m_lru_bits;
++      UInt32 m_set_no;
++
++      UInt8 m_min_insert;
++
++      CacheSetInfoPIPP* m_info;
++
++      Random *rng;
++};
++
++#endif /* CACHE_SET_PIPP_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_plru.cc b/common/core/memory_subsystem/cache/cache_set_plru.cc
+index 3a118aa..2829aac 100644
+--- a/common/core/memory_subsystem/cache/cache_set_plru.cc
++++ b/common/core/memory_subsystem/cache/cache_set_plru.cc
+@@ -19,7 +19,7 @@ CacheSetPLRU::~CacheSetPLRU()
+ }
+ 
+ UInt32
+-CacheSetPLRU::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetPLRU::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // Invalidations may mess up the LRU bits
+ 
+@@ -27,7 +27,7 @@ CacheSetPLRU::getReplacementIndex(CacheCntlr *cntlr)
+    {
+       if (!m_cache_block_info_array[i]->isValid())
+       {
+-         updateReplacementIndex(i);
++         updateReplacementIndex(i, 0);
+          return i;
+       }
+    }
+@@ -82,13 +82,13 @@ CacheSetPLRU::getReplacementIndex(CacheCntlr *cntlr)
+ 
+ 
+    LOG_ASSERT_ERROR(isValidReplacement(retValue), "PLRU selected an invalid replacement candidate" );
+-   updateReplacementIndex(retValue);
++   updateReplacementIndex(retValue, 0);
+    return retValue;
+ 
+ }
+ 
+ void
+-CacheSetPLRU::updateReplacementIndex(UInt32 accessed_index)
++CacheSetPLRU::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    if (m_associativity == 4)
+    {
+diff --git a/common/core/memory_subsystem/cache/cache_set_plru.h b/common/core/memory_subsystem/cache/cache_set_plru.h
+index f6eddda..88864c6 100644
+--- a/common/core/memory_subsystem/cache/cache_set_plru.h
++++ b/common/core/memory_subsystem/cache/cache_set_plru.h
+@@ -10,8 +10,8 @@ class CacheSetPLRU : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetPLRU();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       UInt8 b[8];
+diff --git a/common/core/memory_subsystem/cache/cache_set_prism.cc b/common/core/memory_subsystem/cache/cache_set_prism.cc
+new file mode 100644
+index 0000000..aff05f4
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_prism.cc
+@@ -0,0 +1,265 @@
++#include "cache_set_prism.h"
++#include "log.h"
++#include <cmath>
++
++CacheSetInfoPriSM::CacheSetInfoPriSM(
++         String name, String cfgname,
++         core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++         CacheBase::hash_t hash_function)
++   : CacheSetInfoShadow(name, cfgname, core_id, associativity, cache_block_size, num_sets, shared_cores, hash_function)
++   , m_core_total_usage(0)
++   , m_miss_counter(0)
++   , m_miss_period_limit(Sim()->getCfg()->getInt(cfgname + "/prism_period"))
++   , m_shared_cores(shared_cores)
++   , m_num_blocks(num_sets*associativity)
++{
++   m_core_usage_counter = new UInt64[shared_cores];
++   m_shared_miss_counter = new UInt64[shared_cores];
++   m_shared_hit_counter = new UInt64[shared_cores];
++   m_eviction_prob = new double[shared_cores];
++
++   for(UInt32 i = 0; i < shared_cores; i++) {
++      m_core_usage_counter[i] = m_shared_hit_counter[i] = m_shared_miss_counter[i] = 0;
++      m_eviction_prob[i] = 1.d/shared_cores;
++   }
++}
++
++CacheSetInfoPriSM::~CacheSetInfoPriSM() 
++{
++   delete[] m_shared_hit_counter;
++   delete[] m_shared_miss_counter;
++   delete[] m_core_usage_counter;
++   delete[] m_eviction_prob;
++}
++
++void 
++CacheSetInfoPriSM::accessCache(core_id_t core, IntPtr address, bool hit)
++{
++   // Update shadow tags
++   CacheSetInfoShadow::accessCache(core, address, hit);
++
++
++   // Recalclulate m_eviction_prob using the miss minization algorithm
++   if (m_miss_counter >= m_miss_period_limit) {      
++
++      double occupancy[m_shared_cores];
++      double potential_gain[m_shared_cores];
++      double total_gain = 0;
++      //std::cout << "Hits:\n";
++      for(UInt32 core = 0; core < m_shared_cores; core++) {
++         potential_gain[core] = getHits(core) - m_shared_hit_counter[core];
++         total_gain += potential_gain[core];
++
++         occupancy[core] = (double)m_core_usage_counter[core]/m_num_blocks;
++
++         //std::cout << "\tCore" << core << ": owns " << m_core_usage_counter[core] << " " << occupancy[core] << " private " << getHits(core) << " shared " << m_shared_hit_counter[core] << " gain " << potential_gain[core] << "\n";
++      }
++      //std::cout << "Total gain: " << total_gain << "\n";
++
++      // Calculate target occupancy
++      double target_occupancy[m_shared_cores];
++      if (total_gain > 0) {
++         double sum = 0;
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            target_occupancy[core] = occupancy[core] * (1. + (potential_gain[core] / total_gain));
++            sum += target_occupancy[core];
++         }
++         //std::cout << "\nTarget occupancy:\n";
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            target_occupancy[core] /= sum;
++            //std::cout << "\tCore" << core << ": " << target_occupancy[core] << "\n";
++         }
++      } else {
++         // If there is nothing to gain target should equal current occupancy
++         //std::cout << "\nTarget occupancy:\n";
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            target_occupancy[core] = occupancy[core];
++            //std::cout << "\tCore" << core << ": " << target_occupancy[core] << "\n";
++         }
++      }
++
++
++      //std::cout << "Eviction probabilites:\n";
++      // Calculate eviction properties
++      for(UInt32 core = 0; core < m_shared_cores; core++) {
++         double eviction = ((occupancy[core] - target_occupancy[core]) * (double)m_num_blocks/m_miss_counter) + (double)m_shared_miss_counter[core]/m_miss_counter;
++
++         // Clamp eviction probability to [0,1]
++         eviction = std::max(0., std::min(1., eviction));
++
++         m_eviction_prob[core] = eviction;
++
++         //std::cout << "\tCore" << core << ": " << eviction << "\n";
++      }
++
++      // Paper states that E's should sum to 1, but it does not state that they need to be normalized
++      // however with the calculation of E given E's might not actually sum to 1.
++      // Hence we do a normalization here so our assumptions in victim selection is valid
++      {
++         double sum = 0;
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            sum += m_eviction_prob[core];
++         }
++         if (std::fabs(sum-1.0) > 0.01) {
++            // If this is the case we normalize
++            for(UInt32 core = 0; core < m_shared_cores; core++) {
++               m_eviction_prob[core] /= sum;
++            }
++         }
++      }
++
++      // Reset counters
++      m_miss_counter = 0;
++      for(UInt32 core = 0; core < m_shared_cores; core++) {
++         m_shared_hit_counter[core] = 0;
++         m_shared_miss_counter[core] = 0;
++      }
++      resetCounters();
++   }
++}
++
++UInt32
++CacheSetInfoPriSM::getReplacementTarget()
++{
++   // m_eviction_prob sums to 1
++
++   // Draw a random number between 0 and 1, and a random start core
++   double random = rng.next(32768) / 32767.;
++   UInt32 core = rng.next(m_shared_cores);
++
++   // Decrement random untill one core hits zero or less, this is the selected core
++   while(random >= m_eviction_prob[core]) {
++      random -= m_eviction_prob[core];
++      core = (core + 1) % m_shared_cores;
++   }
++
++   return core;
++}
++
++bool
++CacheSetInfoPriSM::canEvict(core_id_t core)
++{
++   return m_eviction_prob[core] > 0;
++}
++
++void 
++CacheSetInfoPriSM::incrementCoreCounter(core_id_t core_id)
++{
++   m_core_usage_counter[core_id]++;
++   m_core_total_usage++;
++}
++
++void 
++CacheSetInfoPriSM::decrementCoreCounter(core_id_t core_id)
++{
++   assert(m_core_usage_counter[core_id] > 0);
++
++   m_core_usage_counter[core_id]--;
++   m_core_total_usage--;
++}
++
++void 
++CacheSetInfoPriSM::incrementHitCounter(core_id_t core_id)
++{
++   m_shared_hit_counter[core_id]++;
++}
++
++void 
++CacheSetInfoPriSM::incrementMissCounter(core_id_t core_id)
++{
++   m_shared_miss_counter[core_id]++;
++   m_miss_counter++;
++}
++
++
++CacheSetPriSM::CacheSetPriSM(
++      CacheBase::cache_t cache_type,
++      UInt32 associativity, UInt32 blocksize, UInt32 set_no, bool empty_insert, CacheSetInfoPriSM *info) 
++   : CacheSetShadow(cache_type, associativity, blocksize, info)
++   , m_empty_insert(empty_insert)
++   , m_info(info)
++{
++   m_lru_bits = new UInt8[m_associativity];
++   for (UInt32 i = 0; i < m_associativity; i++) {
++      m_lru_bits[i] = i;
++   }
++}
++
++CacheSetPriSM::~CacheSetPriSM()
++{
++   delete[] m_lru_bits;
++}
++
++UInt32
++CacheSetPriSM::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
++{
++   m_info->accessCache(info->core_id, info->address, false);
++   m_info->incrementMissCounter(info->core_id);
++
++   UInt32 replacement_index = 0;
++
++   // Pick random replacement target
++   auto target_core = m_info->getReplacementTarget();
++
++   UInt8 max_empty_lru = 0, max_empty_pos = m_associativity+1;
++   UInt8 max_target_lru = 0, max_target_pos = m_associativity+1;
++   UInt8 max_other_lru = 0, max_other_pos = m_associativity+1;
++   UInt8 lru_pos = 0;
++
++   for (UInt32 i = 0; i < m_associativity; i++) {
++      if(m_empty_insert && m_cache_block_info_array[i]->getOwner() == ~0 && max_empty_lru <= m_lru_bits[i]) {
++         max_empty_lru = m_lru_bits[i];
++         max_empty_pos = i;
++      } else if(m_cache_block_info_array[i]->getOwner() == target_core && max_target_lru <= m_lru_bits[i]) {
++         max_target_lru = m_lru_bits[i];
++         max_target_pos = i;
++      } else if(max_other_lru <= m_lru_bits[i] && (m_cache_block_info_array[i]->getOwner() == ~0 || m_info->canEvict(m_cache_block_info_array[i]->getOwner()))) {
++         max_other_lru = m_lru_bits[i];
++         max_other_pos = i;
++      }
++      if (m_lru_bits[i] >= m_associativity-1) {
++         lru_pos = i;
++      }
++   }
++
++   // Replace either LRU empty block, LRU block of selected core, any core with replacements enabled or the actual lru position
++   if (m_empty_insert && max_empty_pos < m_associativity) {
++      replacement_index = max_empty_pos;
++   } else if (max_target_pos < m_associativity) {
++      replacement_index = max_target_pos;
++   } else if (max_other_pos < m_associativity) {
++      replacement_index = max_other_pos;
++   } else {
++      replacement_index = lru_pos;
++   }
++
++   moveToMRU(replacement_index);
++
++   // Update utilization counters
++   if(m_cache_block_info_array[replacement_index]->getOwner() != ~0) {
++      m_info->decrementCoreCounter(m_cache_block_info_array[replacement_index]->getOwner());
++   }
++   m_info->incrementCoreCounter(info->core_id);
++
++   return replacement_index;   
++}
++
++void
++CacheSetPriSM::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
++{
++   m_info->accessCache(info->core_id, info->address, true);
++   m_info->incrementHitCounter(info->core_id);
++
++   moveToMRU(accessed_index);
++}
++
++void
++CacheSetPriSM::moveToMRU(UInt32 accessed_index) 
++{   
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] < m_lru_bits[accessed_index])
++         m_lru_bits[i]++;
++   }
++   m_lru_bits[accessed_index] = 0;
++}
+\ No newline at end of file
+diff --git a/common/core/memory_subsystem/cache/cache_set_prism.h b/common/core/memory_subsystem/cache/cache_set_prism.h
+new file mode 100644
+index 0000000..c09b2ab
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_prism.h
+@@ -0,0 +1,63 @@
++#ifndef CACHE_SET_PRISM_H
++#define CACHE_SET_PRISM_H
++
++#include "cache_set_shadow.h"
++#include "random.h"
++
++
++class CacheSetInfoPriSM : public CacheSetInfoShadow
++{
++	public:
++      CacheSetInfoPriSM(String name, String cfgname, 
++		   core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++		   CacheBase::hash_t hash_function);
++      virtual ~CacheSetInfoPriSM();
++
++      void accessCache(core_id_t core, IntPtr address, bool hit);
++
++      void incrementCoreCounter(core_id_t core_id);
++      void decrementCoreCounter(core_id_t core_id);
++      void incrementHitCounter(core_id_t core_id);
++      void incrementMissCounter(core_id_t core_id);
++
++      UInt32 getReplacementTarget();
++      bool canEvict(core_id_t);
++
++
++   private:
++      UInt64 *m_shared_hit_counter;
++      UInt64 *m_shared_miss_counter;
++      UInt64 *m_core_usage_counter;
++      UInt64 m_core_total_usage;
++      UInt64 m_miss_counter;
++
++      UInt64 m_miss_period_limit;
++      UInt32 m_shared_cores;
++      UInt32 m_num_blocks;
++
++      double *m_eviction_prob;
++
++      Random rng;
++
++ };
++
++class CacheSetPriSM : public CacheSetShadow
++{
++   public:
++      CacheSetPriSM(CacheBase::cache_t cache_type,
++      	UInt32 associativity, UInt32 blocksize, UInt32 set_no, bool empty_insert, CacheSetInfoPriSM *info);
++      ~CacheSetPriSM();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++      bool m_empty_insert;
++   	CacheSetInfoPriSM *m_info;
++
++      UInt8 *m_lru_bits;
++
++      void moveToMRU(UInt32 accessed_index);
++};
++
++#endif /* CACHE_SET_PRISM_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_random.cc b/common/core/memory_subsystem/cache/cache_set_random.cc
+index 6c85857..3b5347b 100644
+--- a/common/core/memory_subsystem/cache/cache_set_random.cc
++++ b/common/core/memory_subsystem/cache/cache_set_random.cc
+@@ -18,7 +18,7 @@ CacheSetRandom::~CacheSetRandom()
+ }
+ 
+ UInt32
+-CacheSetRandom::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetRandom::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    // Invalidations may mess up the LRU bits
+ 
+@@ -36,11 +36,11 @@ CacheSetRandom::getReplacementIndex(CacheCntlr *cntlr)
+    else
+    {
+       // Could not find valid victim, try again, due to randomness, it might work
+-      return getReplacementIndex(cntlr);
++      return getReplacementIndex(cntlr, info);
+    }
+ }
+ 
+ void
+-CacheSetRandom::updateReplacementIndex(UInt32 accessed_index)
++CacheSetRandom::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+ }
+diff --git a/common/core/memory_subsystem/cache/cache_set_random.h b/common/core/memory_subsystem/cache/cache_set_random.h
+index 2591fde..7ce79cc 100644
+--- a/common/core/memory_subsystem/cache/cache_set_random.h
++++ b/common/core/memory_subsystem/cache/cache_set_random.h
+@@ -10,8 +10,8 @@ class CacheSetRandom : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetRandom();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       Random m_rand;
+diff --git a/common/core/memory_subsystem/cache/cache_set_round_robin.cc b/common/core/memory_subsystem/cache/cache_set_round_robin.cc
+index d465ae8..4758f0e 100644
+--- a/common/core/memory_subsystem/cache/cache_set_round_robin.cc
++++ b/common/core/memory_subsystem/cache/cache_set_round_robin.cc
+@@ -12,19 +12,19 @@ CacheSetRoundRobin::~CacheSetRoundRobin()
+ {}
+ 
+ UInt32
+-CacheSetRoundRobin::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetRoundRobin::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    UInt32 curr_replacement_index = m_replacement_index;
+    m_replacement_index = (m_replacement_index == 0) ? (m_associativity-1) : (m_replacement_index-1);
+ 
+    if (!isValidReplacement(m_replacement_index))
+-      return getReplacementIndex(cntlr);
++      return getReplacementIndex(cntlr, info);
+    else
+       return curr_replacement_index;
+ }
+ 
+ void
+-CacheSetRoundRobin::updateReplacementIndex(UInt32 accessed_index)
++CacheSetRoundRobin::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    return;
+ }
+diff --git a/common/core/memory_subsystem/cache/cache_set_round_robin.h b/common/core/memory_subsystem/cache/cache_set_round_robin.h
+index 1821f80..4cd50b8 100644
+--- a/common/core/memory_subsystem/cache/cache_set_round_robin.h
++++ b/common/core/memory_subsystem/cache/cache_set_round_robin.h
+@@ -10,8 +10,8 @@ class CacheSetRoundRobin : public CacheSet
+             UInt32 associativity, UInt32 blocksize);
+       ~CacheSetRoundRobin();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       UInt32 m_replacement_index;
+diff --git a/common/core/memory_subsystem/cache/cache_set_shadow.cc b/common/core/memory_subsystem/cache/cache_set_shadow.cc
+new file mode 100644
+index 0000000..7b161da
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_shadow.cc
+@@ -0,0 +1,129 @@
++#include "cache_set_shadow.h"
++#include "cache_set_lru.h"
++#include "pr_l1_cache_block_info.h"
++
++#include "log.h"
++
++#include <iostream>
++
++// Cache shadow tag implementation.
++// This works like the CacheSet base class except it implements a LRU managed shadow tag for each sharing core
++
++CacheSetInfoShadow::CacheSetInfoShadow(
++      String name, String cfgname,
++      core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++      CacheBase::hash_t hash_function)
++  : m_shared_cores(shared_cores)
++  , m_associativity(associativity)
++  , m_cache_base(name, num_sets, associativity, cache_block_size, hash_function) 
++{
++
++   String sampling = Sim()->getCfg()->getStringArray(cfgname + "/st/sampling", core_id);   
++   m_set_info = CacheSet::createCacheSetInfo(name, cfgname, core_id, "lru", associativity);
++
++   m_accesses = new UInt64[shared_cores];
++   m_misses = new UInt64[shared_cores];
++   m_access_counters = new UInt64*[shared_cores];
++
++   for(UInt32 core = 0; core < shared_cores; core++) {
++      m_accesses[core] = m_misses[core] = 0;
++      m_access_counters[core] = new UInt64[associativity];
++      for(UInt32 i = 0; i < associativity; i++) {
++         m_access_counters[core][i] = 0;
++      }
++
++      registerStatsMetric(name, core, "shadow-tag-accesses", &m_accesses[core]);
++      registerStatsMetric(name, core, "shadow-tag-misses", &m_misses[core]);
++
++      if (sampling == "full")
++      {
++         for(UInt64 set_index = 0; set_index < num_sets; ++set_index)
++         {
++            m_sets[getSetIndex(core, set_index)] = CacheSet::createCacheSet(name, core_id, "lru", CacheBase::PR_L1_CACHE, associativity, 0, m_set_info);
++         }
++      }
++      else if (sampling == "count")
++      {
++         // Use a specified number of sample sets, evenly distributed
++         UInt64 offset = num_sets / Sim()->getCfg()->getInt(cfgname + "/st/sample_sets");
++         for(UInt64 set_index = 0; set_index < num_sets; set_index += offset)
++         {
++            m_sets[getSetIndex(core, set_index)] = CacheSet::createCacheSet(name, core_id, "lru", CacheBase::PR_L1_CACHE, associativity, 0, m_set_info);
++         }  
++      }
++      else
++      {
++         LOG_PRINT_ERROR("Invalid Shadow Tag sampling method %s", sampling.c_str());
++      }
++   }
++}
++
++CacheSetInfoShadow::~CacheSetInfoShadow() 
++{
++   if(m_set_info)
++      delete m_set_info;
++}
++
++void CacheSetInfoShadow::accessCache(core_id_t core, IntPtr address, bool hit)
++{
++   IntPtr tag; UInt32 set_index;
++   m_cache_base.splitAddress(address, tag, set_index);
++
++   if (isSampledSet(core, set_index))
++   {
++      UInt32 line_index = -1;
++
++      // Get sample set, and attempt to find the requested address
++      auto set = m_sets[getSetIndex(core, set_index)];
++      bool atd_hit = set->find(tag, &line_index) != NULL;
++
++      m_accesses[core]++;
++      if (atd_hit)
++      {
++         // Get LRU bits and update access counters, then promote to MRU
++         CacheSetLRU* lru_set = dynamic_cast<CacheSetLRU*>(set);
++         UInt32 lru_bits = lru_set->getLRUBit(line_index);
++         m_access_counters[core][lru_bits]++;
++
++         lru_set->updateReplacementIndex(line_index, 0);
++      }
++      else
++      {
++         m_misses[core]++;
++
++         PrL1CacheBlockInfo* cache_block_info = new PrL1CacheBlockInfo(tag, CacheState::MODIFIED);
++         bool eviction; PrL1CacheBlockInfo evict_block_info;
++         set->insert(cache_block_info, NULL, &eviction, &evict_block_info, NULL);          
++      }
++   }
++}
++
++CacheSetShadow::CacheSetShadow(
++   CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfoShadow *info) :
++   CacheSet(cache_type, associativity, blocksize),
++   m_info(info)
++{
++}
++
++CacheSetShadow::~CacheSetShadow()
++{
++}
++
++UInt32
++CacheSetShadow::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *request)
++{
++   LOG_ASSERT_ERROR(request != NULL, "Request information not sent to getReplacementIndex, possible bug!");
++
++   LOG_ASSERT_ERROR(m_info != NULL, "info == NULL");
++   m_info->accessCache(request->core_id, request->address, false);
++
++   return 0;
++}
++
++void
++CacheSetShadow::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *request)
++{
++   LOG_ASSERT_ERROR(request != NULL, "Request information not sent to updateReplacementIndex, possible bug!");
++
++   m_info->accessCache(request->core_id, request->address, true);
++}
+diff --git a/common/core/memory_subsystem/cache/cache_set_shadow.h b/common/core/memory_subsystem/cache/cache_set_shadow.h
+new file mode 100644
+index 0000000..0535854
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_shadow.h
+@@ -0,0 +1,102 @@
++#ifndef CACHE_SET_SHADOW_H
++#define CACHE_SET_SHADOW_H
++
++#include <unordered_map>
++
++#include "cache_set.h"
++#include "simulator.h"
++#include "config.hpp"
++#include "stats.h"
++
++class CacheSetShadow;
++
++// Set Info class that creates shadow tag directories for each sharing core
++class CacheSetInfoShadow : public CacheSetInfo
++{
++	public:
++      CacheSetInfoShadow(String name, String cfgname, 
++		   core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++		   CacheBase::hash_t hash_function);
++      virtual ~CacheSetInfoShadow();
++
++      UInt64 getAccesses(core_id_t core) {
++      	return m_accesses[core];
++      };
++
++      UInt64 getMisses(core_id_t core) {
++      	return m_misses[core];
++      };
++
++      UInt64 getHits(core_id_t core) {
++         return getAccesses(core) - getMisses(core);
++      };
++
++      UInt64 getAccessCounter(core_id_t core, UInt32 lru_position) {
++      	return m_access_counters[core][lru_position];
++      };
++      
++      void accessCache(core_id_t core, IntPtr address, bool hit);
++      
++   protected:
++      UInt32 m_shared_cores;
++      UInt32 m_associativity;
++
++
++      void resetCounters() {
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            m_accesses[core] = m_misses[core] = 0;
++            for(UInt32 way = 0; way < m_associativity; way++) {
++               m_access_counters[core][way] = 0;
++            }
++         }
++      };
++
++      void halvAccessCounters() {
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            m_accesses[core] = m_misses[core] = 0;
++            for(UInt32 way = 0; way < m_associativity; way++) {
++               m_access_counters[core][way] >>= 1;
++            }
++         }
++      };
++
++   private:
++
++   	  UInt64* m_accesses;
++   	  UInt64* m_misses;
++   	  UInt64** m_access_counters;
++
++      CacheBase m_cache_base;
++      CacheSetInfo *m_set_info;
++
++      std::unordered_map<UInt32, CacheSet*> m_sets;
++
++      UInt32 getSetIndex(core_id_t core_id, UInt32 set_no) {
++      	return core_id << 30 | set_no;
++      };
++
++      bool isSampledSet(core_id_t core_id, UInt32 set_index) {
++      	return m_sets.count(getSetIndex(core_id, set_index));
++      };
++
++
++
++   	  friend class CacheSetShadow;
++};
++
++// Cache Set implementation that will forward all activity to the set info class
++class CacheSetShadow : public CacheSet
++{
++   public:
++      CacheSetShadow(CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfoShadow *info);
++      ~CacheSetShadow();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++   	  CacheSetInfoShadow *m_info;
++};
++
++#endif /* CACHE_SET_SHADOW_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_srrip.cc b/common/core/memory_subsystem/cache/cache_set_srrip.cc
+index 99a8a82..633e5e7 100644
+--- a/common/core/memory_subsystem/cache/cache_set_srrip.cc
++++ b/common/core/memory_subsystem/cache/cache_set_srrip.cc
+@@ -28,7 +28,7 @@ CacheSetSRRIP::~CacheSetSRRIP()
+ }
+ 
+ UInt32
+-CacheSetSRRIP::getReplacementIndex(CacheCntlr *cntlr)
++CacheSetSRRIP::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
+ {
+    for (UInt32 i = 0; i < m_associativity; i++)
+    {
+@@ -96,7 +96,7 @@ CacheSetSRRIP::getReplacementIndex(CacheCntlr *cntlr)
+ }
+ 
+ void
+-CacheSetSRRIP::updateReplacementIndex(UInt32 accessed_index)
++CacheSetSRRIP::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
+ {
+    m_set_info->increment(m_rrip_bits[accessed_index]);
+ 
+diff --git a/common/core/memory_subsystem/cache/cache_set_srrip.h b/common/core/memory_subsystem/cache/cache_set_srrip.h
+index ed7827f..1eab770 100644
+--- a/common/core/memory_subsystem/cache/cache_set_srrip.h
++++ b/common/core/memory_subsystem/cache/cache_set_srrip.h
+@@ -12,8 +12,8 @@ class CacheSetSRRIP : public CacheSet
+             UInt32 associativity, UInt32 blocksize, CacheSetInfoLRU* set_info, UInt8 num_attempts);
+       ~CacheSetSRRIP();
+ 
+-      UInt32 getReplacementIndex(CacheCntlr *cntlr);
+-      void updateReplacementIndex(UInt32 accessed_index);
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
+ 
+    private:
+       const UInt8 m_rrip_numbits;
+diff --git a/common/core/memory_subsystem/cache/cache_set_tadip.cc b/common/core/memory_subsystem/cache/cache_set_tadip.cc
+new file mode 100644
+index 0000000..5fba07e
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_tadip.cc
+@@ -0,0 +1,187 @@
++#include "cache_set_tadip.h"
++#include "log.h"
++#include "stats.h"
++#include "config.hpp"
++
++#include "simulator.h"
++
++#include <iostream>
++#include <algorithm>
++#include <math.h>
++
++// TADIP: Thread Aware DIP
++
++CacheSetInfoTADIP::CacheSetInfoTADIP(String name, String cfgname, core_id_t core_id, UInt32 associativity, UInt32 num_sets) : 
++   m_num_sets(num_sets),
++   m_master_core(core_id)
++{
++   m_shared_cores = Sim()->getCfg()->getInt(cfgname + "/shared_cores");
++
++   m_policy_counters = new int[m_shared_cores];
++   m_stat_bip_switch = new UInt64[m_shared_cores];
++   m_stat_lip_switch = new UInt64[m_shared_cores];
++   m_time_of_last_switch = new SubsecondTime[m_shared_cores];
++   m_time_in_lip = new SubsecondTime[m_shared_cores];
++   m_time_in_bip = new SubsecondTime[m_shared_cores];
++
++   for(core_id_t i = 0; i < m_shared_cores; i++) {
++      m_policy_counters[i] = 0xFF;
++      m_stat_lip_switch[i] = m_stat_bip_switch[i] = 0;
++
++      registerStatsMetric(name, m_master_core+i, "switch-to-lip", &m_stat_lip_switch[i]);
++      registerStatsMetric(name, m_master_core+i, "switch-to-bip", &m_stat_bip_switch[i]);
++      registerStatsMetric(name, m_master_core+i, "time-in-lip", &m_time_in_lip[i]);
++      registerStatsMetric(name, m_master_core+i, "time-in-bip", &m_time_in_bip[i]);
++   }
++
++   rng = new Random();
++
++   int width = log2(num_sets);
++   int counter_width = log2(16); // TODO Move to configuration
++
++   LOG_ASSERT_ERROR(width >= counter_width*2, "Too few sets to accomidate TADIP-F");
++
++   setno_higher_offset = (width - counter_width);
++   setno_higher_filter = (int(pow(2, counter_width)) - 1) << (setno_higher_offset);
++   setno_lower_filter = (num_sets - 1) ^ setno_higher_filter;
++}
++
++CacheSetInfoTADIP::~CacheSetInfoTADIP()
++{
++   delete[] m_policy_counters;
++   delete rng;
++}
++
++// Hash function implementation
++CacheSetInfoTADIP::policy_t CacheSetInfoTADIP::getSetPolicy(UInt32 set_no, core_id_t core_id)
++{
++   int upper = (set_no & setno_higher_filter) >> setno_higher_offset;
++   int lower = set_no & setno_lower_filter;
++
++   if ((upper + core_id) == lower) {
++      return LRU;
++   } else if ((upper + core_id + m_shared_cores) == lower) {
++      return BIP;
++   } else {
++      if (m_policy_counters[core_id] & 0x100) {
++         return BIP;
++      }
++      return LRU;
++   }
++}
++
++bool CacheSetInfoTADIP::isOwner(UInt32 set_no, core_id_t core_id)
++{
++   int upper = (set_no & setno_higher_filter) >> setno_higher_offset;
++   int lower = set_no & setno_lower_filter;
++
++   return (upper + core_id) == lower || (upper + core_id + m_shared_cores) == lower;
++}
++
++void CacheSetInfoTADIP::updateAccessCounter(UInt32 set_no, core_id_t requester, bool cache_hit)
++{
++   if (!cache_hit && isOwner(set_no, requester)) {
++      // Miss in LRU set -> +1, miss in BIP set -> -1
++      int direction = getSetPolicy(set_no, requester) == LRU ?  +1 : -1;
++
++      int nval = m_policy_counters[requester] + direction;
++      if (nval >= 0 && nval <= 511) 
++      {
++         if ((m_policy_counters[requester] & 0x100) != (nval & 0x100)) {
++            SubsecondTime period = Sim()->getCoreManager()->getCoreFromID(m_master_core)->getPerformanceModel()->getElapsedTime() - m_time_of_last_switch[requester];
++            m_time_of_last_switch[requester] = Sim()->getCoreManager()->getCoreFromID(m_master_core)->getPerformanceModel()->getElapsedTime();
++
++            //std::cout << "Core " << requester << " changed state to " << (nval&0x100 ? "BIP" : "LRU") << "\n";
++            if ((nval&0x100) > 0) {
++               m_stat_bip_switch[requester]++;               
++               m_time_in_lip[requester] += period;
++            } else {
++               m_stat_lip_switch[requester]++;    
++               m_time_in_bip[requester] += period;           
++            }
++         }
++         m_policy_counters[requester] = nval;
++      }
++   }
++}
++
++// Check if a insert in set_no by requester should be promoted to MRU position, or be inserted at LRU
++bool CacheSetInfoTADIP::getPromote(UInt32 set_no, core_id_t requester)
++{
++   auto policy = getSetPolicy(set_no, requester);
++
++   if (policy == BIP) {
++      // For every 32'th insert into a BIP set we return LRU because we want it to promote      
++      if (rng->next(32) != 0) {
++         return false;
++      }
++   }
++
++   // True for LRU, or if we fall though on BIP
++   return true;
++}
++
++
++
++CacheSetTADIP::CacheSetTADIP(
++      CacheBase::cache_t cache_type,
++      UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoTADIP* cache_set_info) :
++   CacheSet(cache_type, associativity, blocksize),
++   m_set_no(set_no),
++   m_cache_set_info(cache_set_info)
++{
++   m_lru_bits = new UInt8[m_associativity];
++   for (UInt32 i = 0; i < m_associativity; i++)
++      m_lru_bits[i] = i;
++
++}
++
++CacheSetTADIP::~CacheSetTADIP()
++{
++   delete [] m_lru_bits;
++}
++
++UInt32
++CacheSetTADIP::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
++{
++   LOG_ASSERT_ERROR(info != NULL, "ExtraMemoryRequestInfo not set");
++   
++   bool promote = m_cache_set_info->getPromote(m_set_no, info->core_id);
++   m_cache_set_info->updateAccessCounter(m_set_no, info->core_id, false);
++
++   // Scan for LRU and replace it
++   int max_bit = 0;
++   int index = 0;
++
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] > max_bit && isValidReplacement(i))
++      {
++         index = i;
++         max_bit = m_lru_bits[i];
++      }
++   }
++
++   if (promote) {
++      moveToMRU(index);
++   }
++   return index;
++}
++
++// Moves the block at accessed_index to MRU
++void
++CacheSetTADIP::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
++{
++   m_cache_set_info->updateAccessCounter(m_set_no, info->core_id, true);
++   moveToMRU(accessed_index);
++}
++
++void CacheSetTADIP::moveToMRU(UInt32 accessed_index)
++{
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] < m_lru_bits[accessed_index])
++         m_lru_bits[i] ++;
++   }
++   m_lru_bits[accessed_index] = 0;   
++}
+\ No newline at end of file
+diff --git a/common/core/memory_subsystem/cache/cache_set_tadip.h b/common/core/memory_subsystem/cache/cache_set_tadip.h
+new file mode 100644
+index 0000000..a5d4ff6
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_tadip.h
+@@ -0,0 +1,74 @@
++#ifndef CACHE_SET_TADIP_H
++#define CACHE_SET_TADIP_H
++
++#include "cache_set.h"
++
++#include "random.h"
++
++#include "simulator.h"
++#include "core_manager.h"
++#include "performance_model.h"
++#include "dvfs_manager.h"
++
++
++class CacheSetInfoTADIP : public CacheSetInfo
++{
++
++   public:
++      enum policy_t {
++         LRU,
++         BIP
++      };
++
++      CacheSetInfoTADIP(String name, String cfgname, core_id_t core_id, UInt32 associativity, UInt32 num_sets);
++      virtual ~CacheSetInfoTADIP();
++      
++      void updateAccessCounter(UInt32 set_no, core_id_t requester, bool core_hit);
++
++      bool getPromote(UInt32 set_no, core_id_t requester);
++
++   private:
++      UInt32 m_num_sets;
++      core_id_t m_master_core;
++      core_id_t m_shared_cores;
++
++      int* m_policy_counters;
++
++      UInt64* m_stat_bip_switch;
++      UInt64* m_stat_lip_switch;
++
++      SubsecondTime* m_time_of_last_switch;
++      SubsecondTime* m_time_in_bip;
++      SubsecondTime* m_time_in_lip;
++      
++      Random* rng;
++
++
++      int setno_lower_filter;
++      int setno_higher_filter;
++      int setno_higher_offset;
++
++      policy_t getSetPolicy(UInt32 set_no, core_id_t requester);
++      bool isOwner(UInt32 set_no, core_id_t core_id);
++};
++
++class CacheSetTADIP : public CacheSet
++{
++   public:
++      CacheSetTADIP(CacheBase::cache_t cache_type,
++            UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoTADIP* cache_set_info);
++      ~CacheSetTADIP();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++      void moveToMRU(UInt32 accessed_index);
++
++      UInt32 m_set_no;
++      UInt8* m_lru_bits;
++      CacheSetInfoTADIP* m_cache_set_info;
++
++};
++
++#endif /* CACHE_SET_TADIP_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_ucp.cc b/common/core/memory_subsystem/cache/cache_set_ucp.cc
+new file mode 100644
+index 0000000..62e635d
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_ucp.cc
+@@ -0,0 +1,89 @@
++#include <iostream>
++#include <sstream>
++#include <algorithm>
++
++#include "log.h"
++#include "stats.h"
++#include "config.hpp"
++
++#include "cache_cntlr.h"
++
++#include "cache_base.h"
++#include "cache_set_ucp.h"
++
++
++CacheSetUCP::CacheSetUCP(
++      CacheBase::cache_t cache_type,
++      UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoUMON *info) :
++   CacheSetUMON(cache_type, associativity, blocksize, info),
++   m_set_no(set_no)
++{
++   m_lru_bits = new UInt8[m_associativity];
++   for (UInt32 i = 0; i < m_associativity; i++) {
++      m_lru_bits[i] = i;
++   }
++}
++
++CacheSetUCP::~CacheSetUCP()
++{
++   delete [] m_lru_bits;
++}
++
++UInt32
++CacheSetUCP::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info)
++{
++   LOG_ASSERT_ERROR(info != NULL, "ExtraMemoryRequestInfo not set");
++   CacheSetUMON::getReplacementIndex(cntlr, info);
++
++   UInt32 count = 0;
++   // Count number of blocks belonging to requester
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_cache_block_info_array[i]->getOwner() == UInt64(info->core_id))
++      {
++         count++;
++      }
++   }
++
++   // NOTE: While the UMON can allocate us 0 columns, we still need to store somewhere as the cache is inclusive. So we change it to one in that case
++   auto allocations = getUMON()->getAllocation(info->core_id);
++   allocations = allocations > 0 ? allocations : 1;
++
++   // Should we canabalize our own allocations or steal from an other core
++   bool canabalize = count >= allocations;
++
++   // Scan for the first valid replacement starting with the LRU, stepping towards the MRU
++   int index = 0;
++   int max_bit = 0;
++
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] > max_bit && isValidReplacement(i))
++      {
++         bool mine = m_cache_block_info_array[i]->getOwner() == UInt64(info->core_id);
++         bool valid = (mine && canabalize) || (!mine && !canabalize);
++
++         if (valid) {
++            index = i;
++            max_bit = m_lru_bits[i];
++         }
++      }
++   }
++
++   updateReplacementIndex(index, info);
++   return index;
++}
++
++// Moves the block at accessed_index to MRU
++void
++CacheSetUCP::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info)
++{
++   CacheSetUMON::updateReplacementIndex(accessed_index, info);
++
++   for (UInt32 i = 0; i < m_associativity; i++)
++   {
++      if (m_lru_bits[i] < m_lru_bits[accessed_index])
++         m_lru_bits[i] ++;
++   }
++   m_lru_bits[accessed_index] = 0;
++}
+diff --git a/common/core/memory_subsystem/cache/cache_set_ucp.h b/common/core/memory_subsystem/cache/cache_set_ucp.h
+new file mode 100644
+index 0000000..1bf83f1
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_ucp.h
+@@ -0,0 +1,27 @@
++#ifndef CACHE_SET_UCP_H
++#define CACHE_SET_UCP_H
++
++#include "cache_set_umon.h"
++
++#include "cache_cntlr.h"
++
++
++
++class CacheSetUCP : public CacheSetUMON
++{
++   public:
++      CacheSetUCP(CacheBase::cache_t cache_type,
++            UInt32 associativity, UInt32 blocksize, UInt32 set_no, CacheSetInfoUMON *info);
++      ~CacheSetUCP();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntl, Core::ExtraMemoryRequestInfo *info);
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   private:
++      void moveToMRU(UInt32 accessed_index);
++
++      UInt8* m_lru_bits;
++      UInt32 m_set_no;
++};
++
++#endif /* CACHE_SET_UCP_H */
+diff --git a/common/core/memory_subsystem/cache/cache_set_umon.cc b/common/core/memory_subsystem/cache/cache_set_umon.cc
+new file mode 100644
+index 0000000..8b7f5e0
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_umon.cc
+@@ -0,0 +1,219 @@
++#include "cache_set_umon.h"
++#include "cache_set_lru.h"
++#include "pr_l1_cache_block_info.h"
++
++#include "log.h"
++
++#include <iostream>
++
++// Cache umon implementation
++// This is an extension of the shadow tag implementation adding utility calculations
++
++CacheSetInfoUMON::CacheSetInfoUMON(
++         String name, String cfgname,
++         core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++         CacheBase::hash_t hash_function)
++   : CacheSetInfoShadow(name, cfgname, core_id, associativity, cache_block_size, num_sets, shared_cores, hash_function)
++   , m_reallocate_period(Sim()->getCfg()->getIntArray(cfgname + "/umon/reallocate_period", core_id))
++   , m_enable_stream_detection(Sim()->getCfg()->getBoolArray(cfgname + "/umon/enable_stream_detection", core_id))
++{
++   // Set the intial allocations be equal for all cores
++   m_current_period = 0;
++   int per_core = associativity / shared_cores;
++   m_allocations = new UInt64[shared_cores];
++   for(UInt32 i = 0; i < shared_cores; i++) {
++      m_allocations[i] = per_core;
++   }
++
++   if(m_enable_stream_detection) {
++      m_stream_miss_count = Sim()->getCfg()->getInt(cfgname + "/umon/stream_miss_count_limit");
++      m_stream_miss_fraction = Sim()->getCfg()->getFloat(cfgname + "/umon/stream_miss_fraction_limit");
++
++      m_stream_flags = new bool[shared_cores];
++      for(UInt32 i = 0; i < shared_cores; i++) {
++         m_stream_flags[i] = false;
++      }
++   }
++
++   // Create a time converter used to convert elapsed time to cycles. ASSUMES CONSTANT FREQ
++   const ComponentPeriod* period = Sim()->getDvfsManager()->getCoreDomain(Sim()->getDvfsManager()->getCoreDomainId(0));
++   m_time_converter = new SubsecondTimeCycleConverter(period);
++
++}
++
++CacheSetInfoUMON::~CacheSetInfoUMON() 
++{
++   delete[] m_allocations;
++   if (m_enable_stream_detection)
++      delete[] m_stream_flags;
++
++   delete m_time_converter;
++}
++
++void 
++CacheSetInfoUMON::accessCache(core_id_t core, IntPtr address, bool hit)
++{
++   // Update shadow tags
++   CacheSetInfoShadow::accessCache(core, address, hit);
++
++   auto this_period = getCurrentAllocationPeriod();
++
++   // If we have moved to the next period we must do a reallocation
++   if (m_current_period < this_period) {
++      m_current_period = this_period;
++
++      // Initialize to 0
++      for(UInt32 core = 0; core < m_shared_cores; core++) {
++         m_allocations[core] = 0;
++      }
++
++      int remainding = m_associativity;
++
++      // While we have remainding ways to distribute
++      while(remainding > 0) {
++         // Keep track of winner, maximum mu and required blocks
++         int winner = -1, max_mu = -1, required_blocks = -1;
++
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            int allocated = m_allocations[core];
++            UInt32 blocks = 0;
++            int mu = getMaxMU(core, allocated, remainding, &blocks);
++            if (mu > max_mu) {
++               winner = core;
++               max_mu = mu;
++               required_blocks = blocks;
++            }
++         }
++
++         // Add allocations and decrement remainding
++         m_allocations[winner] += required_blocks;
++         remainding -= required_blocks;
++
++         assert(required_blocks > 0);
++      }
++      assert(remainding == 0);
++
++      // Do streaming detection
++      if (m_enable_stream_detection) {
++         for(UInt32 core = 0; core < m_shared_cores; core++) {
++            // Check if miss count or miss flag indicates a streaming app, if either limit is 0 that check is disabled
++            bool count_flag = m_stream_miss_count > 0 && getMisses(core) > m_stream_miss_count;
++            bool rate_flag = m_stream_miss_fraction > 0 && ((double)getMisses(core)/getAccesses(core)) > m_stream_miss_fraction;
++
++            m_stream_flags[core] = count_flag || rate_flag;
++         }
++      }
++      logAllocations();
++
++      halvAccessCounters();
++
++   }
++}
++
++UInt32 
++CacheSetInfoUMON::getMU(core_id_t core, UInt32 lower, UInt32 upper) 
++{
++   assert(lower < upper);
++   UInt32 U = 0;
++   for (UInt32 i = lower ; i < upper; i ++) {
++      U += getAccessCounter(core, i);
++   }
++   return U == 0 ? 0 : U / (upper-lower);
++}
++
++UInt32 
++CacheSetInfoUMON::getMaxMU(core_id_t core, UInt32 allocated, UInt32 remainding, UInt32* blocks)
++{
++   assert(remainding > 0);
++
++   int max_mu = 0;
++   int max_blocks = 1;
++
++   for (UInt32 i = 1; i <= remainding; i++) {
++      int mu = getMU(core, allocated, allocated+i);
++      if (mu > max_mu) {
++         max_mu = mu;
++         max_blocks = i;
++      }
++   }
++
++   *blocks = max_blocks;
++   return max_mu;
++} 
++
++void CacheSetInfoUMON::logAllocations() 
++{
++
++   return;
++
++   /*std::ostringstream s;
++   s << "umon.allocation." << getCurrentAllocationPeriod();
++   std::string alloc_tag(s.str());
++   
++   s.str("");
++   s << "umon.streaming." << getCurrentAllocationPeriod();
++   std::string streaming_tag(s.str());   
++
++   for(UInt32 core = 0; core < m_shared_cores; core++) {
++      UInt64* val = new UInt64();
++      *val = m_allocations[core];
++      registerStatsMetric(m_name, m_master_core+core, alloc_tag.c_str(), val);
++
++      if (m_enable_stream_detection) {         
++         UInt64* val = new UInt64();
++         *val = isStreaming(core);
++         registerStatsMetric(m_name, m_master_core+core, streaming_tag.c_str(), val);         
++      }
++   }*/
++
++   // return;
++
++   std::cout << "[UMON] Access counters:\n";
++   for(UInt32 core = 0; core < m_shared_cores; core++) {
++      std::cout << "[UMON] Core" << core << ": ";   
++      for(UInt32 way = 0; way < m_associativity; way++) {
++         std::cout << getAccessCounter(core, way) << ", ";
++      }
++      std::cout << "\n";
++   }
++
++   std::cout << "[UMON] Allocations ";
++   if (m_enable_stream_detection) {
++      std::cout << "(Streaming: " << countStreamingCores() << ")";
++   }
++   std::cout << ": ";
++   for(UInt32 core = 0; core < m_shared_cores; core++) {
++      std::cout << m_allocations[core] << (m_enable_stream_detection && m_stream_flags[core] ? "s, " : ",  ");
++   }
++   std::cout << "\n";
++}
++
++CacheSetUMON::CacheSetUMON(
++   CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfoUMON *info) 
++   : CacheSetShadow(cache_type, associativity, blocksize, info)
++   , m_info(info)
++{
++}
++
++CacheSetUMON::~CacheSetUMON()
++{
++}
++
++UInt32
++CacheSetUMON::getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *request)
++{
++   LOG_ASSERT_ERROR(request != NULL, "Request information not sent to getReplacementIndex, possible bug!");
++
++   LOG_ASSERT_ERROR(m_info != NULL, "info == NULL");
++   m_info->accessCache(request->core_id, request->address, false);
++
++   return 0;
++}
++
++void
++CacheSetUMON::updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *request)
++{
++   LOG_ASSERT_ERROR(request != NULL, "Request information not sent to updateReplacementIndex, possible bug!");
++
++   m_info->accessCache(request->core_id, request->address, true);
++}
+diff --git a/common/core/memory_subsystem/cache/cache_set_umon.h b/common/core/memory_subsystem/cache/cache_set_umon.h
+new file mode 100644
+index 0000000..49f7bfb
+--- /dev/null
++++ b/common/core/memory_subsystem/cache/cache_set_umon.h
+@@ -0,0 +1,96 @@
++#ifndef CACHE_SET_UMON_H
++#define CACHE_SET_UMON_H
++
++#include <unordered_map>
++
++#include "cache_set_shadow.h"
++#include "simulator.h"
++#include "core_manager.h"
++#include "performance_model.h"
++#include "dvfs_manager.h"
++#include "config.hpp"
++#include "stats.h"
++
++class CacheSetUMON;
++
++// Extension of the shadow tag set info, adding utility calculations (ucp,pipp) and stream detection (pipp)
++class CacheSetInfoUMON : public CacheSetInfoShadow
++{
++	public:
++      CacheSetInfoUMON(String name, String cfgname, 
++		   core_id_t core_id, UInt32 associativity, UInt32 cache_block_size, UInt32 num_sets, UInt32 shared_cores,
++		   CacheBase::hash_t hash_function);
++      virtual ~CacheSetInfoUMON();
++
++      void accessCache(core_id_t core, IntPtr address, bool hit);
++
++      // True if the given core is streaming
++      bool isStreaming(core_id_t core_id) { return m_enable_stream_detection && m_stream_flags[core_id]; };
++
++      // Total number of cores marked as streaming
++      UInt32 countStreamingCores() { 
++         int count = 0;
++         if (m_enable_stream_detection) {
++            for(UInt32 i = 0; i < m_shared_cores; i++) {
++               count += isStreaming(i);
++            }
++         }
++         return count;
++      };
++
++      // True if all cores are marked as streaming
++      bool isAllStreaming()  { 
++         return m_enable_stream_detection && countStreamingCores() == m_shared_cores;
++      };     
++
++      UInt64 getAllocation(core_id_t core) {
++         return m_allocations[core];
++      }
++
++   private:
++      UInt64 m_reallocate_period;
++      bool m_enable_stream_detection;
++
++      UInt64 m_stream_miss_count;
++      double m_stream_miss_fraction;
++
++
++      SubsecondTimeCycleConverter* m_time_converter;
++      bool *m_stream_flags;
++      UInt64 *m_allocations;
++      UInt64 m_current_period;
++
++
++      UInt32 getCurrentAllocationPeriod() {
++         SubsecondTime time = Sim()->getCoreManager()->getCoreFromID(0)->getPerformanceModel()->getElapsedTime();
++         return m_time_converter->subsecondTimeToCycles(time) / m_reallocate_period;
++      }
++
++      UInt32 getMU(core_id_t core, UInt32 lower, UInt32 upper);
++      UInt32 getMaxMU(core_id_t core, UInt32 allocated, UInt32 remainding, UInt32 *);
++
++      void logAllocations();
++		
++};
++
++// Cache Set implementation that will forward all activity to the set info class
++class CacheSetUMON : public CacheSetShadow
++{
++   public:
++      CacheSetUMON(CacheBase::cache_t cache_type, UInt32 associativity, UInt32 blocksize, CacheSetInfoUMON *info);
++      ~CacheSetUMON();
++
++      UInt32 getReplacementIndex(CacheCntlr *cntlr, Core::ExtraMemoryRequestInfo *info);
++
++      void updateReplacementIndex(UInt32 accessed_index, Core::ExtraMemoryRequestInfo *info);
++
++   protected:
++      CacheSetInfoUMON* getUMON() {
++         return m_info;
++      }
++
++   private:
++   	  CacheSetInfoUMON *m_info;
++};
++
++#endif /* CACHE_SET_UMON_H */
+diff --git a/common/core/memory_subsystem/dram/dram_cache.cc b/common/core/memory_subsystem/dram/dram_cache.cc
+index 6ee5c9d..24d8d26 100644
+--- a/common/core/memory_subsystem/dram/dram_cache.cc
++++ b/common/core/memory_subsystem/dram/dram_cache.cc
+@@ -42,6 +42,7 @@ DramCache::DramCache(MemoryManagerBase* memory_manager, ShmemPerfModel* shmem_pe
+       m_cache_block_size,
+       Sim()->getCfg()->getStringArray("perf_model/dram/cache/replacement_policy", m_core_id),
+       CacheBase::PR_L1_CACHE,
++      1,
+       CacheBase::parseAddressHash(Sim()->getCfg()->getStringArray("perf_model/dram/cache/address_hash", m_core_id)),
+       NULL, /* FaultinjectionManager */
+       home_lookup
+@@ -125,7 +126,7 @@ DramCache::doAccess(Cache::access_t access, IntPtr address, core_id_t requester,
+          }
+       }
+ 
+-      m_cache->accessSingleLine(address, access, data_buf, m_cache_block_size, now + latency, true);
++      m_cache->accessSingleLine(address, access, data_buf, m_cache_block_size, now + latency, true, NULL);
+ 
+       latency += accessDataArray(access, requester, now + latency, perf);
+       if (access == Cache::STORE)
+@@ -162,7 +163,7 @@ DramCache::insertLine(Cache::access_t access, IntPtr address, core_id_t requeste
+ 
+    m_cache->insertSingleLine(address, data_buf,
+       &eviction, &evict_address, &evict_block_info, evict_buf,
+-      now);
++      now, NULL);
+    m_cache->peekSingleLine(address)->setCState(access == Cache::STORE ? CacheState::MODIFIED : CacheState::SHARED);
+ 
+    // Write to data array off-line, so don't affect return latency
+diff --git a/common/core/memory_subsystem/memory_manager_base.cc b/common/core/memory_subsystem/memory_manager_base.cc
+index 1318877..b82472e 100644
+--- a/common/core/memory_subsystem/memory_manager_base.cc
++++ b/common/core/memory_subsystem/memory_manager_base.cc
+@@ -105,7 +105,7 @@ MemoryManagerBase::getCoreListWithMemoryControllers()
+          {
+             LOG_PRINT_ERROR("Exception while reading network model types.");
+          }
+-
++         
+          std::pair<bool, std::vector<core_id_t> > core_list_with_memory_controllers_1 = NetworkModel::computeMemoryControllerPositions(l_models_memory_1, num_memory_controllers, core_count);
+          return core_list_with_memory_controllers_1.second;
+       }
+diff --git a/common/core/memory_subsystem/memory_manager_base.h b/common/core/memory_subsystem/memory_manager_base.h
+index 69025a8..e24589a 100644
+--- a/common/core/memory_subsystem/memory_manager_base.h
++++ b/common/core/memory_subsystem/memory_manager_base.h
+@@ -48,7 +48,7 @@ class MemoryManagerBase
+             Core::mem_op_t mem_op_type,
+             IntPtr address, UInt32 offset,
+             Byte* data_buf, UInt32 data_length,
+-            Core::MemModeled modeled) = 0;
++            Core::MemModeled modeled, Core::ExtraMemoryRequestInfo *info) = 0;
+       virtual SubsecondTime coreInitiateMemoryAccessFast(
+             bool icache,
+             Core::mem_op_t mem_op_type,
+@@ -64,7 +64,7 @@ class MemoryManagerBase
+                mem_op_type,
+                address - (address % getCacheBlockSize()), 0,
+                NULL, getCacheBlockSize(),
+-               Core::MEM_MODELED_COUNT_TLBTIME);
++               Core::MEM_MODELED_COUNT_TLBTIME, NULL);
+ 
+          // Get the final cycle time
+          SubsecondTime final_time = getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD);
+diff --git a/common/core/memory_subsystem/memory_manager_fast.h b/common/core/memory_subsystem/memory_manager_fast.h
+index e4d7267..da42206 100644
+--- a/common/core/memory_subsystem/memory_manager_fast.h
++++ b/common/core/memory_subsystem/memory_manager_fast.h
+@@ -24,7 +24,7 @@ class MemoryManagerFast : public MemoryManagerBase
+             Core::mem_op_t mem_op_type,
+             IntPtr address, UInt32 offset,
+             Byte* data_buf, UInt32 data_length,
+-            Core::MemModeled modeled)
++            Core::MemModeled modeled, Core::ExtraMemoryRequestInfo *info)
+       {
+          // Emulate slow interface by calling into fast interface
+          assert(data_buf == NULL);
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_atd.cc b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_atd.cc
+index 027ce70..4bdc7b3 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_atd.cc
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_atd.cc
+@@ -94,7 +94,7 @@ void ATD::access(Core::mem_op_t mem_op_type, bool cache_hit, IntPtr address)
+ 
+       if (atd_hit)
+       {
+-         m_sets[set_index]->updateReplacementIndex(line_index);
++         m_sets[set_index]->updateReplacementIndex(line_index, 0);
+       }
+       else
+       {
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.cc b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.cc
+index e6e238b..8699210 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.cc
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.cc
+@@ -172,6 +172,7 @@ CacheCntlr::CacheCntlr(MemComponent::component_t mem_component,
+             m_cache_block_size,
+             cache_params.replacement_policy,
+             CacheBase::SHARED_CACHE,
++            m_shared_cores,
+             CacheBase::parseAddressHash(cache_params.hash_function),
+             Sim()->getFaultinjectionManager()
+                ? Sim()->getFaultinjectionManager()->getFaultInjector(m_core_id_master, mem_component)
+@@ -317,7 +318,8 @@ CacheCntlr::processMemOpFromCore(
+       IntPtr ca_address, UInt32 offset,
+       Byte* data_buf, UInt32 data_length,
+       bool modeled,
+-      bool count)
++      bool count,
++      Core::ExtraMemoryRequestInfo *info)
+ {
+    HitWhere::where_t hit_where = HitWhere::MISS;
+ 
+@@ -364,7 +366,7 @@ LOG_ASSERT_ERROR(offset + data_length <= getCacheBlockSize(), "access until %u >
+          cache_block_info->setCState(CacheState::MODIFIED);
+       else
+       {
+-         insertCacheBlock(ca_address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, NULL, m_core_id, ShmemPerfModel::_USER_THREAD);
++         insertCacheBlock(ca_address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, NULL, m_core_id, ShmemPerfModel::_USER_THREAD, info);
+          cache_block_info = getCacheBlockInfo(ca_address);
+       }
+    }
+@@ -461,7 +463,7 @@ MYLOG("L1 miss");
+       }
+ 
+ MYLOG("processMemOpFromCore l%d before next", m_mem_component);
+-      hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, ca_address, modeled, count, Prefetch::NONE, t_start, false);
++      hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, ca_address, modeled, count, Prefetch::NONE, t_start, false, info);
+       bool next_cache_hit = hit_where != HitWhere::MISS;
+ MYLOG("processMemOpFromCore l%d next hit = %d", m_mem_component, next_cache_hit);
+ 
+@@ -488,7 +490,7 @@ MYLOG("processMemOpFromCore l%d got message reply", m_mem_component);
+ 
+          /* have the next cache levels fill themselves with the new data */
+ MYLOG("processMemOpFromCore l%d before next fill", m_mem_component);
+-         hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, ca_address, false, false, Prefetch::NONE, t_start, true);
++         hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, ca_address, false, false, Prefetch::NONE, t_start, true, info);
+ MYLOG("processMemOpFromCore l%d after next fill", m_mem_component);
+          LOG_ASSERT_ERROR(hit_where != HitWhere::MISS,
+             "Tried to read in next-level cache, but data is already gone");
+@@ -502,7 +504,7 @@ MYLOG("processMemOpFromCore l%d after next fill", m_mem_component);
+ 
+       /* data should now be in next-level cache, go get it */
+       SubsecondTime t_now = getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD);
+-      copyDataFromNextLevel(mem_op_type, ca_address, modeled, t_now);
++      copyDataFromNextLevel(mem_op_type, ca_address, modeled, t_now, info);
+ 
+       cache_block_info = getCacheBlockInfo(ca_address);
+ 
+@@ -535,7 +537,7 @@ MYLOG("processMemOpFromCore l%d after next fill", m_mem_component);
+    }
+ 
+ 
+-   accessCache(mem_op_type, ca_address, offset, data_buf, data_length, hit_where == HitWhere::where_t(m_mem_component) && count);
++   accessCache(mem_op_type, ca_address, offset, data_buf, data_length, hit_where == HitWhere::where_t(m_mem_component) && count, info);
+ MYLOG("access done");
+ 
+ 
+@@ -609,7 +611,7 @@ CacheCntlr::updateHits(Core::mem_op_t mem_op_type, UInt64 hits)
+ 
+ 
+ void
+-CacheCntlr::copyDataFromNextLevel(Core::mem_op_t mem_op_type, IntPtr address, bool modeled, SubsecondTime t_now)
++CacheCntlr::copyDataFromNextLevel(Core::mem_op_t mem_op_type, IntPtr address, bool modeled, SubsecondTime t_now, Core::ExtraMemoryRequestInfo *info)
+ {
+    // TODO: what if it's already gone? someone else may invalitate it between the time it arrived an when we get here...
+    LOG_ASSERT_ERROR(m_next_cache_cntlr->operationPermissibleinCache(address, mem_op_type),
+@@ -617,7 +619,7 @@ CacheCntlr::copyDataFromNextLevel(Core::mem_op_t mem_op_type, IntPtr address, bo
+ MYLOG("copyDataFromNextLevel l%d", m_mem_component);
+ 
+    Byte data_buf[m_next_cache_cntlr->getCacheBlockSize()];
+-   m_next_cache_cntlr->retrieveCacheBlock(address, data_buf, ShmemPerfModel::_USER_THREAD, false);
++   m_next_cache_cntlr->retrieveCacheBlock(address, data_buf, ShmemPerfModel::_USER_THREAD, false, info);
+ 
+    CacheState::cstate_t cstate = m_next_cache_cntlr->getCacheState(address);
+ 
+@@ -642,7 +644,7 @@ MYLOG("copyDataFromNextLevel l%d", m_mem_component);
+    else
+    {
+       // Insert the Cache Block in our own cache
+-      insertCacheBlock(address, cstate, data_buf, m_core_id, ShmemPerfModel::_USER_THREAD);
++      insertCacheBlock(address, cstate, data_buf, m_core_id, ShmemPerfModel::_USER_THREAD, info);
+       MYLOG("copyDataFromNextLevel l%d done (inserted)", m_mem_component);
+    }
+ }
+@@ -719,7 +721,7 @@ CacheCntlr::doPrefetch(IntPtr prefetch_address, SubsecondTime t_start)
+    MYLOG("prefetching %lx", prefetch_address);
+    SubsecondTime t_before = getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD);
+    getShmemPerfModel()->setElapsedTime(ShmemPerfModel::_USER_THREAD, t_start); // Start the prefetch at the same time as the original miss
+-   HitWhere::where_t hit_where = processShmemReqFromPrevCache(this, Core::READ, prefetch_address, true, true, Prefetch::OWN, t_start, false);
++   HitWhere::where_t hit_where = processShmemReqFromPrevCache(this, Core::READ, prefetch_address, true, true, Prefetch::OWN, t_start, false, NULL);
+ 
+    if (hit_where == HitWhere::MISS)
+    {
+@@ -729,7 +731,7 @@ CacheCntlr::doPrefetch(IntPtr prefetch_address, SubsecondTime t_start)
+       waitForNetworkThread();
+       wakeUpNetworkThread();
+ 
+-      hit_where = processShmemReqFromPrevCache(this, Core::READ, prefetch_address, false, false, Prefetch::OWN, t_start, false);
++      hit_where = processShmemReqFromPrevCache(this, Core::READ, prefetch_address, false, false, Prefetch::OWN, t_start, false, NULL);
+ 
+       LOG_ASSERT_ERROR(hit_where != HitWhere::MISS, "Line was not there after prefetch");
+    }
+@@ -744,7 +746,7 @@ CacheCntlr::doPrefetch(IntPtr prefetch_address, SubsecondTime t_start)
+  *****************************************************************************/
+ 
+ HitWhere::where_t
+-CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t mem_op_type, IntPtr address, bool modeled, bool count, Prefetch::prefetch_type_t isPrefetch, SubsecondTime t_issue, bool have_write_lock)
++CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t mem_op_type, IntPtr address, bool modeled, bool count, Prefetch::prefetch_type_t isPrefetch, SubsecondTime t_issue, bool have_write_lock, Core::ExtraMemoryRequestInfo *info)
+ {
+    #ifdef PRIVATE_L2_OPTIMIZATION
+    bool have_write_lock_internal = have_write_lock;
+@@ -769,7 +771,7 @@ CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t m
+       if (cache_block_info)
+          cache_block_info->setCState(CacheState::MODIFIED);
+       else
+-         cache_block_info = insertCacheBlock(address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, NULL, m_core_id, ShmemPerfModel::_USER_THREAD);
++         cache_block_info = insertCacheBlock(address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, NULL, m_core_id, ShmemPerfModel::_USER_THREAD, info);
+    }
+ 
+    if (count)
+@@ -908,13 +910,13 @@ CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t m
+             invalidateCacheBlock(address);
+ 
+          // let the next cache level handle it.
+-         hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, address, modeled, count, isPrefetch == Prefetch::NONE ? Prefetch::NONE : Prefetch::OTHER, t_issue, have_write_lock_internal);
++         hit_where = m_next_cache_cntlr->processShmemReqFromPrevCache(this, mem_op_type, address, modeled, count, isPrefetch == Prefetch::NONE ? Prefetch::NONE : Prefetch::OTHER, t_issue, have_write_lock_internal, info);
+          if (hit_where != HitWhere::MISS)
+          {
+             cache_hit = true;
+             /* get the data for ourselves */
+             SubsecondTime t_now = getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD);
+-            copyDataFromNextLevel(mem_op_type, address, modeled, t_now);
++            copyDataFromNextLevel(mem_op_type, address, modeled, t_now, info);
+             if (isPrefetch != Prefetch::NONE)
+                getCacheBlockInfo(address)->setOption(CacheBlockInfo::PREFETCH);
+          }
+@@ -962,7 +964,7 @@ CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t m
+                getMemoryManager()->incrElapsedTime(latency, ShmemPerfModel::_USER_THREAD);
+ 
+                // Insert the line. Be sure to use SHARED/MODIFIED as appropriate (upgrades are free anyway), we don't want to have to write back clean lines
+-               insertCacheBlock(address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, data_buf, m_core_id, ShmemPerfModel::_USER_THREAD);
++               insertCacheBlock(address, mem_op_type == Core::READ ? CacheState::SHARED : CacheState::MODIFIED, data_buf, m_core_id, ShmemPerfModel::_USER_THREAD, info);
+                if (isPrefetch != Prefetch::NONE)
+                   getCacheBlockInfo(address)->setOption(CacheBlockInfo::PREFETCH);
+ 
+@@ -980,7 +982,7 @@ CacheCntlr::processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t m
+    {
+       MYLOG("Yay, hit!!");
+       Byte data_buf[getCacheBlockSize()];
+-      retrieveCacheBlock(address, data_buf, ShmemPerfModel::_USER_THREAD, first_hit && count);
++      retrieveCacheBlock(address, data_buf, ShmemPerfModel::_USER_THREAD, first_hit && count, info);
+       /* Store completion time so we can detect overlapping accesses */
+       if (modeled && !first_hit)
+       {
+@@ -1250,19 +1252,19 @@ CacheCntlr::operationPermissibleinCache(
+ void
+ CacheCntlr::accessCache(
+       Core::mem_op_t mem_op_type, IntPtr ca_address, UInt32 offset,
+-      Byte* data_buf, UInt32 data_length, bool update_replacement)
++      Byte* data_buf, UInt32 data_length, bool update_replacement, Core::ExtraMemoryRequestInfo *info)
+ {
+    switch (mem_op_type)
+    {
+       case Core::READ:
+       case Core::READ_EX:
+          m_master->m_cache->accessSingleLine(ca_address + offset, Cache::LOAD, data_buf, data_length,
+-                                             getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD), update_replacement);
++                                             getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD), update_replacement, info);
+          break;
+ 
+       case Core::WRITE:
+          m_master->m_cache->accessSingleLine(ca_address + offset, Cache::STORE, data_buf, data_length,
+-                                             getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD), update_replacement);
++                                             getShmemPerfModel()->getElapsedTime(ShmemPerfModel::_USER_THREAD), update_replacement, info);
+          // Write-through cache - Write the next level cache also
+          if (m_cache_writethrough) {
+             LOG_ASSERT_ERROR(m_next_cache_cntlr, "Writethrough enabled on last-level cache !?");
+@@ -1328,10 +1330,10 @@ CacheCntlr::invalidateCacheBlock(IntPtr address)
+ }
+ 
+ void
+-CacheCntlr::retrieveCacheBlock(IntPtr address, Byte* data_buf, ShmemPerfModel::Thread_t thread_num, bool update_replacement)
++CacheCntlr::retrieveCacheBlock(IntPtr address, Byte* data_buf, ShmemPerfModel::Thread_t thread_num, bool update_replacement, Core::ExtraMemoryRequestInfo *info)
+ {
+    __attribute__((unused)) SharedCacheBlockInfo* cache_block_info = (SharedCacheBlockInfo*) m_master->m_cache->accessSingleLine(
+-      address, Cache::LOAD, data_buf, getCacheBlockSize(), getShmemPerfModel()->getElapsedTime(thread_num), update_replacement);
++      address, Cache::LOAD, data_buf, getCacheBlockSize(), getShmemPerfModel()->getElapsedTime(thread_num), update_replacement, info);
+    LOG_ASSERT_ERROR(cache_block_info != NULL, "Expected block to be there but it wasn't");
+ }
+ 
+@@ -1341,7 +1343,7 @@ CacheCntlr::retrieveCacheBlock(IntPtr address, Byte* data_buf, ShmemPerfModel::T
+  *****************************************************************************/
+ 
+ SharedCacheBlockInfo*
+-CacheCntlr::insertCacheBlock(IntPtr address, CacheState::cstate_t cstate, Byte* data_buf, core_id_t requester, ShmemPerfModel::Thread_t thread_num)
++CacheCntlr::insertCacheBlock(IntPtr address, CacheState::cstate_t cstate, Byte* data_buf, core_id_t requester, ShmemPerfModel::Thread_t thread_num, Core::ExtraMemoryRequestInfo *info = NULL)
+ {
+ MYLOG("insertCacheBlock l%d @ %lx as %c (now %c)", m_mem_component, address, CStateString(cstate), CStateString(getCacheState(address)));
+    bool eviction;
+@@ -1353,7 +1355,7 @@ MYLOG("insertCacheBlock l%d @ %lx as %c (now %c)", m_mem_component, address, CSt
+ 
+    m_master->m_cache->insertSingleLine(address, data_buf,
+          &eviction, &evict_address, &evict_block_info, evict_buf,
+-         getShmemPerfModel()->getElapsedTime(thread_num), this);
++         getShmemPerfModel()->getElapsedTime(thread_num), this, info);
+    SharedCacheBlockInfo* cache_block_info = setCacheState(address, cstate);
+ 
+    if (Sim()->getInstrumentationMode() == InstMode::CACHE_ONLY)
+@@ -1548,7 +1550,7 @@ CacheCntlr::updateCacheBlock(IntPtr address, CacheState::cstate_t new_cstate, Tr
+       // We already have the right state, nothing to do except writing our data
+       // in the out_buf if it is passed
+          // someone (presumably the directory interfacing code) is waiting to consume the data
+-      retrieveCacheBlock(address, out_buf, thread_num, false);
++      retrieveCacheBlock(address, out_buf, thread_num, false, NULL);
+       buf_written = true;
+       is_writeback = true;
+       sibling_hit = true;
+@@ -1595,14 +1597,14 @@ CacheCntlr::updateCacheBlock(IntPtr address, CacheState::cstate_t new_cstate, Tr
+          } else if (m_next_cache_cntlr) {
+             /* write straight into the next level cache */
+             Byte data_buf[getCacheBlockSize()];
+-            retrieveCacheBlock(address, data_buf, thread_num, false);
++            retrieveCacheBlock(address, data_buf, thread_num, false, NULL);
+             m_next_cache_cntlr->writeCacheBlock(address, 0, data_buf, getCacheBlockSize(), thread_num);
+             is_writeback = true;
+             sibling_hit = true;
+ 
+          } else if (out_buf) {
+             /* someone (presumably the directory interfacing code) is waiting to consume the data */
+-            retrieveCacheBlock(address, out_buf, thread_num, false);
++            retrieveCacheBlock(address, out_buf, thread_num, false, NULL);
+             buf_written = true;
+             is_writeback = true;
+             sibling_hit = true;
+@@ -1619,7 +1621,7 @@ CacheCntlr::updateCacheBlock(IntPtr address, CacheState::cstate_t new_cstate, Tr
+       {
+          if (out_buf)
+          {
+-            retrieveCacheBlock(address, out_buf, thread_num, false);
++            retrieveCacheBlock(address, out_buf, thread_num, false, NULL);
+             buf_written = true;
+             is_writeback = true;
+             sibling_hit = true;
+@@ -1631,7 +1633,7 @@ CacheCntlr::updateCacheBlock(IntPtr address, CacheState::cstate_t new_cstate, Tr
+       {
+          if (out_buf)
+          {
+-            retrieveCacheBlock(address, out_buf, thread_num, false);
++            retrieveCacheBlock(address, out_buf, thread_num, false, NULL);
+             buf_written = true;
+             is_writeback = true;
+             sibling_hit = true;
+@@ -1690,7 +1692,7 @@ assert(data_length==getCacheBlockSize());
+          memcpy(m_master->m_evicting_buf + offset, data_buf, data_length);
+    } else {
+       __attribute__((unused)) SharedCacheBlockInfo* cache_block_info = (SharedCacheBlockInfo*) m_master->m_cache->accessSingleLine(
+-         address + offset, Cache::STORE, data_buf, data_length, getShmemPerfModel()->getElapsedTime(thread_num), false);
++         address + offset, Cache::STORE, data_buf, data_length, getShmemPerfModel()->getElapsedTime(thread_num), false, NULL);
+       LOG_ASSERT_ERROR(cache_block_info, "writethrough expected a hit at next-level cache but got miss");
+       LOG_ASSERT_ERROR(cache_block_info->getCState() == CacheState::MODIFIED, "Got writeback for non-MODIFIED line");
+    }
+@@ -1852,7 +1854,7 @@ MYLOG("processExRepFromDramDirectory l%d", m_mem_component);
+    IntPtr address = shmem_msg->getAddress();
+    Byte* data_buf = shmem_msg->getDataBuf();
+ 
+-   insertCacheBlock(address, CacheState::EXCLUSIVE, data_buf, requester, ShmemPerfModel::_SIM_THREAD);
++   insertCacheBlock(address, CacheState::EXCLUSIVE, data_buf, requester, ShmemPerfModel::_SIM_THREAD, NULL);
+ MYLOG("processExRepFromDramDirectory l%d end", m_mem_component);
+ }
+ 
+@@ -1867,7 +1869,7 @@ MYLOG("processShRepFromDramDirectory l%d", m_mem_component);
+    Byte* data_buf = shmem_msg->getDataBuf();
+ 
+    // Insert Cache Block in L2 Cache
+-   insertCacheBlock(address, CacheState::SHARED, data_buf, requester, ShmemPerfModel::_SIM_THREAD);
++   insertCacheBlock(address, CacheState::SHARED, data_buf, requester, ShmemPerfModel::_SIM_THREAD, NULL);
+ }
+ 
+ void
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.h b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.h
+index a2fa9cd..c180b31 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.h
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/cache_cntlr.h
+@@ -276,11 +276,11 @@ namespace ParametricDramDirectoryMSI
+          void accessCache(
+                Core::mem_op_t mem_op_type,
+                IntPtr ca_address, UInt32 offset,
+-               Byte* data_buf, UInt32 data_length, bool update_replacement);
++               Byte* data_buf, UInt32 data_length, bool update_replacement, Core::ExtraMemoryRequestInfo *info);
+          bool operationPermissibleinCache(
+                IntPtr address, Core::mem_op_t mem_op_type, CacheBlockInfo **cache_block_info = NULL);
+ 
+-         void copyDataFromNextLevel(Core::mem_op_t mem_op_type, IntPtr address, bool modeled, SubsecondTime t_start);
++         void copyDataFromNextLevel(Core::mem_op_t mem_op_type, IntPtr address, bool modeled, SubsecondTime t_start, Core::ExtraMemoryRequestInfo *info);
+          void trainPrefetcher(IntPtr address, bool cache_hit, bool prefetch_hit, SubsecondTime t_issue);
+          void Prefetch(SubsecondTime t_start);
+          void doPrefetch(IntPtr prefetch_address, SubsecondTime t_start);
+@@ -293,15 +293,15 @@ namespace ParametricDramDirectoryMSI
+ 
+          // Cache data operations
+          void invalidateCacheBlock(IntPtr address);
+-         void retrieveCacheBlock(IntPtr address, Byte* data_buf, ShmemPerfModel::Thread_t thread_num, bool update_replacement);
++         void retrieveCacheBlock(IntPtr address, Byte* data_buf, ShmemPerfModel::Thread_t thread_num, bool update_replacement, Core::ExtraMemoryRequestInfo *info);
+ 
+ 
+-         SharedCacheBlockInfo* insertCacheBlock(IntPtr address, CacheState::cstate_t cstate, Byte* data_buf, core_id_t requester, ShmemPerfModel::Thread_t thread_num);
++         SharedCacheBlockInfo* insertCacheBlock(IntPtr address, CacheState::cstate_t cstate, Byte* data_buf, core_id_t requester, ShmemPerfModel::Thread_t thread_num, Core::ExtraMemoryRequestInfo *info);
+          std::pair<SubsecondTime, bool> updateCacheBlock(IntPtr address, CacheState::cstate_t cstate, Transition::reason_t reason, Byte* out_buf, ShmemPerfModel::Thread_t thread_num);
+          void writeCacheBlock(IntPtr address, UInt32 offset, Byte* data_buf, UInt32 data_length, ShmemPerfModel::Thread_t thread_num);
+ 
+          // Handle Request from previous level cache
+-         HitWhere::where_t processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t mem_op_type, IntPtr address, bool modeled, bool count, Prefetch::prefetch_type_t isPrefetch, SubsecondTime t_issue, bool have_write_lock);
++         HitWhere::where_t processShmemReqFromPrevCache(CacheCntlr* requester, Core::mem_op_t mem_op_type, IntPtr address, bool modeled, bool count, Prefetch::prefetch_type_t isPrefetch, SubsecondTime t_issue, bool have_write_lock, Core::ExtraMemoryRequestInfo *info);
+ 
+          // Process Request from L1 Cache
+          boost::tuple<HitWhere::where_t, SubsecondTime> accessDRAM(Core::mem_op_t mem_op_type, IntPtr address, bool isPrefetch, Byte* data_buf);
+@@ -375,7 +375,8 @@ namespace ParametricDramDirectoryMSI
+                IntPtr ca_address, UInt32 offset,
+                Byte* data_buf, UInt32 data_length,
+                bool modeled,
+-               bool count);
++               bool count,
++               Core::ExtraMemoryRequestInfo *info);
+          void updateHits(Core::mem_op_t mem_op_type, UInt64 hits);
+ 
+          // Notify next level cache of so it can update its sharing set
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.cc b/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.cc
+index d3ec6af..354009f 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.cc
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.cc
+@@ -216,11 +216,10 @@ MemoryManager::MemoryManager(Core* core,
+          core_list_with_tag_directories.push_back(core_id);
+       }
+    }
+-
+    m_tag_directory_home_lookup = new AddressHomeLookup(dram_directory_home_lookup_param, core_list_with_tag_directories, getCacheBlockSize());
+    m_dram_controller_home_lookup = new AddressHomeLookup(dram_directory_home_lookup_param, core_list_with_dram_controllers, getCacheBlockSize());
+ 
+-   // if (m_core->getId() == 0)
++   //if (getCore()->getId() == 0)
+    //   printCoreListWithMemoryControllers(core_list_with_dram_controllers);
+ 
+    if (find(core_list_with_dram_controllers.begin(), core_list_with_dram_controllers.end(), getCore()->getId()) != core_list_with_dram_controllers.end())
+@@ -419,7 +418,8 @@ MemoryManager::coreInitiateMemoryAccess(
+       Core::mem_op_t mem_op_type,
+       IntPtr address, UInt32 offset,
+       Byte* data_buf, UInt32 data_length,
+-      Core::MemModeled modeled)
++      Core::MemModeled modeled,
++      Core::ExtraMemoryRequestInfo *info)
+ {
+    LOG_ASSERT_ERROR(mem_component <= m_last_level_cache,
+       "Error: invalid mem_component (%d) for coreInitiateMemoryAccess", mem_component);
+@@ -435,7 +435,8 @@ MemoryManager::coreInitiateMemoryAccess(
+          address, offset,
+          data_buf, data_length,
+          modeled == Core::MEM_MODELED_NONE || modeled == Core::MEM_MODELED_COUNT ? false : true,
+-         modeled == Core::MEM_MODELED_NONE ? false : true);
++         modeled == Core::MEM_MODELED_NONE ? false : true,
++         info);
+ }
+ 
+ void
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.h b/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.h
+index 3766c54..5741800 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.h
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/memory_manager.h
+@@ -86,7 +86,8 @@ namespace ParametricDramDirectoryMSI
+                Core::mem_op_t mem_op_type,
+                IntPtr address, UInt32 offset,
+                Byte* data_buf, UInt32 data_length,
+-               Core::MemModeled modeled);
++               Core::MemModeled modeled,
++               Core::ExtraMemoryRequestInfo *info);
+ 
+          void handleMsgFromNetwork(NetPacket& packet);
+ 
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/nuca_cache.cc b/common/core/memory_subsystem/parametric_dram_directory_msi/nuca_cache.cc
+index 467d1b5..2b41816 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/nuca_cache.cc
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/nuca_cache.cc
+@@ -29,6 +29,7 @@ NucaCache::NucaCache(MemoryManagerBase* memory_manager, ShmemPerfModel* shmem_pe
+       m_cache_block_size,
+       parameters.replacement_policy,
+       CacheBase::PR_L1_CACHE,
++      1,
+       CacheBase::parseAddressHash(parameters.hash_function),
+       NULL, /* FaultinjectionManager */
+       home_lookup
+@@ -65,7 +66,7 @@ NucaCache::read(IntPtr address, Byte* data_buf, SubsecondTime now, ShmemPerf *pe
+ 
+    if (block_info)
+    {
+-      m_cache->accessSingleLine(address, Cache::LOAD, data_buf, m_cache_block_size, now + latency, true);
++      m_cache->accessSingleLine(address, Cache::LOAD, data_buf, m_cache_block_size, now + latency, true, NULL);
+ 
+       latency += accessDataArray(Cache::LOAD, now + latency, perf);
+       hit_where = HitWhere::NUCA_CACHE;
+@@ -90,7 +91,7 @@ NucaCache::write(IntPtr address, Byte* data_buf, bool& eviction, IntPtr& evict_a
+    if (block_info)
+    {
+       block_info->setCState(CacheState::MODIFIED);
+-      m_cache->accessSingleLine(address, Cache::STORE, data_buf, m_cache_block_size, now + latency, true);
++      m_cache->accessSingleLine(address, Cache::STORE, data_buf, m_cache_block_size, now + latency, true, NULL);
+ 
+       latency += accessDataArray(Cache::STORE, now + latency, NULL);
+       hit_where = HitWhere::NUCA_CACHE;
+diff --git a/common/core/memory_subsystem/parametric_dram_directory_msi/tlb.cc b/common/core/memory_subsystem/parametric_dram_directory_msi/tlb.cc
+index 1cb228c..7cd6d86 100644
+--- a/common/core/memory_subsystem/parametric_dram_directory_msi/tlb.cc
++++ b/common/core/memory_subsystem/parametric_dram_directory_msi/tlb.cc
+@@ -7,7 +7,7 @@ namespace ParametricDramDirectoryMSI
+ TLB::TLB(String name, String cfgname, core_id_t core_id, UInt32 num_entries, UInt32 associativity, TLB *next_level)
+    : m_size(num_entries)
+    , m_associativity(associativity)
+-   , m_cache(name + "_cache", cfgname, core_id, num_entries / associativity, associativity, SIM_PAGE_SIZE, "lru", CacheBase::PR_L1_CACHE)
++   , m_cache(name + "_cache", cfgname, core_id, num_entries / associativity, associativity, SIM_PAGE_SIZE, "lru", CacheBase::PR_L1_CACHE, 1)
+    , m_next_level(next_level)
+    , m_access(0)
+    , m_miss(0)
+@@ -21,7 +21,7 @@ TLB::TLB(String name, String cfgname, core_id_t core_id, UInt32 num_entries, UIn
+ bool
+ TLB::lookup(IntPtr address, SubsecondTime now, bool allocate_on_miss)
+ {
+-   bool hit = m_cache.accessSingleLine(address, Cache::LOAD, NULL, 0, now, true);
++   bool hit = m_cache.accessSingleLine(address, Cache::LOAD, NULL, 0, now, true, NULL);
+ 
+    m_access++;
+ 
+@@ -49,7 +49,7 @@ TLB::allocate(IntPtr address, SubsecondTime now)
+    bool eviction;
+    IntPtr evict_addr;
+    CacheBlockInfo evict_block_info;
+-   m_cache.insertSingleLine(address, NULL, &eviction, &evict_addr, &evict_block_info, NULL, now);
++   m_cache.insertSingleLine(address, NULL, &eviction, &evict_addr, &evict_block_info, NULL, now, NULL);
+ 
+    // Use next level as a victim cache
+    if (eviction && m_next_level)
+diff --git a/config/cachepartiton.cfg b/config/cachepartiton.cfg
+new file mode 100644
+index 0000000..5a15625
+--- /dev/null
++++ b/config/cachepartiton.cfg
+@@ -0,0 +1,185 @@
++
++[general]
++enable_icache_modeling = true
++
++## Core
++
++[perf_model/core]
++frequency = 3
++logical_cpus = 1
++type = rob
++core_model = nehalem
++
++[perf_model/core/interval_timer]
++window_size = 128
++dispatch_width = 4
++issue_memops_at_dispatch = true
++
++[perf_model/core/rob_timer]
++outstanding_loads = 48
++outstanding_stores = 32
++commit_width = 4              # Commit bandwidth (instructions per cycle), per SMT thread
++rs_entries = 36
++
++in_order = false
++issue_contention = true
++mlp_histogram = false           # Collect histogram of memory-level parallelism (slow)
++issue_memops_at_issue = true    # Issue memops to the memory hierarchy at issue time (false = before dispatch)
++store_to_load_forwarding = true # Forward data to loads from stores that are still in the store buffer
++address_disambiguation = true   # Allow loads to bypass preceding stores with an unknown address
++rob_repartition = false
++
++
++## Network
++
++[network]
++system_model = "emesh_hop_by_hop"
++memory_model_1 = "emesh_hop_by_hop"
++collect_traffic_matrix = "true"
++
++[network/bus]
++ignore_local_traffic = "true"
++
++[network/emesh_hop_by_hop]
++concentration = 1
++dimensions = 1
++hop_latency = 2
++link_bandwidth = 64
++size = ""
++wrap_around = "true"
++
++[network/emesh_hop_by_hop/broadcast_tree]
++enabled = "false"
++
++[network/emesh_hop_by_hop/queue_model]
++enabled = "true"
++type = "history_list"
++
++## Caches
++
++[perf_model/l1_icache]
++address_hash = "mask"
++shared_cores = 1
++cache_size = 32
++associativity = 4
++outstanding_misses = 8
++replacement_policy = "lru"
++perf_model_type = parallel
++writethrough = 0
++dvfs_domain = core
++tags_access_time = 1
++data_access_time = 1
++cache_block_size = 64
++perfect = "false"
++
++[perf_model/l1_dcache]
++address_hash = "mask"
++shared_cores = 1
++cache_size = 32
++associativity = 8
++outstanding_misses = 8
++replacement_policy = "lru"
++perf_model_type = parallel
++writethrough = 0
++dvfs_domain = core
++tags_access_time = 1
++data_access_time = 2
++cache_block_size = 64
++perfect = "false"
++
++[perf_model/l2_cache]
++address_hash = "mask"
++shared_cores = 1
++cache_size = 128
++associativity = 8
++outstanding_misses = 12
++replacement_policy = "lru"
++perf_model_type = parallel
++writeback_time = 25
++writethrough = 0
++dvfs_domain = core
++tags_access_time = 1
++data_access_time = 2
++cache_block_size = 64
++perfect = "false"
++
++[perf_model/l3_cache]
++address_hash = "mask"
++shared_cores = 32
++replacement_policy = "lru"
++cache_size = 4096
++associativity = 32
++outstanding_misses = 24
++perf_model_type = parallel
++writeback_time = 50
++tags_access_time = 4
++data_access_time = 19
++perfect = "false"
++writethrough = 0
++dvfs_domain = core
++prefetcher = none
++cache_block_size = 64
++
++prism_period = 10000
++prism_empty_insert = false # Prioritize filling empty blocks before replacing filled blocks
++
++pipp_min_insert = 0   # Minimum insertion offset from LRU position is PIPP
++
++[perf_model/l3_cache/st]
++sampling = "full"
++sample_sets = 64                # Sets per core (Original paper uses 32 on a 1M 16-way (1024 set) cache, we got 2048 sets)
++
++[perf_model/l3_cache/umon]
++reallocate_period = 5000000     # In cycles
++enable_stream_detection = true
++stream_miss_count_limit = 0     # Paper uses 4095 for 32 sets
++stream_miss_fraction_limit = 0.25
++
++[perf_model/l3_cache/drrip]
++bits=3
++
++[perf_model/cache]
++levels = 3
++
++## TLBs 
++
++[perf_model/tlb]
++penalty = 30          # Page walk penalty in cycles
++
++[perf_model/itlb]
++size = 128            # Number of I-TLB entries
++associativity = 4     # I-TLB associativity
++
++[perf_model/dtlb]
++size = 64             # Number of D-TLB entries
++associativity = 4     # D-TLB associativity
++
++[perf_model/stlb]
++size = 1024           # Number of second-level TLB entries
++associativity = 8     # S-TLB associativity
++
++## DRAM
++
++[perf_model/dram/cache]
++enabled = false
++
++[perf_model/dram/queue_model]
++enabled = "true"
++type = "windowed_mg1"
++
++[queue_model/windowed_mg1]
++window_size = 10000
++
++[perf_model/dram]
++num_controllers = 1
++latency = 45
++per_controller_bandwidth = 12.8
++direct_access = true
++
++[network]
++memory_model_1 = bus
++memory_model_2 = bus
++
++[network/bus]
++bandwidth = 25.6 # in GB/s. Actually, it's 12.8 GB/s per direction and per connected chip pair
++ignore_local_traffic = true # Memory controllers are on-chip, so traffic from core0 to dram0 does not use the QPI links
+\ No newline at end of file
+diff --git a/scripts/appeventsstats.py b/scripts/appeventsstats.py
+new file mode 100644
+index 0000000..9556c6c
+--- /dev/null
++++ b/scripts/appeventsstats.py
+@@ -0,0 +1,39 @@
++import sim
++
++class AppEventsStats:
++
++  done = []
++  period = 0
++
++  def hook_application_start(self, appid):
++  	if appid in self.done:
++  		print '[BENCHMARK]', appid, 'restart'
++  	else:
++  		print '[BENCHMARK]', appid, 'start'
++
++  def hook_application_exit(self, appid):
++    if appid not in self.done:
++    	print '[BENCHMARK]', appid, 'writing stats'    	
++    	sim.stats.write('benchmark-%d-done' % appid)
++    	self.done.append(appid)
++
++
++  def setup(self, args):    
++
++    args = args.split(':')
++
++    if args[0] == 'periodic':
++      self.period = (int) (args[1] if len(args) == 2 else 1000000000000)
++
++      print '[PERIODIC] Periodic stats enabled (period %d)' % self.period
++      sim.util.Every(self.period, self.periodic, roi_only = True)
++
++  last_period = 0
++
++  def periodic(self, time, delta):
++    print '[PERIODIC] Writing periodic stats t=%d' % time
++    sim.stats.write('periodic-%d' % time)
++
++
++
++sim.util.register(AppEventsStats())
+\ No newline at end of file
