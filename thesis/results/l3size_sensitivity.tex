@@ -23,19 +23,9 @@ Also, we expect PIPP, which already has shown bad performance compared to LRU, t
 
 Before showing the results of this experiment, we will briefly discuss a special case that arises in this experiment.
 When we set the L3 cache to 0.5MB, we have a situation where the sum of the L2 caches equals the L3 cache.
-In this situation, with inclusive caches, it might be reasonable to think that no algorithm will outperform LRU.
-As we will demonstrate, this is not the case.
-In a simplified situation with two core, core 0 has a streaming access pattern and core 1 has a recency friendly pattern that fits in the L2 cache.
-The L3 size is equal to the sum of L2s, and all caches are managed by LRU.
-Consider the situation when core 0 has filled its L2 cache and core 1 has all its data in the private caches.
-When execution continues core 0 to load new data, evicting old data from the L2 cache.
-The data evicted will still be present in the L3 cache, inclusive caches only require that the data present in one cache level must be present in all lower levels.
-Core 1 will never access the L3 cache because all data is present in the private caches. 
-Hence the L3 cache blocks owned by core 1 will start to age, and they will eventually be evicted to fit new data loaded by core 0.
-When this happens, the blocks are also evicted from core 1's private caches, to perserve the inclusive property.
-Core 1 will start to miss, and will have to access main memory.
-A perfect replacement scheme would shield core 1's blocks in the L3, causing an increase in performance for that core while not affecting the streaming core.
-Because of this we conclude that a 0.5MB cache is valid, and we might observe an improvement over LRU.
+This is an extreme case in a inclusive cache architecture because when the L2 caches are fully utilized there is no spare room in the L3 cache.
+In a real processor, it would not make sense to have an L3 of this size.
+We still experiment with this configuration, as interesting results may arise in situations where the L2 caches are not fully utilized, such as in a mixed workload with streaming and recency-friendly applications.
 
 Figure~\ref{fig:results:l3} show the speedup of all algorithms normalized to LRU for varying shared cache size.
 DRRIP is the algorithm that shows least variation across the various shared cache sizes.
