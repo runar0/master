@@ -8,7 +8,7 @@ As in previous experiments, we set the L3 size depending on the workload size.
 In this experiment, we only utilize the three random workload groups.
 We do this to be able to aggregate and compare 4-core results to 8- and 16-core results.
 We omit the 4-core workloads with specific traits because they would bias the overall 4-core averages.
-Also, we have included plots of the STP results, this because HMS and MPKI results did not add any additional insight in this experiment.
+Also, we have only included plots of the STP results, this because HMS and MPKI results did not add any additional insight in this experiment.
 
 Figure~\ref{fig:results:l2:access} shows the average number of L3 accesses for random workloads with varying L2 cache size.
 As can be seen from the graph, by increasing the size of the L2 cache we are decreasing the number of accesses to the L3 cache.
@@ -70,7 +70,7 @@ This effect does not seem to have a noticeable impact on results for the 4- and 
 
 DRRIP as already covered outperforms LRU, Figure~\ref{fig:results:l2:drrip} confirms this.
 The figure also shows that increasing the L2 size causes a reduction in DRRIP performance.
-We know that DRRIP uses a step-wise promotion policy where each successive access promoted a block one position.
+We know that DRRIP uses a step-wise promotion policy where each successive access promotes a block one position.
 Naturally less information about successive accesses will be available to the shared level as filtering in the private levels increase.
 It is consequently not unexpected that DRRIP suffers from increased filtering by private cache levels.
 From the figure, we note that DRRIP seems to be slightly less sensitive to small changes in L2 size with increasing core count, but in all cases a 1024kB L2 causes DRRIP performance to mimic LRU performance.

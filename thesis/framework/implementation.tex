@@ -9,8 +9,8 @@
 \end{figure}
 
 Figure~\ref{fig:framework:implementation:core_memory} shows an overview of the classes involved in the Sniper memory simulation.
-The core class simulated the execution of instructions; this also includes simulating memory accesses to get and store instructions and data.
-Each core as a memory manager instance which again, in our case, has four cache controllers.
+The core class simulate the execution of instructions; this also includes simulating memory accesses to get and store instructions and data.
+Each core has a memory manager instance which again, in our case, has four cache controllers.
 A cache controller represents a single cache.
 For shared caches, the cache controller instance in all but core 0 is a proxy, any calls to the proxy cache controllers is directed to the main controller at core 0.
 
@@ -39,7 +39,6 @@ This data structure allows us to pass arbitrary data from the core to the cache 
 \end{figure}
 
 Of the schemes presented in Chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; LRU, TADIP-F, DRRIP-3, PriSM, UCP, and PIPP.
-
 Figure~\ref{fig:framework:implementation:algorithms} shows how the five implemented algorithms relate to each other, and the base CacheSet class.
 LRU, which is included in Sniper, and the two set dueling schemes TADIP and DRRIP, are all implemented as direct subclasses of the CacheSet class.
 Based on the CacheSet class we have also implemented a cache with support for ATDs, also known as shadow tags.

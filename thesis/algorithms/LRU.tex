@@ -20,13 +20,14 @@ In a hardware implementation, the blocks are not stored in a sorted fashion, but
 The replacement policy of LRU is to evict the least recently used cache block, the one on the bottom of the LRU stack.
 The insertion and promotion policy of LRU is the same; a inserted or accessed block is always moved to the MRU position unless it is already there.
 
-Figure~\ref{fig:algorithms:lru_example} shows how a 4-way cache set managed by LRU replacement handles three requests. 
+Figure~\ref{fig:algorithms:lru_example} shows how a 4-way cache set managed by LRU replacement handles four requests. 
 Initially, the set contains four blocks; A, B, C and D. 
 A is in the MRU position while D is in the LRU position.
 The first request is for block C; this is a hit, and that causes the block to move to the MRU position, pushing both block A and B one step closer to the LRU position.
 The second request is made to block E; this block is not present in the cache.
 The LRU algorithm evicts block D at the LRU position and then places block E at the MRU position.
-Finally, another request is made to block E. Nothing changes since the block already is at the MRU position.
+Then a request for D follows, this is a miss and B is evited.
+Finally, another request is made to block D. Nothing changes since the block already is at the MRU position.
 
 One important result of the LRU insertion, promotion, and replacement policies is that an LRU managed cache satisfies the \textit{stack property}.
 Given a 4-way LRU managed cache with counters that count the number of hits in each way; then we know that the number of misses in a 3-way LRU managed cache equals the misses in the 4-way cache plus the number of hits in the 4th cache way.

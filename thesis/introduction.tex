@@ -17,7 +17,7 @@ By the mid-2000s, processor cores had become so complex and were running at such
 The power wall entails that manufacturers were unable to continue increasing the frequency and the transistor count of each core, without also attaching high-performance cooling systems to counter the increased power usage and hence increased heat generation.
 Systems like water or even nitrogen cooling were needed to continue the single core performance increase~\cite{Sutter2005}; these systems are not practical for personal computers.
 
-Figure~\ref{fig:introduction:memgap} shows the single core performance development for processors from 1980 to 2010.
+Figure~\ref{fig:introduction:memgap} shows the single core performance development from 1980 to 2010.
 The effect of the power wall is clearly visible from 2005 and out where we observe no improvement in single core performance.
 We also observe that in the five years leading to the power wall, the yearly performance improvement decreased.
 This decrease is observed because improving single core performance became harder, as more advanced techniques for ILP exploiting where needed, ultimately resulting in the power wall.
@@ -51,7 +51,8 @@ The figure shows that memory performance has had a constant development over the
 The processor-memory gap made itself visible in 1986 when processor performance started increasing by about 52\% each year.
 If not handled, the increasing processor-memory gap would become the limiting factor in processor performance, as processors are dependent on the memory system providing both code and data.
 In response to the growing gap small and fast memory structures known as caches were introduced.
-Caches are produced using different techniques than main memory, proving faster access; this comes at the cost of higher production cost and power usage.
+Caches are produced using different techniques than main memory, proving faster access. 
+This comes at the cost of higher production cost and power usage.
 Today, most single-core processors and CMPs have one or more caches integrated on the processor die.
 The caches filter all memory request made by the processing core.
 If one of the caches has a copy of the requested data, it will stop the memory request from going to main memory and respond with the correct data.
@@ -94,7 +95,7 @@ Figure~\ref{fig:introduction:cache} shows both a direct mapped and a 2-way cache
 The figure does not show a fully associative cache organization but given the 2-way cache organization a fully associative cache is created by duplicating the block scan hardware until each column has only one row.
 In this thesis, we will show that increasing the number of ways can improve performance of a cache via increased hit rate.
 However, the access time and complexity of a cache also increases as the number of ways increases.
-As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because of the access latency must be short to prevent the CPU stalling while it waits for data. 
+As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
 Alternative cache organizations have been proposed, such as zcache~\cite{Sanchez2010}, that allows for higher associativity while providing access times comparable to traditional caches.
 However, these techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
@@ -106,7 +107,7 @@ For a set-associative or fully associative cache, there are multiple valid stora
 An algorithm known as the cache management algorithm decides which of the valid blocks are used to store the value.
 If the block that was chosen by the algorithm already contains valid data the cache removes or evicts the existing data.
 
-\begin{figure}[ht]
+\begin{figure}[th]
 \centering
 \includegraphics[scale=.65]{figures/processor_model/processor_model}
 \caption{Generic Chip Multiprocessor Architecture.}
@@ -194,7 +195,7 @@ Based on the problem description and discussions with the thesis advisors, we li
 \begin{description}
     \item[O1] Implement additional algorithms and evaluate them.
     \item[O2] Compare performance of the implemented algorithms against each other.
-    \item[O3] Investigate algorithm sensitivity to changes in L2 cache, L3 cache, and/or memory bus bandwidth.
+    \item[O3] Investigate algorithm sensitivity to changes in L2 cache size, L3 cache size, and/or memory bus bandwidth.
 \end{description}
 
 \section{Contributions}

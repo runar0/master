@@ -20,7 +20,7 @@ In addition to the ATDs, there is a monitor circuit that uses the access counter
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
-On of them is a Lookahead Algorithm suitable when there are more than two cores sharing a cache.
+One of them is the Lookahead Algorithm suitable when there are more than two cores sharing a cache.
 The Lookahead Algorithm assigns ways based on an increase in marginal utility; it is given in Algorithm~\ref{alg:algorithms:ucp}.
 While there are more ways to distribute, the algorithm calculates the maximum marginal utility achievable by each core. 
 The core with the highest value wins and is assigned as many ways as needed to achieve the increase.
@@ -36,7 +36,7 @@ By doing this, the UMON will keep historical data for future decisions while pri
 Because the lookahead algorithm is greedy, finding a case where it makes a non-optimal choice is rather easy.
 Consider a case with two cores, and two ways left to assign.
 By assigning one way to core 0 it will receive 10 more hits, 2 ways offers no improvement.
-Assigning one way to core 1 causes no additional hits, but if given two way it will receive 18 hits.
+Assigning one way to core 1 causes no additional hits, but if given two ways it will receive 18 hits.
 In this case, the marginal utility is 10 for core 0 and 9 for core 1.
 The algorithm assigns one way to core 0, and in the next iteration both have zero utility and it does not matter which is assigned the last way.
 In this case, the algorithm saved 10 misses while it could have saved 18.

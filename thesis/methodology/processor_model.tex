@@ -16,11 +16,11 @@
                                     & 128 rob entries, 4 inst. commit width, \\
                                     & 3 Int. ALU, 1 FP MUL/DIV, 1 FP ADD, \\
                                     & 2 Int. SSE ALU, 1 Int. SSE MUL \\
-\bf{Private L1 inst.}               & 32kB, 64B line-size, 4-way, 8 mshrs, LRU \\
-\bf{Private L1 data}                & 32kB, 64B line-size, 8-way, 8 mshrs, LRU \\
-\bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B line-size, 8-way, \\
+\bf{Private L1 inst.}               & 32kB, 64B block-size, 4-way, 8 mshrs, LRU \\
+\bf{Private L1 data}                & 32kB, 64B block-size, 8-way, 8 mshrs, LRU \\
+\bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B block-size, 8-way, \\
                                     & 12 MSHRs, LRU      \\
-\bf{Shared L3 cache}                & 4/8/16/32MB, 64B line-size, 24 mshrs, \\
+\bf{Shared L3 cache}                & 4/8/16/32MB, 64B block-size, 24 mshrs, \\
                                     & 32-way, varying replacement algorithm         \\
 \bf{Memory controller}              & 6.4GB/s, 100ns access latency         \\
 \bf{Clock Skew}                     & 100 cycle barrier synchronization        \\
@@ -91,8 +91,8 @@ When choosing a first level cache size, we must consider that first level caches
 Having a hit latency of more than 2-3 cycles in a first level cache will be a limiting factor in the overall processor design.
 We can observe that first level cache sizes have remained constant between Intel's Nehalem~\cite{Thomadakis2011} and the newer Haswell~\cite{Jain2013} architectures.
 We have for this reason opted to simulate only a single size configuration at this cache level.
-Both the first level caches have a size of 32kB, divided into sets of 4 and 8 lines for the instruction and data caches respectively. 
-Both caches have 64-bytes long cache lines.
+Both the first level caches have a size of 32kB, divided into sets of 4 and 8 blocks for the instruction and data caches respectively. 
+Both caches have 64-bytes long cache blocks.
 Table~\ref{tbl:processor_model:l1} summarizes these values as well as the best bank count and access latency for the tag directory and data as estimated by CACTI. 
 We define the best bank count to be the one that provides lowest access latency for data and tag directory measured in cycles.
 
@@ -121,7 +121,7 @@ For example, a tag access latency of 0.16ns equals one cycle while a data access
 \end{table}
 
 For the unified second level cache we have modeled four different sizes; 128kB, 256kB, 512kB, and 1024kB. 
-In all configurations, there are 8 lines in each set and each line is 64-byte long.
+In all configurations, there are 8 blocks in each set and each block is 64-byte long.
 Using CACTI, we have found the best number of banks per size configuration and the corresponding access latency.
 Table~\ref{tbl:processor_model:l2} summarises these values. 
 Again we have converted access times to cycles assuming a 0.33ns period.
@@ -149,9 +149,9 @@ As expected we observe an increased access latency as the cache size increases.
 
 Like the previous level we have three different size configurations for the L3 cache; 4MB, 8MB, and 16MB.
 Unlike the previous two cache levels, that all use a standard LRU replacement policy, we will vary the replacement policy of the third level.
-Many of the algorithms we are experimenting with in this work resemble some form of way-partitioning by assigning some ways (or cache lines) per cache set to each core.
-For this reason, the third level cache has 32 cache lines per cache set, in contrast to the 16 cache lines per set in the original Nehalem architecture.
+Many of the algorithms we are experimenting with in this work resemble some form of way-partitioning by assigning some ways (or cache blocks) per cache set to each core.
+For this reason, the third level cache has 32 cache blocks per cache set, in contrast to the 16 cache blocks per set in the original Nehalem architecture.
 Giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.
-The line size is set to be 64-bytes as in the previous level.
+The block size is set to be 64-bytes as in the previous levels.
 Again using CACTI we find the best bank count and the corresponding access latencies.
 Table~\ref{tbl:processor_model:l3} summarises the cache properties for the various cache sizes.

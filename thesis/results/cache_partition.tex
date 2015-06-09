@@ -1,5 +1,5 @@
 
-\section{Cache Partition}
+\section{Cache Management Evaluation}
 \label{sec:results:cache_partition}
 
 This section describes an experiment that will compare the various implemented cache partitioning algorithms both against LRU and against each other.
@@ -107,10 +107,10 @@ Exploring the result from each of these groups individually is useful as it will
 
 Bandwidth bound workloads contain benchmarks that do not benefit from increased cache space.
 These are benchmarks with mainly streaming access patterns. 
-As expected the results support that none of the algorithms can significantly improve performance compared to LRU.
+As expected the results show that none of the algorithms can significantly improve performance compared to LRU.
 As seen in Figure~\ref{fig:results:base:4-avg:mpki} UCP causes 3\% more misses than LRU, and in return increases STP by 4.8\% compared to LRU.
 We expect that even our bandwidth bound benchmarks will have phases with memory re-references, which means that their utility will increase.
-Based on our results, UCP seems to detect these phases and prioritize benchmarks correctly during these phases.
+Based on our results, UCP seems to detect these phases and prioritize benchmarks correctly.
 While PIPP in theory also should be able to detect such changes, our result shows it does not.
 A possible explanation to this is that PIPP uses both utility and streaming flags.
 While an application may periodically have increased utility causing UCP to prioritize it, PIPP might still consider it as streaming due to a high miss-fraction, if this is the case, PIPP will ignore the increased utility.
