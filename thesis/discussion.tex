@@ -37,8 +37,8 @@ In the context of this thesis, there are two effects of having multiple
 simulation threads that could bias our results.
 The problem relates to the ordering of memory events.
 With multiple simulation threads, the only guarantee the simulator gives regarding the ordering of memory events from different cores are that events from different intervals execute in the correct order.
-The order of events from different cores within the same interval depends on the os scheduler.
-In the worst case the os scheduler may schedule all simulation threads serially, this will cause the ordering of memory events to be by core id and not by time.
+The order of events from different cores within the same interval depends on the OS scheduler.
+In the worst case the OS scheduler may schedule all simulation threads serially, this will cause the ordering of memory events to be by core id and not by time.
 All the implemented cache partition algorithms assume that memory requests are in order, and this inaccuracy will break this assumption.
 In addition to the effects on the cache partitioning, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the author's autumn project~\cite{Olsen2014}.
 
