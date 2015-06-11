@@ -19,7 +19,7 @@ show: build
 	$(VIEWER) $(PDF)
 
 clean:
-	rm -f *log *aux *lof *lot *toc
+	rm -f *log *aux *lof *lot *toc $(PDF)
 
 purge: clean
 	rm -f $(PDF) $(FPDF)
