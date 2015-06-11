@@ -27,7 +27,7 @@ Etter at produsenter møtte grensen for enkjerneprosessorytelse på starten av 2
 Flerkjerneprosessorer deler vanligvis noe hurtigbuffer mellom kjernene, og algoritmer som kontrolerer kjernenes tilgang til det delte området har blitt et viktig forskningsområdet.
 Flere forskere har presenter algoritmer som skal kunne øke ytelsen til flerkjerneprosessorer ved å endre algoritmen som styrer hurtigbufferet.
 I denne avhandlingen presenterer og evaluerer vi flere nylig publiserte og viktige arbeid som omhandler kontroll av delt hurtigbuffer.
-Vi presenterer et simuleringssystem som vi bruker til å evaluerer flere algorithmer, basert på simuleringssystemet Sniper.
+Vi presenterer et simuleringssystem som vi bruker til å evaluerer flere algoritmer, basert på simuleringssystemet Sniper.
 Flere av de presenterte algoritmene er implementert; TADIP, DRRIP, UCP, PIPP, og PriSM.
 De implementerte algoritmene er evaluert mot den ofte brukte algoritmen Least Recently Used (LRU) og hverandre.
 I tillegg utfører vi fem sensitivitetseksperimenter, hvor vi utforsker algoritmenes sensitivitet til endringer i den simulerte arkitekturen.
@@ -36,6 +36,6 @@ Totalt bruker vi data fra over 9000 simuleringer i vår evaluering.
 Våre resultat viser at alle de implementerter algoritmene for det meste yter like bra eller bedre enn LRU på 4-kjerne arkitekturer.
 For 8- og 16-kjerne arkitekturer yter noen algoritmer, spesielt PIPP, dårligere enn LRU.
 Vi viser også at UCP, den eldste av de implementerte alternativet til LRU, gir best resultat på alle våre testprogrammer med gjennomsnittlig ytelsesøkelse på 5\%.
-Vi viser også at UCP ytelsen øker til over 20\% når vi begrenser tilgjengelig cache or minne resursser.
+Vi viser også at UCP ytelsen øker til over 20\% når vi begrenser tilgjengelig hurtigbuffer og minne resursser.
 
 \clearpage

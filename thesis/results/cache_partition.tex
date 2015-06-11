@@ -7,10 +7,9 @@ After completion, a benchmark will be restarted unless it is the last benchmark 
 We generate reference statistics for each benchmark by executing it in private mode.
 In private mode, we use the same system as in this experiment but with only a single core, the L2 and L3 sizes are set equal to the 4-core workloads; 128kB L2 and 4MB L3.
 
-This chapter is divided into three sections.
+This chapter is divided into two sections.
 In the first section, we present average algorithm performance by core count.
-Next, we then take a closer look at the results of the five 4-core workload groups.
-The final section covers the performance of cabw workloads.
+We then take a closer look at the results of the five 4-core workload groups.
 
 \section{Overall Results}
 \label{sec:results:cache_partition}
@@ -140,8 +139,6 @@ One interesting fact to note is that both versions of PIPP and UCP are equally g
 This result points to PIPP being able to provide speedups of individual benchmarks that are good enough to raise the average while still performing as good as LRU measured in STP.
 Most likely this indicates that applications marked as streaming are performing badly while those shielded are performing so good their performance increase raises the average.
 
-
-\section{Cache- And Bandwidth-Bound Workload Results}
 \begin{figure}[th]
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
