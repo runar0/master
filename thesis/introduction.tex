@@ -22,7 +22,7 @@ The effect of the power wall is clearly visible from 2005 and out where we obser
 We also observe that in the five years leading to the power wall, the yearly performance improvement decreased.
 This decrease is observed because improving single core performance became harder, as more advanced techniques for \gls{ilp} exploiting where needed, ultimately resulting in the power wall.
 
-\begin{figure}[ht]
+\begin{figure}[th]
 \centering
 \includegraphics[width=.8\textwidth]{figures/introduction/memory-gap}
 \caption[Processor-Memory Gap]{Comparison of (single core) processor and memory performance from 1980 to 2010 based on data collected by J. Hennessy and D. Patterson~\cite{hennessy2012}.}
@@ -138,7 +138,7 @@ Figure~\ref{fig:algorithms:rf_pattern} illustrates an example memory access patt
 Because the pattern repeats and $k$ is less than the number of ways we know that the least recently used block will always be referenced before being evicted, if we assume a recency-assumption based algorithm.
 Hence, the algorithm will be able to provide hits for every access after the initial repetition, and the pattern is recency-friendly.
 
-\begin{figure}[ht]
+\begin{figure}[th]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})^N$
 \caption[Recency-friendly access pattern.]{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
@@ -150,7 +150,7 @@ A trashing memory pattern is one that repeats in a similar manner to a recency-f
 Figure~\ref{fig:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of $k$.
 Under a recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
 A better management algorithm for these patterns might keep some of the working set in the cache, providing hits for parts of the access pattern.
-\begin{figure}[ht]
+\begin{figure}[th]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})^N$
 \caption[Trashing memory access pattern.]{Trashing memory access pattern (k $>$ number of ways, N $>$ 1).}
@@ -162,7 +162,7 @@ A streaming memory access pattern is one that has no re-references, or where the
 Figure~\ref{fig:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
 No caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
 
-\begin{figure}[ht]
+\begin{figure}[th]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})$
 \caption[Streaming memory access pattern]{Streaming memory access pattern (k = $\infty$).}
