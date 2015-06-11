@@ -17,18 +17,18 @@
 \end{figure}
 
 Dynamic Insertion Policy (DIP)~\cite{Qureshi2007} was originally proposed in 2007.
-The DIP algorithm views the cache set as a stack, as in gls{lru}.
-Replacement and promotion policies are equal to gls{lru}, DIP evicts the block at the gls{lru} position, and following a cache hit a block moves to the MRU position.
-In contrast to gls{lru}, DIP is a combination of two insertion policies, the standard gls{lru} insertion policy (LIP) and Binominal Insertion Policy (BIP).
+The DIP algorithm views the cache set as a stack, as in \gls{lru}.
+Replacement and promotion policies are equal to \gls{lru}, DIP evicts the block at the \gls{lru} position, and following a cache hit a block moves to the MRU position.
+In contrast to \gls{lru}, DIP is a combination of two insertion policies, the standard \gls{lru} insertion policy (LIP) and Binominal Insertion Policy (BIP).
 LIP inserts new blocks at the MRU position.
-BIP inserts new blocks either at the gls{lru} position or with a small probability, $p = \frac{1}{32}$, at the MRU position. 
+BIP inserts new blocks either at the \gls{lru} position or with a small probability, $p = \frac{1}{32}$, at the MRU position. 
 The overall DIP algorithm switches between the two insertion policies by always using the one that is expected to cause fewer cache misses.
 
-By mostly inserting at the gls{lru} position the BIP insertion policy can theoretically handle trashing memory access patterns.
-When most new blocks enter at the gls{lru} position, the upper parts of the gls{lru} stack can contain blocks that have been re-referenced.
-In a trashing access pattern, this results in part of the working set residing in the upper part of the stack while the rest are inserted at the gls{lru} position and evicted at the next miss.
+By mostly inserting at the \gls{lru} position the BIP insertion policy can theoretically handle trashing memory access patterns.
+When most new blocks enter at the \gls{lru} position, the upper parts of the \gls{lru} stack can contain blocks that have been re-referenced.
+In a trashing access pattern, this results in part of the working set residing in the upper part of the stack while the rest are inserted at the \gls{lru} position and evicted at the next miss.
 By sometimes inserting at the MRU position BIP will give blocks not referenced by the next miss a chance to stay in the cache. 
-Inserting at the MRU position will also force stale cache blocks in the upper part of the stack to move towards the gls{lru} position.
+Inserting at the MRU position will also force stale cache blocks in the upper part of the stack to move towards the \gls{lru} position.
 
 The authors of DIP present several methods to detect the best of the two replacement algorithms, one of them is set-dueling.
 Set-dueling is implemented by having some sets of the cache always use BIP and some always use LIP.
@@ -54,12 +54,12 @@ On their benchmarks, they measured an average decrease in misses by 22.3\% using
 Figure~\ref{fig:algorithms:bip_example} shows an example cache set managed by DIP.
 In the example, we assume BIP insertion with no insertions at the MRU position.
 In the initial state, there are four blocks; A, B, C, and D.
-A is at the MRU position and D is at the gls{lru} position.
-The first request is for C; this is a hit, and C is promoted to the MRU position, A and B are pushed towards the gls{lru} position.
+A is at the MRU position and D is at the \gls{lru} position.
+The first request is for C; this is a hit, and C is promoted to the MRU position, A and B are pushed towards the \gls{lru} position.
 Then follows a request for E, which is a miss.
-DIP evicts D at the gls{lru} position, and E is inserted in its place.
-Then follows two requests to D; the first request is a miss causing E to be evicted and D to be inserted at the gls{lru} position.
-The second request is a hit and promotes D to MRU, pushing all other blocks one step towards the gls{lru} position.
+DIP evicts D at the \gls{lru} position, and E is inserted in its place.
+Then follows two requests to D; the first request is a miss causing E to be evicted and D to be inserted at the \gls{lru} position.
+The second request is a hit and promotes D to MRU, pushing all other blocks one step towards the \gls{lru} position.
 
 \begin{figure}[ht]
     \centering

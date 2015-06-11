@@ -16,10 +16,10 @@
                                     & 128 rob entries, 4 inst. commit width, \\
                                     & 3 Int. ALU, 1 FP MUL/DIV, 1 FP ADD, \\
                                     & 2 Int. SSE ALU, 1 Int. SSE MUL \\
-\bf{Private L1 inst.}               & 32kB, 64B block-size, 4-way, 8 mshrs, gls{lru} \\
-\bf{Private L1 data}                & 32kB, 64B block-size, 8-way, 8 mshrs, gls{lru} \\
+\bf{Private L1 inst.}               & 32kB, 64B block-size, 4-way, 8 mshrs, \gls{lru} \\
+\bf{Private L1 data}                & 32kB, 64B block-size, 8-way, 8 mshrs, \gls{lru} \\
 \bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B block-size, 8-way, \\
-                                    & 12 MSHRs, gls{lru}      \\
+                                    & 12 MSHRs, \gls{lru}      \\
 \bf{Shared L3 cache}                & 4/8/16/32MB, 64B block-size, 24 mshrs, \\
                                     & 32-way, varying replacement algorithm         \\
 \bf{Memory controller}              & 6.4GB/s, 100ns access latency         \\
@@ -33,7 +33,7 @@
 Throughout this thesis, we utilize a \gls{cmp} model simulated on Sniper~\cite{Carlson2011a}. 
 In our model, each processing core has two levels of private cache, the L1 data and code caches and a unified L2 cache.
 Additionally there is a third cache level, L3, which is shared by all cores. 
-The private caches are managed by gls{lru}, and the replacement policy of the third cache level varies throughout our experiments.
+The private caches are managed by \gls{lru}, and the replacement policy of the third cache level varies throughout our experiments.
 Figure~\ref{fig:processor_model} shows an overview of the simulated architecture and Table~\ref{tbl:processor_model:properties} contains an overview of the system properties.
 
 As the sniper simulation system implements a Nehalem core model, all our processor core properties are based on Intel's Nehalem architecture~\cite{Thomadakis2011}. 
@@ -148,7 +148,7 @@ As expected we observe an increased access latency as the cache size increases.
 \end{table}
 
 Like the previous level we have three different size configurations for the L3 cache; 4MB, 8MB, and 16MB.
-Unlike the previous two cache levels, that all use a standard gls{lru} replacement policy, we will vary the replacement policy of the third level.
+Unlike the previous two cache levels, that all use a standard \gls{lru} replacement policy, we will vary the replacement policy of the third level.
 Many of the algorithms we are experimenting with in this work resemble some form of way-partitioning by assigning some ways (or cache blocks) per cache set to each core.
 For this reason, the third level cache has 32 cache blocks per cache set, in contrast to the 16 cache blocks per set in the original Nehalem architecture.
 Giving us an average of 8/4/2 sets per core during our 4/8/16 core experiments.

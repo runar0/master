@@ -9,7 +9,7 @@
 \end{figure}
 
 Dynamic Re-Reference Interval Prediction (DRRIP)~\cite{Jaleel2010} was proposed in 2010.
-DRRIP does not utilize the concept of an gls{lru} stack as done by gls{lru} and TADIP.
+DRRIP does not utilize the concept of an \gls{lru} stack as done by \gls{lru} and TADIP.
 In DRRIP, each cache block has a number associated with it, called re-reference interval.
 The re-reference interval is a relative measure of when the algorithm expects a block to be re-referenced.
 Given two blocks with different re-reference intervals, then the block with a lower interval is expected to be re-referenced before the other block.
@@ -18,7 +18,7 @@ M is a configurable variable usually in the interval $[2, 5]$~\cite{Jaleel2010}.
 The value of 0 indicates a \textit{near} re-reference interval, the algorithm expects the block to be re-referenced in the near future.
 The value $2^M - 1$ indicates a \textit{distant} re-reference interval while the value of $2^M - 2$ indicates a \textit{long} re-reference interval.
 Multiple blocks may have the same re-reference interval. 
-Hence, blocks are not strictly ordered as in the gls{lru} stack.
+Hence, blocks are not strictly ordered as in the \gls{lru} stack.
 By setting $M=1$, DRRIP degrades into the Not Recently Used (NRU)~\cite{Microsystems2007} algorithm, which among others is used on the UltraSPARC T2.
 
 The replacement policy of DRRIP is to scan all blocks and evict the first one found with a distant re-reference interval.
@@ -30,7 +30,7 @@ In the original paper, the authors specify that the leftmost potential block, th
 DRRIP's promotion policy is to decrement the re-reference interval of the accessed block.
 By doing this DRRIP utilize access history rather than access time when calculating the re-reference interval.
 Hence, to reach a near re-reference interval a block has to be accessed multiple times.
-This promotion policy is different compared to gls{lru} and TADIP, where a block will move to the MRU position following a hit, independent of the previous access history.
+This promotion policy is different compared to \gls{lru} and TADIP, where a block will move to the MRU position following a hit, independent of the previous access history.
 
 The insertion policy of DRRIP, like DIP and TADIP, is composed of two different policies and a selection mechanism.
 Static RRIP (SRRIP) will always insert new blocks with a long re-reference interval. 
