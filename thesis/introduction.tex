@@ -29,15 +29,15 @@ This decrease is observed because improving single core performance became harde
 \label{fig:introduction:memgap}
 \end{figure}
 
-By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards chip multiprocessors (CMPs)~\cite{Sutter2005}.
-CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
+By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards \glspl{cmp}~\cite{Sutter2005}.
+\glspl{cmp} are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
 This development is based on Pollack's rule~\cite{Borkar2007}, which states that performance increases proportionally to the square root of the area, and that power usage increases proportionally to the area.
 Consider having two cores, one large highly complex core, and a simple core at half the size.
 The performance of the larger core will by Pollack's rule be worse than the combined performance\footnotemark of the two smaller while having roughly the same power consumption.
-\footnotetext{Single thread performance is only increased by creating more complex cores; multithreading techniques are required in software to take advantage of CMPs performance increase.}
+\footnotetext{Single thread performance is only increased by creating more complex cores; multithreading techniques are required in software to take advantage of \glspl{cmp} performance increase.}
 Moving to simpler and smaller cores allowed manufacturers to continue overall performance improvements while staying below the power wall.
-With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
-Today CMPs are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
+With an increasing number of transistors due to scaling, even more processing cores can be added to \glspl{cmp}.
+Today \glspl{cmp} are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
 
 \section{CMP Memory System}
@@ -53,7 +53,7 @@ If not handled, the increasing processor-memory gap would become the limiting fa
 In response to the growing gap small and fast memory structures known as caches were introduced.
 Caches are produced using different techniques than main memory, proving faster access. 
 This comes at the cost of higher production cost and power usage.
-Today, most single-core processors and CMPs have one or more caches integrated on the processor die.
+Today, most single-core processors and \glspl{cmp} have one or more caches integrated on the processor die.
 The caches filter all memory request made by the processing core.
 If one of the caches has a copy of the requested data, it will stop the memory request from going to main memory and respond with the correct data.
 This is known as a cache hit.
@@ -79,7 +79,7 @@ Because caches are faster and are located closer to the processor than main memo
 \end{figure}
 
 Traditionally there are three main ways of organizing cache memory; direct mapped, set associative and fully associative.
-Caches used in commercial CMPs today are set associative memory structures~\cite{Thomadakis2011, Jain2013, ARM2010, Ho2014}.
+Caches used in commercial \glspl{cmp} today are set associative memory structures~\cite{Thomadakis2011, Jain2013, ARM2010, Ho2014}.
 A cache is organized as a 2d array, where each row is called a set, and each set consist of one or more blocks, sometimes known as cache lines.
 A block is the minimum unit of data a cache stores, this is typically 64B.
 The cache divides all memory addresses into three portions, the set address, block tag and block offset.
@@ -98,7 +98,7 @@ However, the access time and complexity of a cache also increases as the number 
 As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
 Alternative cache organizations have been proposed, such as zcache~\cite{Sanchez2010}, that allows for higher associativity while providing access times comparable to traditional caches.
-However, these techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
+However, these techniques are not currently used in commercial \glspl{cmp} and hence are not considered further in this thesis.
 
 When data not present in the cache is requested by a processing core, a request is sent to the next cache level, or possibly the main memory.
 Once the cache receives a response, it normally stores the data to provide faster access times in case of a re-reference.
@@ -117,10 +117,10 @@ If the block that was chosen by the algorithm already contains valid data the ca
 In the memory hierarchy, smaller means faster. 
 For instance, main memory is much faster than disks, but disks can store much more data.
 The same is valid for caches, a smaller cache has a shorter critical path and hence a lower access time compared to a larger cache.
-Figure~\ref{fig:cmp_model} shows an example 16-core CMP architecture with three cache levels and main memory.
+Figure~\ref{fig:cmp_model} shows an example 16-core \gls{cmp} architecture with three cache levels and main memory.
 For each cache level, both the size and access time increases.
 First level caches are the smallest while the third level caches are largest.
-To save area on CMPs, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
+To save area on \glspl{cmp}, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
 In Figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared last-level cache (LLC), the L3 cache.
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
 The cache management algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by some form of prioritization.
@@ -185,7 +185,7 @@ Some of the algorithms we cover in the following sections will attempt to detect
 By analyzing the problem description, we have been able to extract a set of requirements that this thesis has to fulfill:
 
 \begin{description}
-    \item[R1] Introduce CMPs, their memory system, and the role of a cache management algorithm.
+    \item[R1] Introduce \glspl{cmp}, their memory system, and the role of a cache management algorithm.
     \item[R2] Present recent and important work in the cache management field. Compare similarities and differences of the various proposed algorithms.
     \item[R3] Create a framework for evaluation of various cache management algorithms.
     \item[R4] Implement at least one of the presented algorithms and compare against a conventional LRU-managed cache.
