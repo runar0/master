@@ -191,7 +191,7 @@ def load_results(rundir, aliases):
 	benchmark_results, workload_results = extract_raw_data(rundir);
 	return transform_data_group_names(transform_data_to_speedup(benchmark_results, workload_results), aliases);
 
-def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None, includeLegend = None, includeAverage=True):
+def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, plotname = 'default', dropLRU = False, plotYLine = None, includeLegend = None, includeAverage=True, legendPos = None):
 	fig,ax = plt.subplots()
 	for csmb in results.keys():
 		for l2size in results[csmb].keys():
@@ -253,6 +253,9 @@ def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, p
 						for algorithm in algorithms:
 							if algorithm == "lru" and dropLRU: continue
 							handles += (rects[count][0],)
+
+							replacements = {'0_5M': '0.5MB', '01M': '1MB', '02M': '2MB', '04M': '4MB', '0128k': '128kB', '0256k': '256kB', '0512k': '512kB', '1024k': '1024kB', '01_6': '1.6GB/s', '03_2': '3.2GB/s', '06_4': '6.4GB/s'}
+							if algorithm in replacements: algorithm = replacements[algorithm]
 							legends += (algorithm,)
 							count += 1
 
@@ -260,7 +263,8 @@ def plot_results(results, aliases, metrics, algorithms, rundir, yLimit = None, p
 							cols = 2
 						else:
 							cols = 2 if dropLRU else 3
-						ax.legend(handles, legends, fontsize='small', ncol=cols, bbox_to_anchor=(0.5, 1.45), loc='upper center')
+						legendPos = (0.5, 1.45) if legendPos==None else legendPos
+						ax.legend(handles, legends, fontsize='small', ncol=cols, bbox_to_anchor=legendPos, loc='upper center')
 
 
 					if yLimit != None: ax.set_ylim(yLimit)
@@ -671,11 +675,11 @@ aliases = [
 # Partition algorithms to plot
 algorithms = ['lru', 'tadip', 'drrip-3', 'ucp', 'pipp', 'pipp-min8', 'prism']
 
-genSpeedup = False
+genSpeedup = True
 genCsmbComp = False
-genL2Comp = False
-genL3Comp = False
-genPubYearComp = True
+genL2Comp = True
+genL3Comp = True
+genPubYearComp = False
 
 results = load_results(rundir, aliases);
 
@@ -683,8 +687,8 @@ results = load_results(rundir, aliases);
 if genSpeedup:
 	legend = lambda alias, metric: alias.startswith('ra')
 	speedup = generate_speedup_results(results)
-	plot_results(speedup, aliases, ['stp', 'hms'], algorithms, rundir, plotname='speedup', dropLRU=True, yLimit=[0.8,1.1], plotYLine=1, includeLegend=lambda alias, metric: alias.startswith('ra'))
-	plot_results(speedup, aliases, ['mpki'], algorithms, rundir, plotname='speedup', dropLRU=True, yLimit=[0.9,1.6], plotYLine=1, includeLegend=lambda alias, metric: alias.startswith('ra'))
+	plot_results(speedup, aliases, ['stp', 'hms'], algorithms, rundir, plotname='speedup', dropLRU=True, yLimit=[0.8,1.1], plotYLine=1, includeLegend=lambda alias, metric: metric == "stp")
+	plot_results(speedup, aliases, ['mpki'], algorithms, rundir, plotname='speedup', dropLRU=True, yLimit=[0.9,1.6], plotYLine=1, includeLegend=lambda alias, metric: metric == "stp")
 	avg = generate_size_averages(speedup)
 	plot_results(avg, [('', 'avg', ''), ('', '4-avg', '')], ['stp', 'hms'], algorithms, rundir, yLimit=[0.8,1.1], includeAverage=False, plotname='avg', dropLRU=True, plotYLine=1, includeLegend=lambda alias, metric: (alias == 'avg' and metric=='mpki') or (alias == '4-avg' and metric=='stp'))
 	plot_results(avg, [('', 'avg', ''), ('', '4-avg', '')], ['mpki'], algorithms, rundir, yLimit=[0.9,1.55], includeAverage=False, plotname='avg', dropLRU=True, plotYLine=1, includeLegend=lambda alias, metric: (alias == 'avg' and metric=='mpki') or (alias == '4-avg' and metric=='stp'))
@@ -701,18 +705,22 @@ if genCsmbComp:
 if genL2Comp:
 	plot_results(generate_l3_access_averages(results), [('', 'access', ''), ('', '4-access', '')], ['accesses'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='accesses', yLimit=[0.85,1.0], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
 	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2', yLimit=[0.50,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generate_l2size_comparison(results), [('', 'l2', '')], ['stp', 'hms', 'mpki'], ['0128k', '0256k', '0512k', '1024k'], rundir, plotname='l2-legend', yLimit=[0.50,1.15], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
 
 if genL3Comp:
 	generated = generate_l3size_comparison(results)
-	plot_results(generated, [('', 'l3', '')], ['stp', 'hms'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3', yLimit=[0.9,1.05], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True)
+	plot_results(generated, [('', 'l3', '')], ['stp', 'hms'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3', yLimit=[0.9,1.05], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True,  legendPos=(0.5, 1.35))
 	plot_results(generated, [('', 'l3', '')], ['mpki'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3', yLimit=[0.85,1.30], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generated, [('', 'l3', '')], ['mpki'], ['0_5M', '01M', '02M', '04M'], rundir, plotname='l3-legend', yLimit=[0.85,1.30], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True, legendPos=(0.5, 1.35))
 
 	generated = generate_membus_comparison(results, l3filter=['04M'])
 	plot_results(generated, [('', 'membus', '')], ['stp', 'hms'], ['01_6', '03_2', '06_4'], rundir, plotname='membus', yLimit=[0.85,1.10], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generated, [('', 'membus', '')], ['stp', 'hms'], ['01_6', '03_2', '06_4'], rundir, plotname='membus-legend', yLimit=[0.85,1.10], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True, legendPos=(0.5, 1.35))
 	plot_results(generated, [('', 'membus', '')], ['mpki'], ['01_6', '03_2', '06_4'], rundir, plotname='membus', yLimit=[0.85,1.30], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
 
 	generated = generate_membus_comparison(results, l3filter=['0_5M'])
 	plot_results(generated, [('', 'membus', '')], ['stp', 'hms'], ['01_6', '03_2', '06_4'], rundir, plotname='membus-0_5M', yLimit=[0.85,1.25], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
+	plot_results(generated, [('', 'membus', '')], ['stp', 'hms'], ['01_6', '03_2', '06_4'], rundir, plotname='membus-0_5M-legend', yLimit=[0.85,1.25], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: True, legendPos=(0.5, 1.35))
 	plot_results(generated, [('', 'membus', '')], ['mpki'], ['01_6', '03_2', '06_4'], rundir, plotname='membus-0_5M', yLimit=[0.85,1.30], dropLRU=False, includeAverage=False, includeLegend=lambda a,b: False)
 
 if genPubYearComp:
