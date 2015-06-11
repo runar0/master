@@ -1,7 +1,7 @@
 \subsection{DIP}
 \label{sec:algorithms:dip}
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.50\textwidth}
         \includegraphics[width=\textwidth]{figures/algorithms/DIP_architecture}
@@ -61,7 +61,7 @@ Then follows a request for E, which is a miss.
 Then follows two requests to D; the first request is a miss causing E to be evicted and D to be inserted at the \gls{lru} position.
 The second request is a hit and promotes D to \gls{mru}, pushing all other blocks one step towards the \gls{lru} position.
 
-\begin{figure}[th]
+\begin{figure}[t]
     \centering
     \includegraphics[width=.65\textwidth]{figures/algorithms/DIP}
     \caption[DIP managed 4-way cache set.]{\gls{dip} managed 4-way cache set. (Assuming \gls{bip} insertion)}

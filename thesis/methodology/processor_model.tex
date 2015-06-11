@@ -1,7 +1,7 @@
 \section{Processor Model}
 \label{sec:methodology:processor_model}
 
-\begin{figure}[th]
+\begin{figure}[t]
 \centering
 \includegraphics[scale=.65]{figures/processor_model/processor_model}
 \caption{Processor model architecture.}
@@ -16,11 +16,11 @@
                                     & 128 rob entries, 4 inst. commit width, \\
                                     & 3 Int. ALU, 1 FP MUL/DIV, 1 FP ADD, \\
                                     & 2 Int. SSE ALU, 1 Int. SSE MUL \\
-\bf{Private L1 inst.}               & 32kB, 64B block-size, 4-way, 8 \glspl{mshr}, \gls{lru} \\
-\bf{Private L1 data}                & 32kB, 64B block-size, 8-way, 8 \glspl{mshr}, \gls{lru} \\
+\bf{Private L1 inst.}               & 32kB, 64B block-size, 4-way, 8 MSHRs, LRU \\
+\bf{Private L1 data}                & 32kB, 64B block-size, 8-way, 8 MSHRs, LRU \\
 \bf{Private L2 unified cache}       & 128/256/512/1024kB, 64B block-size, 8-way, \\
-                                    & 12 \glspl{mshr}, \gls{lru}      \\
-\bf{Shared L3 cache}                & 4/8/16/32MB, 64B block-size, 24 \glspl{mshr}, \\
+                                    & 12 MSHRs, LRU      \\
+\bf{Shared L3 cache}                & 4/8/16/32MB, 64B block-size, 24 MSHRs, \\
                                     & 32-way, varying replacement algorithm         \\
 \bf{Memory controller}              & 6.4GB/s, 100ns access latency         \\
 \bf{Clock Skew}                     & 100 cycle barrier synchronization        \\

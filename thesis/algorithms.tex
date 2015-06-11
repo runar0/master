@@ -23,18 +23,19 @@ This limitation makes the comparison of results from different algorithms easier
 Also, we avoid having to extend our simulator with a new cache type, which would be unfeasible given the time constraints of this thesis.
 
 \begin{table}[thb]
-\begin{tabular}{|p{1.4cm}|p{0.5cm}|p{0.8cm}|p{1.2cm}|p{1.2cm}|p{1.4cm}|p{1.2cm}|p{1.0cm}|}
-\hline
-\multicolumn{1}{|c|}{Name} & \multicolumn{1}{c|}{Year} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Repl.} & \multicolumn{1}{c|}{Insert.} & \multicolumn{1}{c|}{Promo.} & \multicolumn{1}{c|}{Hardware}    & \multicolumn{1}{c|}{Partition}     \\
-\multicolumn{1}{|c|}{}          & \multicolumn{1}{c|}{}          & \multicolumn{1}{c|}{aware}  & \multicolumn{1}{c|}{policy}      & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{overhead\footnotemark}  & \multicolumn{1}{c|}{}       \\ \hline
-\gls{dip}                             & 2007                           & No                          & \gls{lru}                              & \gls{lip}/ \gls{bip}                        & Promote to \gls{mru}            & 1 counter, set dueling    & No            \\ \hline
-\gls{tadip}                           & 2008                          & Yes                         & \gls{lru}                              & \gls{lip}/ \gls{bip}                        & Promote to \gls{mru}            & 1 counter per core, set dueling  & No          \\ \hline
-\gls{drrip}                           & 2010                          & Yes                         & \gls{lru} approx.                      & \gls{srrip}/ \gls{brrip}                    & Stepwise promotion            & 1 counter per core, set dueling  & No          \\ \hline
-\gls{nucache}                         & 2011                         & No                          & \gls{lru} + DeliWays     & \gls{lip}                            & Promote to \gls{mru}                 & NUTrack                            & No    \\ \hline
-\gls{ucp}                             & 2006                           & Yes                         & Per core \gls{lru}                     & \gls{lip}                            & Promote to \gls{mru}                 & \gls{umon}, 1 \gls{atd} per core   & Yes                \\ \hline
-\gls{pipp}                            & 2009                           & Yes                         & \gls{lru}                              & Utility position               & Stepwise promotion            & \gls{umon}, 1 \gls{atd} per core, random generator & Yes \\ \hline
-\gls{prism}                           & 2012                           & Yes                         & Per core \gls{lru}                  & \gls{lip}                            & Promote to \gls{mru}                 & 1 \gls{atd} per core, random generator                       & Yes  \\ \hline
-\gls{clu}                             & 2014                           & Yes                         & \gls{lru}                              & \gls{lip}/ \gls{bip}                        & Promote to \gls{mru}/ Skip            & \gls{umon} \~3 \glspl{atd} per core                & Yes  \\ \hline
+\begin{tabular}{p{1.4cm}p{0.5cm}p{0.8cm}p{1.2cm}p{1.2cm}p{1.4cm}p{1.2cm}p{1.0cm}}
+\multicolumn{1}{c}{\textbf{Name}} & \multicolumn{1}{c}{\textbf{Year}} & \multicolumn{1}{c}{\textbf{Thread}} & \multicolumn{1}{c}{\textbf{Repl.}} & \multicolumn{1}{c}{\textbf{Insert.}} & \multicolumn{1}{c}{\textbf{Promo.}} & \multicolumn{1}{c}{\textbf{Hardware}}    & \multicolumn{1}{c}{\textbf{Partition}}     \\
+\multicolumn{1}{c}{}          & \multicolumn{1}{c}{}          & \multicolumn{1}{c}{\textbf{aware}}  & \multicolumn{1}{c}{\textbf{policy}}      & \multicolumn{1}{c}{\textbf{policy}}    & \multicolumn{1}{c}{\textbf{olicy}}    & \multicolumn{1}{c}{\textbf{overhead}\footnotemark}  & \multicolumn{1}{c}{}       \\ 
+\toprule
+DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU           & 1 counter, set dueling    & No            \\ \hline
+TADIP                           & 2008                          & Yes                         & LRU                              & LIP/ BIP                       & Promote to MRU          & 1 counter per core, set dueling  & No          \\ \hline
+DRRIP                           & 2010                          & Yes                         & LRU approx.                      & DRRIP/ BRRIP                    & Stepwise promotion            & 1 counter per core, set dueling  & No          \\ \hline
+NUCache                         & 2011                         & No                          & LRU + DeliWays     & LIP                            & Promote to MRU                 & NUTrack                            & No    \\ \hline
+UCP                            & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON, 1 ATD per core   & Yes                \\ \hline
+PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Stepwise promotion            & UMON, 1 ATD per core, random generator & Yes \\ \hline
+PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                           & Promote to MRU                 & 1 ATD per core, random generator                       & Yes  \\ \hline
+CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                & Yes  \\ 
+\bottomrule
 \end{tabular}
 \caption{Overview of Cache Management Algorithms.}
 \label{tbl:algorithms}

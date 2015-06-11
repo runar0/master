@@ -1,7 +1,7 @@
 \section{Implementation}
 \label{sec:framework:implementation}
 
-\begin{figure}[th]
+\begin{figure}[t]
 \centering
 \includegraphics[scale=0.7]{figures/framework/functional_core_model}
 \caption{Partial core memory model in Sniper.}
@@ -31,7 +31,7 @@ While this is enough to implement simple schemes, such as \gls{lru} and \gls{tad
 We have therefore modified Sniper by adding a data structure that is sent from the core when it initiates a memory request, all the way down to the cache set.
 This data structure allows us to pass arbitrary data from the core to the cache set, allowing for more complex schemes.
 
-\begin{figure}[th]
+\begin{figure}[t]
 \centering
 \includegraphics[scale=0.7]{figures/framework/algorithms}
 \caption{Implemented algorithms and their relations.}
