@@ -8,9 +8,9 @@ PDF=thesis.pdf
 FPDF=thesis-final.pdf
 
 build:
-	makeglossaries $(MAIN)
 	$(LATEX) $(MAIN).tex
 	$(BIBTEX) $(MAIN).aux
+	makeglossaries $(MAIN)
 	$(LATEX) $(MAIN).tex
 	$(LATEX) $(MAIN).tex
 	qpdf --linearize $(PDF) $(FPDF)
