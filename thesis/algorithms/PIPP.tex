@@ -8,9 +8,9 @@ Where the UCP algorithm only handles streaming applications indirectly, by assig
 Stream detection is implemented by adding a counter that counts the total number of cache misses in the ATD.
 An application is then deemed to be streaming if either the number of misses or the miss rate in a single allocation period is above a threshold.
 
-PIPP like UCP views the cache set as an LRU stack.
-The replacement policy is as in LRU, but the insertion and promotion policy is novel.
-The insertion policy inserts new blocks $\pi_n$ blocks from the LRU position. 
+PIPP like UCP views the cache set as an gls{lru} stack.
+The replacement policy is as in gls{lru}, but the insertion and promotion policy is novel.
+The insertion policy inserts new blocks $\pi_n$ blocks from the gls{lru} position. 
 Here $\pi_n$ is the number of ways assigned to the $n^{th}$ core.
 In a 4-way cache dual-core setup where both cores are assigned two ways, PIPP will insert all new blocks from either core in the second to last position in the stack. 
 In this situation, the two top positions in the cache stack can only be reached by a cache block through promotion.
@@ -30,14 +30,14 @@ A special insertion position, $\pi_{stream}$, is used for all streaming cores.
 $\pi_{stream}$ is set to the number of cores currently streaming. 
 By inserting at this fixed position, PIPP attempts to limit the interference the streaming core has on the non-streaming cores.
 Blocks from streaming applications have a reduced chance of promotion after an access, $p_{stream} = \frac{1}{128}$.
-In the case where all cores are streaming, and there are no cores to protect, PIPP inserts all blocks at the LRU position.
+In the case where all cores are streaming, and there are no cores to protect, PIPP inserts all blocks at the gls{lru} position.
 
 Figure~\ref{fig:algorithms:pipp_example} shows an example cache set managed by PIPP shared by two cores.
 Both cores are allocated two blocks, and initially core 0 owns three blocks in the set; A, C, and D.
 In this example we assume all hits cause a block promotion.
 The first request is for C by core 0; this is a hit, and the block is promoted, effectively swapping block B and C.
 Next is a request for E by core 0; this is a miss.
-E is inserted at the second to last position of the cache set, as the core is allocated two blocks, causing D to be evicted and B to move to the LRU position.
+E is inserted at the second to last position of the cache set, as the core is allocated two blocks, causing D to be evicted and B to move to the gls{lru} position.
 Finally, a request for F is made by core 1; again it is inserted at the second to last position, evicting B.
 Note that after the initial request for C, the state of the two upper blocks do not change.
 

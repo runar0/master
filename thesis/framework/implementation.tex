@@ -27,7 +27,7 @@ By modifying how the CacheSet operates, cache management algorithms can be imple
 The CacheSetInfo instance is available to all cache sets and enables implementation of schemes that share data between cache sets.
 
 In the original Sniper implementation, only the block tag requested is made available to the CacheSet. 
-While this is enough to implement simple schemes, such as LRU and TADIP, we need more information to implement cache partitioning schemes such as UCP.
+While this is enough to implement simple schemes, such as gls{lru} and TADIP, we need more information to implement cache partitioning schemes such as UCP.
 We have therefore modified Sniper by adding a data structure that is sent from the core when it initiates a memory request, all the way down to the cache set.
 This data structure allows us to pass arbitrary data from the core to the cache set, allowing for more complex schemes.
 
@@ -38,9 +38,9 @@ This data structure allows us to pass arbitrary data from the core to the cache 
 \label{fig:framework:implementation:algorithms}
 \end{figure}
 
-Of the schemes presented in Chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; LRU, TADIP-F, DRRIP-3, PriSM, UCP, and PIPP.
+Of the schemes presented in Chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; gls{lru}, TADIP-F, DRRIP-3, PriSM, UCP, and PIPP.
 Figure~\ref{fig:framework:implementation:algorithms} shows how the five implemented algorithms relate to each other, and the base CacheSet class.
-LRU, which is included in Sniper, and the two set dueling schemes TADIP and DRRIP, are all implemented as direct subclasses of the CacheSet class.
+gls{lru}, which is included in Sniper, and the two set dueling schemes TADIP and DRRIP, are all implemented as direct subclasses of the CacheSet class.
 Based on the CacheSet class we have also implemented a cache with support for ATDs, also known as shadow tags.
 By default, the ATDs do full sampling of the cache, but we made this configurable.
 PriSM, which requires access statistics for each core, is implemented on top of the ATD implementation.

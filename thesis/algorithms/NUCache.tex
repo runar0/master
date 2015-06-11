@@ -18,7 +18,7 @@ Because all applications running may contain one or more delinquent PCs, NUCache
 
 To detect delinquent PCs, NUCache uses a novel DeliTrack structure.
 The DeliTrack is a storage structure, indexed by PC that stores a miss count, insertion time and a next use histogram. 
-LRU is used to manage the DeliTrack, which naturally ensures that PCs causing many misses are kept while others are replaced.
+gls{lru} is used to manage the DeliTrack, which naturally ensures that PCs causing many misses are kept while others are replaced.
 The next use histogram counts the next use value of blocks loaded into the cache by the given PC in buckets of 8 from 0 to 64.
 This histogram is later used when a set of prioritized delinquent PCs are selected.
 
@@ -35,17 +35,17 @@ On insertion in the main cache, the NUTrack searches for a matching row.
 If a matching row exists the next use distance is calculated and if the value is lower than the max value (64) the corresponding row in the DeliTrack histogram is incremented.
 
 NUCache divides the ways in each cache set into two groups, MainWays, and DeliWays.
-The MainWays are managed by LRU while the DeliWays are simply first in first out.
+The MainWays are managed by gls{lru} while the DeliWays are simply first in first out.
 The value $M$ defines the number of DeliWays.
 NUCache attempts to reduce misses by not evicting blocks from selected delinquent PCs when they are evicted from the MainWays, but rather let them enter the DeliWays.
 By using the size of the DeliWays and the next use information in the DeliTrack structure, the algorithm periodically selects a set of PCs that are allowed to use the DeliWays.
 The selection is done using a greedy algorithm that attempts to ensure that each block entering the DeliWays will receive a hit at least once before they are pushed out by other blocks.
 DeliWays and MainWays are implemented by having two extra bits per cache block, one indicating if the block can enter the DeliWays, another indicating if the block is the DeliWays.
 On insertion, all blocks inserted into to the MainWays.
-When the LRU block in the MainWays is about to be replaced, the algorithm checks if it is marked to enter the DeliWays.
+When the gls{lru} block in the MainWays is about to be replaced, the algorithm checks if it is marked to enter the DeliWays.
 If the block is allowed to enter the DeliWays, it will not be evicted but rather moved from the MainWays.
 If, after moving the new block into the DeliWays, the number of DeliWays blocks has exceeded $M$ the oldest block is removed.
-Otherwise, the new LRU block in the MainWays is evaluated.
+Otherwise, the new gls{lru} block in the MainWays is evaluated.
 Because of this implementation the MainWays may use the entire cache if no DeliWays are in use, at the same time the DeliWays cannot exceed $M$.
 This allows for an efficient use of every cache set.
 
@@ -60,6 +60,6 @@ Next is a request for E, and this is a miss.
 The cache first attempts to evict B, but B is eligible for DeliWays and is not evicted.
 After B enters the DeliWays, it contains a total of 3 blocks, this is one more than the upper limit of 2, and hence the first in, D, is evicted.
 E is then inserted at the MRU position.
-Next is a request for D; this is also a miss, and A at the LRU position is evicted.
+Next is a request for D; this is also a miss, and A at the gls{lru} position is evicted.
 The final request is also for D, causing no change as D is already at the MRU position.
 

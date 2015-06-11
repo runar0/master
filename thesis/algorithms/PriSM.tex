@@ -9,16 +9,16 @@ PriSM utilizes ATDs to estimate private cache performance for each of the cores.
 The ATD will keep track of total misses and hits.
 It will not track hits per cache way like the ATDs in UCP and PIPP.
 In addition to the ATDs, the algorithm requires three counters per core tracking hits, misses and number of blocks owned by the core in the actual cache.
-PriSM utilizes the same insertion and promotion policies as LRU, but the replacement policy is optimized based on the ATD and the optimization target.
+PriSM utilizes the same insertion and promotion policies as gls{lru}, but the replacement policy is optimized based on the ATD and the optimization target.
 
 The replacement algorithm of PriSM utilizes eviction probabilities, $E_i$ ($\sum{E_i} = 1$), assigned to each core when selecting a victim block.
 On replacement, a victim core is first selected by a random draw using the eviction probabilities.
-The LRU block owned by the victim core within the cache set is the eviction target.
-In the case where the selected target does not own a block in the set, all blocks owned by cores with $E_i > 0$ are considered, and the LRU of these is the eviction target.
+The gls{lru} block owned by the victim core within the cache set is the eviction target.
+In the case where the selected target does not own a block in the set, all blocks owned by cores with $E_i > 0$ are considered, and the gls{lru} of these is the eviction target.
 At set intervals, an optimization algorithm determines the eviction probability, $E_i$, for each core.
 The original paper recalculated $E_i$ values at every 10000 cache miss.
 
-The insertion and promotion policy of PriSM is equal to LRU.
+The insertion and promotion policy of PriSM is equal to gls{lru}.
 On insertion, a block is promoted to the MRU position, and on any subsequent accesses the block is again promoted to MRU unless it already has that position.
 
 Selecting an eviction probability $E_i$ for each core is done by considering how the eviction probability will effect a core's usage of the cache.
@@ -51,6 +51,6 @@ It is a relatively simple algorithm that will adjust the target occupancy based 
 \end{algorithmic}
 \end{algorithm}
 
-While we have presented PriSM based on LRU replacement, as done in the original paper, it should be noted that PriSM is not dependent on this underlying replacement algorithm.
+While we have presented PriSM based on gls{lru} replacement, as done in the original paper, it should be noted that PriSM is not dependent on this underlying replacement algorithm.
 Any algorithm is usable, as long as it is augmented to prioritize the selected victim during replacement.
 The algorithm run on the ATDs has to be the same as the underlying algorithm in the PriSM implementation.

@@ -28,79 +28,79 @@ We expect this increased filtering of requests to have an impact on the performa
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-legend-stp-0128k-tadip-l2}
-        \caption{Speedup of TADIP normalized to LRU.}
+        \caption{Speedup of TADIP normalized to gls{lru}.}
         \label{fig:results:l2:tadip}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-drrip-3-l2}
-        \caption{Speedup of DRRIP normalized to LRU.}
+        \caption{Speedup of DRRIP normalized to gls{lru}.}
         \label{fig:results:l2:drrip}
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-ucp-l2}
-        \caption{Speedup of UCP normalized to LRU.}
+        \caption{Speedup of UCP normalized to gls{lru}.}
         \label{fig:results:l2:ucp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-prism-l2}
-        \caption{Speedup of PriSM normalized to LRU.}
+        \caption{Speedup of PriSM normalized to gls{lru}.}
         \label{fig:results:l2:prism}
     \end{subfigure}
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-pipp-l2}
-        \caption{Speedup of PIPP normalized to LRU.}
+        \caption{Speedup of PIPP normalized to gls{lru}.}
         \label{fig:results:l2:pipp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[scale=0.6]{figures/results/speedup/l2-stp-0128k-pipp-min8-l2}
-        \caption{Speedup of PIPP-min8 normalized to LRU.}
+        \caption{Speedup of PIPP-min8 normalized to gls{lru}.}
         \label{fig:results:l2:pipp-min8}
     \end{subfigure}
-    \caption[Speedup with increasing L2 size]{Speedup of cache partition algorithms normalized to LRU with increasing private L2 size}
+    \caption[Speedup with increasing L2 size]{Speedup of cache partition algorithms normalized to gls{lru} with increasing private L2 size}
     \label{fig:results:l2}
 \end{figure}
 
-Figure~\ref{fig:results:l2:tadip} shows the speedup of TADIP normalized to LRU measured in STP. 
-As seen previously, TADIP performs as good as LRU in both 4- and 8-core workloads with a 128kB L2 cache.
-With increasing L2 cache size TADIP steadily outperforms LRU with between 0.1\% and 0.6\% depending on the configuration. 
-At 16-cores, TADIP underperforms compared to LRU, as previously shown.
+Figure~\ref{fig:results:l2:tadip} shows the speedup of TADIP normalized to gls{lru} measured in STP. 
+As seen previously, TADIP performs as good as gls{lru} in both 4- and 8-core workloads with a 128kB L2 cache.
+With increasing L2 cache size TADIP steadily outperforms gls{lru} with between 0.1\% and 0.6\% depending on the configuration. 
+At 16-cores, TADIP underperforms compared to gls{lru}, as previously shown.
 We note that, in this case, increasing the L2 size seems to cause a further decrease in TADIP performance, while the opposite is true in the 8-core case.
 We expect that TADIP will react slower to changes in application phases as memory filtering increases, because of the counter architecture used to switch between algorithms.
 This effect does not seem to have a noticeable impact on results for the 4- and 8-core runs, but we assume it is causing the visible decrease in performance for the 16-core runs.
 
-DRRIP as already covered outperforms LRU, Figure~\ref{fig:results:l2:drrip} confirms this.
+DRRIP as already covered outperforms gls{lru}, Figure~\ref{fig:results:l2:drrip} confirms this.
 The figure also shows that increasing the L2 size causes a reduction in DRRIP performance.
 We know that DRRIP uses a step-wise promotion policy where each successive access promotes a block one position.
 Naturally less information about successive accesses will be available to the shared level as filtering in the private levels increase.
 It is consequently not unexpected that DRRIP suffers from increased filtering by private cache levels.
-From the figure, we note that DRRIP seems to be slightly less sensitive to small changes in L2 size with increasing core count, but in all cases a 1024kB L2 causes DRRIP performance to mimic LRU performance.
+From the figure, we note that DRRIP seems to be slightly less sensitive to small changes in L2 size with increasing core count, but in all cases a 1024kB L2 causes DRRIP performance to mimic gls{lru} performance.
 
 In contrast to the previous algorithms, UCP performance increases with L2 cache size in all workloads, as seen in Figure~\ref{fig:results:l2:ucp}.
 We know that UCP uses a utility algorithm as the mechanism for allocating ways to cores. 
 The input to this algorithm changes when we increase filtering of requests to the shared cache level.
 As a result, the allocation of ways to cores is also expected to change, but this is the intended mechanism of UCP and should not negatively affect performance.
-UCP uses LRU to manage replacement for each core, but UCP under normal circumstances only allows a core to evict one of its own blocks. 
-We have already covered that this is why UCP outperforms LRU in the base configuration, in Section~\ref{sec:results:cache_partition}. 
-As filtering increases at the private level, we notice that UCP increases its performance compared to LRU. 
+UCP uses gls{lru} to manage replacement for each core, but UCP under normal circumstances only allows a core to evict one of its own blocks. 
+We have already covered that this is why UCP outperforms gls{lru} in the base configuration, in Section~\ref{sec:results:cache_partition}. 
+As filtering increases at the private level, we notice that UCP increases its performance compared to gls{lru}. 
 We expect that this is because, with increased private cache, more requests from recency-friendly applications can be satisfied by the private levels and less information reaches the shared level.
 Trashing and streaming applications will still have its requests propagate to the shared cache, largely independent of the size of the private cache. 
-Hence with increasing private cache size we expect LRU to make worse decisions by prioritizing trashing and streaming patterns due to their access frequency.
+Hence with increasing private cache size we expect gls{lru} to make worse decisions by prioritizing trashing and streaming patterns due to their access frequency.
 UCP with utility-based way-partitioning will not suffer as much from the lack of information about recency-friendly applications, and as the results state, can take advantage of increasing private cache size.
 
 PriSM calculates target allocations for each core with the goal of reducing misses.
 This technique bears some resemblance to the utility calculation done by the UMON.
-As with UCP, we expect PriSM to be able to increase its performance compared to LRU with increased private cache size because it will continue to limit the cache use of streaming and trashing applications.
+As with UCP, we expect PriSM to be able to increase its performance compared to gls{lru} with increased private cache size because it will continue to limit the cache use of streaming and trashing applications.
 We find this expectation reflected in our results.
-For both 4- and 16-core workloads we observe an increase in performance compared to LRU as the size of private cache increases.
+For both 4- and 16-core workloads we observe an increase in performance compared to gls{lru} as the size of private cache increases.
 In the 8-core results we see the same trend between the smallest and largest L2 configuration, but we unexpectedly observe a performance drop for 256kB and 512kB configurations. 
 It is unclear what causes this performance drop, and further work is required to analyze this.
 
 Finally Figure~\ref{fig:results:l2:pipp} show the performance of PIPP, and Figure~\ref{fig:results:l2:pipp-min8} shows the performance of the modified PIPP algorithm.
 Since PIPP uses the same utility algorithm as UCP and also aims to achieve the same allocations as UCP, we expect them to show similar trends.
 This expectation somewhat holds true for the 4-core case, where there is a slight upward trend with increasing L2 size.
-However, PIPP underperforms compared to LRU in all workloads, and with increasing core count performance drops significantly.
+However, PIPP underperforms compared to gls{lru} in all workloads, and with increasing core count performance drops significantly.
 We expect the short lifetime of blocks in PIPP managed caches to be the cause of this, as covered in Section~\ref{sec:results:cache_partition}.
 The modified PIPP algorithm shows a performance development much closer to what is expected, at least for 4- and 8-core workloads.
 We observe the same increase in performance with increased L2 cache size as seen in the UCP case. 
-In the 16-core workloads, the performance trend is still as expected, but the modified algorithm performs worse than LRU.
+In the 16-core workloads, the performance trend is still as expected, but the modified algorithm performs worse than gls{lru}.
 This performance reduction for larger core counts has also been observed in previous research~\cite{Manikantan2012}.
