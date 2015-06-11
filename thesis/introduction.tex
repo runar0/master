@@ -12,7 +12,7 @@ Moore's Law~\cite{Moore1998}, an observation made by G. E. Moore one of the co-f
 The law is simply an observation; that scaling of transistors used to make integrated circuits will allow for approximately twice the number of transistors per die every 18 months.
 Up until the mid-2000s, manufacturers used these smaller transistors to increase single-core performance.
 Smaller transistors allowed for increased frequency, and more transistors per die allowed for increasingly complex processor cores.
-Features such as speculative and out-of-order execution were added to take advantage of instruction-level parallelism (ILP) present in computer programs.
+Features such as speculative and out-of-order execution were added to take advantage of \gls{ilp} present in computer programs.
 By the mid-2000s, processor cores had become so complex and were running at such high frequencies that manufacturers had reached the limitation known as the power wall.
 The power wall entails that manufacturers were unable to continue increasing the frequency and the transistor count of each core, without also attaching high-performance cooling systems to counter the increased power usage and hence increased heat generation.
 Systems like water or even nitrogen cooling were needed to continue the single core performance increase~\cite{Sutter2005}; these systems are not practical for personal computers.
@@ -20,7 +20,7 @@ Systems like water or even nitrogen cooling were needed to continue the single c
 Figure~\ref{fig:introduction:memgap} shows the single core performance development from 1980 to 2010.
 The effect of the power wall is clearly visible from 2005 and out where we observe no improvement in single core performance.
 We also observe that in the five years leading to the power wall, the yearly performance improvement decreased.
-This decrease is observed because improving single core performance became harder, as more advanced techniques for ILP exploiting where needed, ultimately resulting in the power wall.
+This decrease is observed because improving single core performance became harder, as more advanced techniques for \gls{ilp} exploiting where needed, ultimately resulting in the power wall.
 
 \begin{figure}[ht]
 \centering
@@ -30,7 +30,7 @@ This decrease is observed because improving single core performance became harde
 \end{figure}
 
 By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards \glspl{cmp}~\cite{Sutter2005}.
-\glspl{cmp} are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
+\glspl{cmp} are built using several simpler processing cores without many of the aggressive \gls{ilp} utilization features that were added to single core processors in the late 2000s to increase performance.
 This development is based on Pollack's rule~\cite{Borkar2007}, which states that performance increases proportionally to the square root of the area, and that power usage increases proportionally to the area.
 Consider having two cores, one large highly complex core, and a simple core at half the size.
 The performance of the larger core will by Pollack's rule be worse than the combined performance\footnotemark of the two smaller while having roughly the same power consumption.
