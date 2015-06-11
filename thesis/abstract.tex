@@ -3,14 +3,20 @@
 
 The performance gap between processors and main memory has been growing over the last decades.
 Fast memory structures know as caches were introduced to mitigate some of the effects of this gap.
-After processor producers reached the limits of single core processors performance in the early 2000s, multicore processors have become common.
+After processor manufacturers reached the limits of single core processors performance in the early 2000s, multicore processors have become common.
 Multicore processors commonly share cache space between cores, and algorithms that manage access to shared cache structures have become an important research topic.
 Many researchers have presented algorithms that are supposed to improve the performance of multicore processors by modifying cache policies.
 In this thesis, we present and evaluate several recent and important works in the cache management field.
 We present a simulation framework for evaluation of various cache management algorithms, based on the Sniper simulation system.
-Several of the recently suggested algorithms are implemented and evaluated against the commonly used Least Recently Used (LRU) replacement policy.
-Our results suggest that LRU replacement in many cases is sufficient, and few of the evaluated algorithms consistently outperforms LRU.
-We also show that Utility Cache Partitioning, the oldest evaluated alternative to LRU, is the best performer for all our workloads.
+Several of the presented algorithms are implemented; TADIP, DRRIP, UCP, PIPP, and PriSM.
+The implemented algorithms are evaluated against the commonly used Least Recently Used (LRU) replacement policy and each other.
+In addition, we perform five sensitivity analysis experiments, exploring algorithm sensitivity to changes the simulated architecture.
+In total data from almost 9000 simulation runs is used in our evaluation.
+
+Our results suggest that all implemented algorithms mostly perform as good as or better than LRU in 4-core architectures.
+In 8- and 16-core architectures some of the algorithms, especially PIPP, perform worse than LRU.
+Throughout all our experiments UCP, the oldest of the evaluated alternative to LRU, is the best performer with an average performance increase of about 5\%.
+We also show that UCP performance increases to more than 20\% when available cache and memory resources are reduced.
 
 \clearpage
 
@@ -22,8 +28,14 @@ Flerkjerneprosessorer deler vanligvis noe hurtigbuffer mellom kjernene, og algor
 Flere forskere har presenter algoritmer som skal kunne øke ytelsen til flerkjerneprosessorer ved å endre algoritmen som styrer hurtigbufferet.
 I denne avhandlingen presenterer og evaluerer vi flere nylig publiserte og viktige arbeid som omhandler kontroll av delt hurtigbuffer.
 Vi presenterer et simuleringssystem som vi bruker til å evaluerer flere algorithmer, basert på simuleringssystemet Sniper.
-Flere av de nylige presenterte algoritmene er implementer og evaluert mot den ofte brukte algoritmen Least Recently Used (LRU).
-Våre resultat viser til at LRU i flere tilfeller er tilstrekkelig, og at få av de implementerte algoritmene kan konsekvent produsere bedre resultat enn LRU.
-Vi viser også at Utility Cache Partition, den eldste av de implementerte alternativet til LRU, gir best resultat på alle våre testprogrammer.
+Flere av de presenterte algoritmene er implementert; TADIP, DRRIP, UCP, PIPP, og PriSM.
+De implementerte algoritmene er evaluert mot den ofte brukte algoritmen Least Recently Used (LRU) og hverandre.
+I tillegg utfører vi fem sensitivitetseksperimenter, hvor vi utforsker algoritmenes sensitivitet til endringer i den simulerte arkitekturen.
+Totalt bruker vi data fra over 9000 simuleringer i vår evaluering.
+
+Våre resultat viser at alle de implementerter algoritmene for det meste yter like bra eller bedre enn LRU på 4-kjerne arkitekturer.
+For 8- og 16-kjerne arkitekturer yter noen algoritmer, spesielt PIPP, dårligere enn LRU.
+Vi viser også at UCP, den eldste av de implementerte alternativet til LRU, gir best resultat på alle våre testprogrammer med gjennomsnittlig ytelsesøkelse på 5\%.
+Vi viser også at UCP ytelsen øker til over 20\% når vi begrenser tilgjengelig cache or minne resursser.
 
 \clearpage
