@@ -3,28 +3,28 @@
 
 When we simulate our workloads, we expect destructive interference between benchmarks to cause slowdowns.
 Performance metrics are needed to quantify the performance of workloads and to compare the performance of different cache partitioning algorithms.
-This section defines two metrics; system throughput (STP)~\cite{Eeckhout2010} and the harmonic mean of speedup (HMS)~\cite{Eeckhout2010}.
+This section defines two metrics; \gls{stp}~\cite{Eeckhout2010} and the \gls{hms}~\cite{Eeckhout2010}.
 
-Two concepts are needed to define STP and HMS, private mode execution time and shared mode execution time.
+Two concepts are needed to define \gls{stp} and \gls{hms}, private mode execution time and shared mode execution time.
 Shared mode execution time is the simulation time of a benchmark when run as a part of a workload.
 Private mode execution time is the simulation time of a benchmark when run alone on the same processor model.
 By definition, we expect a benchmark to execute slower in shared mode than in private mode.
 
-Based on private and shared mode execution time we can define normalized progress (NP), or speedup, as ${NP}_i = \frac{T^{P}_i}{T^{S}_i}$.
+Based on private and shared mode execution time we can define \gls{np}, or speedup, as ${NP}_i = \frac{T^{P}_i}{T^{S}_i}$.
 Here $T^{P}_i$ and $T^{S}_i$ is respectively the private and shared mode execution time for benchmark $i$.
 Normalized progress is a measure of benchmark progression in shared mode.
 A perfect value of 1 indicates that the benchmark progresses just as fast in shared and private mode.
 While a value of 0.5 indicates that the benchmark progresses at half the rate in shared mode compared to private mode.
-STP is defined by L. Eeckhout~\cite{Eeckhout2010} as the sum of NP for all benchmarks in a workload, as shown in Equation~\ref{eq:STP}.
-By definition, a perfect STP value equals the number of benchmarks in a simulation, in our case either 4, 8 or 16.
+\gls{stp} is defined by L. Eeckhout~\cite{Eeckhout2010} as the sum of \gls{np} for all benchmarks in a workload, as shown in Equation~\ref{eq:STP}.
+By definition, a perfect \gls{stp} value equals the number of benchmarks in a simulation, in our case either 4, 8 or 16.
 
 \begin{equation} \label{eq:STP} 
  {STP} = {\sum\limits_{n=1}^{k}}\frac{T^{P}_i}{T^{S}_i}
 \end{equation}
 
-We also define HMS as the harmonic mean of NP values, as shown in Equation~\ref{eq:HMS}.
-The summation kernel in HMS is also known as normalized turnaround time (NTT).
-HMS is therefore by definition the reciprocal of average normalized turnaround-time (ANTT)~\cite{Eeckhout2010}, and hence HMS has a system level meaning relating to the benchmark's average normalized turnaround-time.
+We also define \gls{hms} as the harmonic mean of \gls{np} values, as shown in Equation~\ref{eq:HMS}.
+The summation kernel in \gls{hms} is also known as \gls{ntt}.
+\gls{hms} is therefore by definition the reciprocal of \gls{antt}~\cite{Eeckhout2010}, and hence \gls{hms} has a system level meaning relating to the benchmark's average normalized turnaround-time.
 
 \begin{equation} \label{eq:HMS}
  {HMS} = \frac{k}{{\sum\limits_{n=1}^{k}\frac{1}{\frac{T^{P}_i}{T^{S}_i}}}} = \frac{k}{{\sum\limits_{n=1}^{k}\frac{T^{S}_i}{T^{P}_i}}}
@@ -33,12 +33,12 @@ HMS is therefore by definition the reciprocal of average normalized turnaround-t
 In general an increase in system throughput is also expected to improve turnaround time.
 However, there are cases where this is not true.
 Given a workload where most benchmarks are performing well while one is performing badly.
-The one benchmark performing badly may pull the STP value down, indicating a badly performing workload.
-At the same time, HMS could show another picture, as the well-performing benchmarks may dominate the average performance.
-As a result, both STP and HMS are needed to get an insight into system performance.
+The one benchmark performing badly may pull the \gls{stp} value down, indicating a badly performing workload.
+At the same time, \gls{hms} could show another picture, as the well-performing benchmarks may dominate the average performance.
+As a result, both \gls{stp} and \gls{hms} are needed to get an insight into system performance.
 
-In addition to HMS and STP, we will use misses per kilo instruction (MPKI) when evaluating cache partitioning algorithms.
-MPKI is defined as the total number of misses in the LLC, per 1000 instructions.
-MPKI is an important metric in our experiments, especially because we are simulating an out of order core. 
-Due to latency hiding in the processor we cannot assume that a reduction in MPKI necessarily will increase performance nor that a performance increase must be caused by a reduction in MPKI.
+In addition to \gls{hms} and \gls{stp}, we will use \gls{mpki} when evaluating cache partitioning algorithms.
+\gls{mpki} is defined as the total number of misses in the \gls{llc}, per 1000 instructions.
+\gls{mpki} is an important metric in our experiments, especially because we are simulating an out of order core. 
+Due to latency hiding in the processor we cannot assume that a reduction in \gls{mpki} necessarily will increase performance nor that a performance increase must be caused by a reduction in \gls{mpki}.
 As a result, all three metrics are required to gain full insight into the effects of various cache partitioning algorithms.

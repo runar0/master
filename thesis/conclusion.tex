@@ -4,10 +4,10 @@
 
 \section{Conclusion}
 
-\begin{figure}[ht]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\textwidth]{figures/results/speedup/year-comp}
-    \caption[Average algorithm performance by year of publication]{Average algorithm performance measured in STP and HMS normalized to LRU by year of publication.}
+    \caption[Average algorithm performance by year of publication]{Average algorithm performance measured in \gls{stp} and \gls{hms} normalized to \gls{lru} by year of publication.}
     \label{fig:conclusion:yearcomp}
 \end{figure}
 
@@ -17,25 +17,25 @@ A simulation framework based on Sniper was created, and several of the algorithm
 We have presented some potential error sources within Sniper; most notably is the lack of precision when simulating inter-core interactions.
 However, experiments were conducted to investigate the severity of this inaccuracy, and based on the results we conclude that Sniper is a viable choice for this research.
 
-Figure~\ref{fig:conclusion:yearcomp} is a highly simplified view of our results, showing average STP and HMS for all algorithms by publication year, normalized to LRU performance.
-Throughout our work, UCP has proven to be the best performer providing up to 5\% speedups measured in STP for our main experiment.
-With constrained resources, we observed more than 20\% performance improvement with UCP.
-PIPP has been unable to compete with LRU in most cases, and on average performed no better than LRU.
-We suspect this is due to a short lifetime of cache blocks in a PIPP managed cache.
-Both DRRIP and TADIP, which are arguably simpler schemes compared to UCP and PIPP, have shown to outperform LRU.
-Neither has been able to achieve speedups comparable to UCP.
-In terms of misses, we have observed that DRRIP, TADIP, and PriSM, which all attempt to reduce overall misses succeed by having as many or fewer misses than LRU.
-UCP has proven to cause an increased number of misses.
+Figure~\ref{fig:conclusion:yearcomp} is a highly simplified view of 4-core random workload results, showing average \gls{stp} and \gls{hms} for all algorithms by publication year, normalized to \gls{lru} performance.
+Throughout our work, \gls{ucp} has proven to be the best performer providing up to 5\% speedups measured in \gls{stp} for our main experiment.
+With constrained resources, we observed more than 20\% performance improvement with \gls{ucp}.
+\gls{pipp} has shown comparable performance to \gls{lru} in 4-core random workloads, but has been unable to compete with \gls{lru} in most other cases.
+We suspect this is due to a short lifetime of cache blocks in a \gls{pipp} managed cache.
+Both \gls{drrip} and \gls{tadip}, which are arguably simpler schemes compared to \gls{ucp} and \gls{pipp}, have shown to outperform \gls{lru}.
+Neither has been able to achieve speedups comparable to \gls{ucp}.
+In terms of misses, we have observed that \gls{drrip}, \gls{tadip}, and \gls{prism} have succeed in reducing the number of misses compared to \gls{lru}.
+\gls{ucp} has proven to cause an increased number of misses.
 We suspect that this may be an artifact of the greedy lookahead algorithm, which prioritizes high marginal utility and that might not always equal fewer misses.
 Section~\ref{sec:results:cache_partition} covers in detail how this might result in both increased miss count and performance in the same workload.
 
 
-Independent of the performance metric used, none of the implemented algorithms has proven to beat UCP on average.
-Our results make it is tempting to conclude that UCP is the best solution.
-In sections~\ref{sec:results:l3size_sensitivity} and~\ref{sec:results:bus_sensitivity} we demonstrated that changes in the simulated architecture can greatly affect algorithm performance, and in all cases UCP had a positive trend.
-While we claim that UCP is the best solution in our setup, this might not be the case in all architectural configurations.
-LRU is still the dominating algorithm in hardware implementations, even if UCP has existed for nine years, and several publications have shown its improvement over LRU.
-Compared to LRU, UCP requires more hardware to implement. 
+Independent of the performance metric used, none of the implemented algorithms has proven to beat \gls{ucp} on average.
+Our results make it is tempting to conclude that \gls{ucp} is the best solution.
+In sections~\ref{sec:results:l3size_sensitivity} and~\ref{sec:results:bus_sensitivity} we demonstrated that changes in the simulated architecture can greatly affect algorithm performance, and in all cases \gls{ucp} had a positive trend.
+While we claim that \gls{ucp} is the best solution in our setup, this might not be the case in all architectural configurations.
+\gls{lru} is still the dominating algorithm in hardware implementations, even if \gls{ucp} has existed for nine years, and several publications have shown its improvement over \gls{lru}.
+Compared to \gls{lru}, \gls{ucp} requires more hardware to implement. 
 In a real design process, this additional hardware will come at the cost of reduced area for some other functionality.
 In the end, this might cause the improvement of cache performance to be reverted by a decrease in performance of some other component.
 

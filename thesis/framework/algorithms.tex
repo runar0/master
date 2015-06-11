@@ -4,20 +4,20 @@
 Some of the original papers explaining the algorithms makes unstated assumptions in their implementation.
 This section covers the assumptions we have had to make when implementing algorithms in our simulation framework.
 
-In the DRRIP paper, the authors specify that they make use of set dueling to choose between SRRIP and BRRIP.
+In the \gls{drrip} paper, the authors specify that they make use of set dueling to choose between \gls{srrip} and \gls{brrip}.
 The authors do not specify how they select which sets are dueling sets and which are follower sets.
-We choose to use the same algorithm for set classification as used by the authors of TADIP, shown in Section~\ref{sec:algorithms:tadip}.
-Our implementation of DRRIP uses 3-bit counters per cache block, hence DRRIP-3.
+We choose to use the same algorithm for set classification as used by the authors of \gls{tadip}, shown in Section~\ref{sec:algorithms:tadip}.
+Our implementation of \gls{drrip} uses 3-bit counters per cache block, hence \gls{drrip}-3.
 
-As mentioned in Section~\ref{sec:framework:implementation} we have built a generic ATD, or shadow tag, implementation.
-We choose to use full sampling in all algorithms that make use of this implementation, PriSM, UCP, and PIPP.
+As mentioned in Section~\ref{sec:framework:implementation} we have built a generic \gls{atd}, or shadow tag, implementation.
+We choose to use full sampling in all algorithms that make use of this implementation, \gls{prism}, \gls{ucp}, and \gls{pipp}.
 While previous work has shown that the estimation error when using dynamic sampling with a sufficient number of sets~\cite{Jaleel2008} is negligible, we still opted for full sampling in all our experiments.
 By doing full sampling, we eliminate the error source caused by imperfect data and allow the focus of our experiment to be on the decisions made by the algorithm instead.
 
-The UMON implementation, as covered in Section~\ref{sec:algorithms:ucp}, allows a core to be assigned zero ways.
+The \gls{umon} implementation, as covered in Section~\ref{sec:algorithms:ucp}, allows a core to be assigned zero ways.
 Sniper simulates inclusive caches, which requires a block to be stored in all cache levels when it is first loaded.
 As a result, we cannot allocate less than one block per core.
-To achieve this, we have modified the first two lines of the UMON allocation algorithm, as shown in Algorithm~\ref{alg:algorithms:ucp}.
+To achieve this, we have modified the first two lines of the \gls{umon} allocation algorithm, as shown in Algorithm~\ref{alg:algorithms:ucp}.
 Algorithm~\ref{alg:implementation:ucp} shows the modification that ensures that each core is assigned at least one way.
 Several of the previous works also did this modification to support inclusive caches~\cite{Qureshi2006,Xie2009}.
 
@@ -26,11 +26,11 @@ Several of the previous works also did this modification to support inclusive ca
 \State $balance\gets N - cores $ /* Number of ways minus number of cores */
 \State $allocations[i]\gets 1$ /* for each core $i$ */
 \end{algorithmic}
-\caption{Snip: Modified UMON Lookahead Algorithm.}
+\caption{Snip: Modified \gls{umon} Lookahead Algorithm.}
 \label{alg:implementation:ucp}
 \end{algorithm}
 
-In the original PIPP paper~\cite{Xie2009}, there are two conditions that cause an application to be marked as streaming; miss rate and miss count.
+In the original \gls{pipp} paper~\cite{Xie2009}, there are two conditions that cause an application to be marked as streaming; miss rate and miss count.
 The original paper uses dynamic sampling in the shadow tags while we use full sampling.
 Because the miss count condition scaled badly with full sampling, it was removed in our experiments.
 Additionally, the original paper used a miss limit of 0.125 as the classification limit.
@@ -38,12 +38,12 @@ However, using our workloads we observed that most benchmarks always were marked
 As a result, we increased the value to the next power of two, 0.25.
 This change resulted in most benchmarks switching between streaming and not streaming as expected.
 
-In addition to PIPP, we have implemented a variation we named PIPP-min8.
-This variation works exactly like the normal PIPP algorithm, except that the insertion policy always adds eight to every position.
+In addition to \gls{pipp}, we have implemented a variation we named PIPP-min8.
+This variation works exactly like the normal \gls{pipp} algorithm, except that the insertion policy always adds eight to every position.
 The theory is that blocks in PIPP-min8 has a longer lifetime, and this may improve performance.
 Previous works have mentioned this modification~\cite{Manikantan2012} as well.
 
-The original PriSM paper states that the eviction probabilities, $E_i$, for all cores should sum to 1~\cite{Manikantan2012}.
+The original \gls{prism} paper states that the eviction probabilities, $E_i$, for all cores should sum to 1~\cite{Manikantan2012}.
 However, we discovered that this is not the case, at least for the miss minimization algorithm.
 Simply normalizing the eviction probabilities is not a viable solution.
 One or more cores may have an eviction probability of 1, indicating that they are always the eviction target, while other cores have $E > 0$.

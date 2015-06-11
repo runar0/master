@@ -1,22 +1,22 @@
 \subsection{UCP}
 \label{sec:algorithms:ucp}
 
-Utility Cache Partition~\cite{Qureshi2006} (UCP) was first presented in 2006. 
-UCP uses the concept of utility when assigning ways to a core.
-Using a utility monitor (UMON), UCP divides the ways in the cache between the cores.
-UCP then uses the same insertion and promotion policy as LRU.
-The replacement policy is as in LRU but with two modifications:
+\gls{ucp}~\cite{Qureshi2006} was first presented in 2006. 
+\gls{ucp} uses the concept of utility when assigning ways to a core.
+Using a \gls{umon}, \gls{ucp} divides the ways in the cache between the cores.
+\gls{ucp} then uses the same insertion and promotion policy as \gls{lru}.
+The replacement policy is as in \gls{lru} but with two modifications:
 First if the number of blocks owned by the requesting core is less than the number of ways assigned to it, then the least recently used block that is not assigned to the requester core is replaced.
 If however the number of blocks owned is greater than or equal to the number of assigned ways the replacement algorithm selects the least recently used block of those owned by the requester.
 This replacement policy ensures that the division between cores in each set move toward the global allocation following cache misses.
 At the same time, a core may use more blocks that it is currently assigned, given that the space is not claimed by any other core.
 
-The UMON is the core of the UCP algorithm.
-It consists of one ATD per core sharing the cache. 
-The ATD is managed by normal LRU replacement and has one access counter per way.
-Whenever a cache request hits in the ATD, the access counter representing the way the block was in is incremented.
-In other words, UMON uses the stack property of LRU, as explained in Section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
-In addition to the ATDs, there is a monitor circuit that uses the access counters to calculate a new global partition at set intervals.
+The \gls{umon} is the core of the \gls{ucp} algorithm.
+It consists of one \gls{atd} per core sharing the cache. 
+The \gls{atd} is managed by normal \gls{lru} replacement and has one access counter per way.
+Whenever a cache request hits in the \gls{atd}, the access counter representing the way the block was in is incremented.
+In other words, \gls{umon} uses the stack property of \gls{lru}, as explained in Section~\ref{sec:algorithms:lru}, to find the hit rate of all valid partition sizes.
+In addition to the \glspl{atd}, there is a monitor circuit that uses the access counters to calculate a new global partition at set intervals.
 In the original paper, the authors recalculate the partitioning every 5M cycles.
 
 The original paper proposes several algorithms for determining optimal partitioning based on the counter data. 
@@ -27,11 +27,11 @@ The core with the highest value wins and is assigned as many ways as needed to a
 The algorithm continue until all ways have been assigned.
 Lines 27-28 calculate the marginal utility. 
 First the number of misses prevented by increasing the allocation from a to b is found.
-Due to the stack property of LRU, this is simply done by summing the access counters for ways $a$ to $b-1$.
+Due to the stack property of \gls{lru}, this is simply done by summing the access counters for ways $a$ to $b-1$.
 The number of misses is then divided by the number of sets introduced, to find the marginal utility.
 The rest of the algorithm is simply a greedy algorithm selecting the highest marginal utility at each iteration.
-After a reallocation of cache ways, the ATD counters are all halved.
-By doing this, the UMON will keep historical data for future decisions while prioritizing data from the current period.
+After a reallocation of cache ways, the \gls{atd} counters are all halved.
+By doing this, the \gls{umon} will keep historical data for future decisions while prioritizing data from the current period.
 
 Because the lookahead algorithm is greedy, finding a case where it makes a non-optimal choice is rather easy.
 Consider a case with two cores, and two ways left to assign.
@@ -42,22 +42,22 @@ The algorithm assigns one way to core 0, and in the next iteration both have zer
 In this case, the algorithm saved 10 misses while it could have saved 18.
 In order to guarantee optimal decisions the algorithm would have to do an exhaustive search of the solution space, but this is infeasible as it requires a lot more resources than the simplified greedy algorithm.
 
-\begin{figure}[ht]
+\begin{figure}[t]
     \centering
     \includegraphics[width=.65\textwidth]{figures/algorithms/UCP}
     \caption[UCP managed 4-way cache set.]{UCP managed 4-way cache set. (Two cores each allocated two blocks)}
     \label{fig:algorithms:ucp_example}
 \end{figure}
 
-Figure~\ref{fig:algorithms:ucp_example} show an example cache set managed by UCP shared by two cores.
+Figure~\ref{fig:algorithms:ucp_example} show an example cache set managed by \gls{ucp} shared by two cores.
 We assume that both cores are allocated two blocks.
 Initially, core 0 has three blocks in the cache as indicated by the blue background color; A, C, and D.
-The first request is by core 0 for block C; this is a hit causing the block to be promoted to MRU, pushing A and B towards the LRU position.
+The first request is by core 0 for block C; this is a hit causing the block to be promoted to \gls{mru}, pushing A and B towards the \gls{lru} position.
 Next is a request for E by core 0; this is a miss.
-Because core 0 already has more than the number of allocated blocks in the cache, the block closest to LRU owned by core 0 is evicted, D in this case.
+Because core 0 already has more than the number of allocated blocks in the cache, the block closest to \gls{lru} owned by core 0 is evicted, D in this case.
 Finally, a request for F is made by core 1; this is also an miss.
 Because core 1 has less than the number of allocated blocks in the cache, a block not owned by core 1 is to be evicted.
-As a result, B owned by core 1 at the LRU position is saved, and rather A at the next to LRU position is evicted.
+As a result, B owned by core 1 at the \gls{lru} position is saved, and rather A at the next to \gls{lru} position is evicted.
 
 
 

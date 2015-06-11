@@ -7,34 +7,35 @@ A cache management algorithm manages the storage space in a cache.
 It decides where to store new data blocks and which of the existing blocks are evicted to make room for new blocks.
 Some algorithms are thread-aware and geared towards shared caches.
 Others are thread-agnostic and work both for shared and private caches.
-Some have advanced optimization goals such as quality of service (QoS) while others use simpler metrics like miss minimization.
+Some have advanced optimization goals such as \gls{qos} while others use simpler metrics like miss minimization.
 Algorithms proposed for shared caches may in general be divided into two groups, those that explicitly divide storage space between cores sharing the cache and those that do not.
 The term cache replacement algorithm is often used to describe algorithms that do not divide the storage space while the term cache partitioning algorithm describe algorithms that do divide the space.
 Throughout this paper, we will use the two terms interchangeably.
 
 The field of cache management is well researched, and there exists a large number of proposed algorithms.
 In this thesis, we present a few recently proposed algorithms and compare their performance.
-We will also present LRU, an algorithm that is thread-agnostic and widely used both in private and shared caches today.
+We will also present \gls{lru}, an algorithm that is thread-agnostic and widely used both in private and shared caches today.
 Table~\ref{tbl:algorithms} lists the selected algorithms.
 Only algorithms that optimize for fewer cache misses are included.
 This metric is easy to measure and also makes it easy to compare the various algorithms.
-Also, we only consider algorithms that target conventional caches, as they are designed in CMPs today.
+Also, we only consider algorithms that target conventional caches, as they are designed in \glspl{cmp} today.
 This limitation makes the comparison of results from different algorithms easier.
 Also, we avoid having to extend our simulator with a new cache type, which would be unfeasible given the time constraints of this thesis.
 
 \begin{table}[thb]
-\begin{tabular}{|p{1.4cm}|p{0.5cm}|p{0.8cm}|p{1.2cm}|p{1.2cm}|p{1.4cm}|p{1.2cm}|p{1.0cm}|}
-\hline
-\multicolumn{1}{|c|}{Name} & \multicolumn{1}{c|}{Year} & \multicolumn{1}{c|}{Thread} & \multicolumn{1}{c|}{Repl.} & \multicolumn{1}{c|}{Insert.} & \multicolumn{1}{c|}{Promo.} & \multicolumn{1}{c|}{Hardware}    & \multicolumn{1}{c|}{Partition}     \\
-\multicolumn{1}{|c|}{}          & \multicolumn{1}{c|}{}          & \multicolumn{1}{c|}{aware}  & \multicolumn{1}{c|}{policy}      & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{policy}    & \multicolumn{1}{c|}{overhead\footnotemark}  & \multicolumn{1}{c|}{}       \\ \hline
-DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU            & 1 counter, set dueling    & No            \\ \hline
-TADIP                           & 2008                          & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU            & 1 counter per core, set dueling  & No          \\ \hline
-DRRIP                           & 2010                          & Yes                         & LRU approx.                      & SRRIP/ BRRIP                    & Stepwise promotion            & 1 counter per core, set dueling  & No          \\ \hline
+\begin{tabular}{p{1.4cm}p{0.5cm}p{0.8cm}p{1.2cm}p{1.2cm}p{1.4cm}p{1.2cm}p{1.0cm}}
+\multicolumn{1}{c}{\textbf{Name}} & \multicolumn{1}{c}{\textbf{Year}} & \multicolumn{1}{c}{\textbf{Thread}} & \multicolumn{1}{c}{\textbf{Repl.}} & \multicolumn{1}{c}{\textbf{Insert.}} & \multicolumn{1}{c}{\textbf{Promo.}} & \multicolumn{1}{c}{\textbf{Hardware}}    & \multicolumn{1}{c}{\textbf{Partition}}     \\
+\multicolumn{1}{c}{}          & \multicolumn{1}{c}{}          & \multicolumn{1}{c}{\textbf{aware}}  & \multicolumn{1}{c}{\textbf{policy}}      & \multicolumn{1}{c}{\textbf{policy}}    & \multicolumn{1}{c}{\textbf{olicy}}    & \multicolumn{1}{c}{\textbf{overhead}\footnotemark}  & \multicolumn{1}{c}{}       \\ 
+\toprule
+DIP                             & 2007                           & No                          & LRU                              & LIP/ BIP                        & Promote to MRU           & 1 counter, set dueling    & No            \\ \hline
+TADIP                           & 2008                          & Yes                         & LRU                              & LIP/ BIP                       & Promote to MRU          & 1 counter per core, set dueling  & No          \\ \hline
+DRRIP                           & 2010                          & Yes                         & LRU approx.                      & DRRIP/ BRRIP                    & Stepwise promotion            & 1 counter per core, set dueling  & No          \\ \hline
 NUCache                         & 2011                         & No                          & LRU + DeliWays     & LIP                            & Promote to MRU                 & NUTrack                            & No    \\ \hline
-UCP                             & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON, 1 ATD per core   & Yes                \\ \hline
+UCP                            & 2006                           & Yes                         & Per core LRU                     & LIP                            & Promote to MRU                 & UMON, 1 ATD per core   & Yes                \\ \hline
 PIPP                            & 2009                           & Yes                         & LRU                              & Utility position               & Stepwise promotion            & UMON, 1 ATD per core, random generator & Yes \\ \hline
-PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                            & Promote to MRU                 & 1 ATD per core, random generator                       & Yes  \\ \hline
-CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                & Yes  \\ \hline
+PriSM                           & 2012                           & Yes                         & Per core LRU                  & LIP                           & Promote to MRU                 & 1 ATD per core, random generator                       & Yes  \\ \hline
+CLU                             & 2014                           & Yes                         & LRU                              & LIP/ BIP                        & Promote to MRU/ Skip            & UMON \~3 ATDs per core                & Yes  \\ 
+\bottomrule
 \end{tabular}
 \caption{Overview of Cache Management Algorithms.}
 \label{tbl:algorithms}
@@ -53,7 +54,7 @@ In the following sections, we will explain how each of the selected cache partit
 This section covers cache replacement algorithms, or algorithms that do not explicitly divide the available cache space between cores.
 
 
-\footnotetext{Simplified hardware overhead compared to an LRU managed cached.}
+\footnotetext{Simplified hardware overhead compared to an \gls{lru} managed cached.}
 
 \input{algorithms/LRU.tex}
 \input{algorithms/DIP.tex}

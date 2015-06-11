@@ -12,7 +12,7 @@ Moore's Law~\cite{Moore1998}, an observation made by G. E. Moore one of the co-f
 The law is simply an observation; that scaling of transistors used to make integrated circuits will allow for approximately twice the number of transistors per die every 18 months.
 Up until the mid-2000s, manufacturers used these smaller transistors to increase single-core performance.
 Smaller transistors allowed for increased frequency, and more transistors per die allowed for increasingly complex processor cores.
-Features such as speculative and out-of-order execution were added to take advantage of instruction-level parallelism (ILP) present in computer programs.
+Features such as speculative and out-of-order execution were added to take advantage of \gls{ilp} present in computer programs.
 By the mid-2000s, processor cores had become so complex and were running at such high frequencies that manufacturers had reached the limitation known as the power wall.
 The power wall entails that manufacturers were unable to continue increasing the frequency and the transistor count of each core, without also attaching high-performance cooling systems to counter the increased power usage and hence increased heat generation.
 Systems like water or even nitrogen cooling were needed to continue the single core performance increase~\cite{Sutter2005}; these systems are not practical for personal computers.
@@ -20,24 +20,24 @@ Systems like water or even nitrogen cooling were needed to continue the single c
 Figure~\ref{fig:introduction:memgap} shows the single core performance development from 1980 to 2010.
 The effect of the power wall is clearly visible from 2005 and out where we observe no improvement in single core performance.
 We also observe that in the five years leading to the power wall, the yearly performance improvement decreased.
-This decrease is observed because improving single core performance became harder, as more advanced techniques for ILP exploiting where needed, ultimately resulting in the power wall.
+This decrease is observed because improving single core performance became harder, as more advanced techniques for \gls{ilp} exploiting where needed, ultimately resulting in the power wall.
 
-\begin{figure}[ht]
+\begin{figure}[t]
 \centering
 \includegraphics[width=.8\textwidth]{figures/introduction/memory-gap}
 \caption[Processor-Memory Gap]{Comparison of (single core) processor and memory performance from 1980 to 2010 based on data collected by J. Hennessy and D. Patterson~\cite{hennessy2012}.}
 \label{fig:introduction:memgap}
 \end{figure}
 
-By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards chip multiprocessors (CMPs)~\cite{Sutter2005}.
-CMPs are built using several simpler processing cores without many of the aggressive ILP utilization features that were added to single core processors in the late 2000s to increase performance.
+By 2005, most manufacturers had abandoned their plans for increased single core performance and were all working towards \glspl{cmp}~\cite{Sutter2005}.
+\glspl{cmp} are built using several simpler processing cores without many of the aggressive \gls{ilp} utilization features that were added to single core processors in the late 2000s to increase performance.
 This development is based on Pollack's rule~\cite{Borkar2007}, which states that performance increases proportionally to the square root of the area, and that power usage increases proportionally to the area.
 Consider having two cores, one large highly complex core, and a simple core at half the size.
 The performance of the larger core will by Pollack's rule be worse than the combined performance\footnotemark of the two smaller while having roughly the same power consumption.
-\footnotetext{Single thread performance is only increased by creating more complex cores; multithreading techniques are required in software to take advantage of CMPs performance increase.}
+\footnotetext{Single thread performance is only increased by creating more complex cores; multithreading techniques are required in software to take advantage of \glspl{cmp} performance increase.}
 Moving to simpler and smaller cores allowed manufacturers to continue overall performance improvements while staying below the power wall.
-With an increasing number of transistors due to scaling, even more processing cores can be added to CMPs.
-Today CMPs are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
+With an increasing number of transistors due to scaling, even more processing cores can be added to \glspl{cmp}.
+Today \glspl{cmp} are the de-facto standard, being used in everything from embedded computers~\cite{ARM2010} and mobile phones~\cite{Ho2014} to commercial and high-performance computing~\cite{Thomadakis2011, Jain2013}.
 
 
 \section{CMP Memory System}
@@ -53,14 +53,14 @@ If not handled, the increasing processor-memory gap would become the limiting fa
 In response to the growing gap small and fast memory structures known as caches were introduced.
 Caches are produced using different techniques than main memory, proving faster access. 
 This comes at the cost of higher production cost and power usage.
-Today, most single-core processors and CMPs have one or more caches integrated on the processor die.
+Today, most single-core processors and \glspl{cmp} have one or more caches integrated on the processor die.
 The caches filter all memory request made by the processing core.
 If one of the caches has a copy of the requested data, it will stop the memory request from going to main memory and respond with the correct data.
 This is known as a cache hit.
 If a cache does not have the value of the requested address, it is known as a cache miss.
 Because caches are faster and are located closer to the processor than main memory they can to an extent hide the processor-memory gap, assuming a high hit rate in the caches.
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
@@ -79,7 +79,7 @@ Because caches are faster and are located closer to the processor than main memo
 \end{figure}
 
 Traditionally there are three main ways of organizing cache memory; direct mapped, set associative and fully associative.
-Caches used in commercial CMPs today are set associative memory structures~\cite{Thomadakis2011, Jain2013, ARM2010, Ho2014}.
+Caches used in commercial \glspl{cmp} today are set associative memory structures~\cite{Thomadakis2011, Jain2013, ARM2010, Ho2014}.
 A cache is organized as a 2d array, where each row is called a set, and each set consist of one or more blocks, sometimes known as cache lines.
 A block is the minimum unit of data a cache stores, this is typically 64B.
 The cache divides all memory addresses into three portions, the set address, block tag and block offset.
@@ -98,7 +98,7 @@ However, the access time and complexity of a cache also increases as the number 
 As a result, first level caches are often limited to 2- or 4-ways~\cite{Sanchez2010}, because the access latency must be short to prevent the CPU stalling while it waits for data. 
 Even third level caches rarely exceed 16- or 32-ways.
 Alternative cache organizations have been proposed, such as zcache~\cite{Sanchez2010}, that allows for higher associativity while providing access times comparable to traditional caches.
-However, these techniques are not currently used in commercial CMPs and hence are not considered further in this thesis.
+However, these techniques are not currently used in commercial \glspl{cmp} and hence are not considered further in this thesis.
 
 When data not present in the cache is requested by a processing core, a request is sent to the next cache level, or possibly the main memory.
 Once the cache receives a response, it normally stores the data to provide faster access times in case of a re-reference.
@@ -107,7 +107,7 @@ For a set-associative or fully associative cache, there are multiple valid stora
 An algorithm known as the cache management algorithm decides which of the valid blocks are used to store the value.
 If the block that was chosen by the algorithm already contains valid data the cache removes or evicts the existing data.
 
-\begin{figure}[th]
+\begin{figure}[t]
 \centering
 \includegraphics[scale=.65]{figures/processor_model/processor_model}
 \caption{Generic Chip Multiprocessor Architecture.}
@@ -117,11 +117,11 @@ If the block that was chosen by the algorithm already contains valid data the ca
 In the memory hierarchy, smaller means faster. 
 For instance, main memory is much faster than disks, but disks can store much more data.
 The same is valid for caches, a smaller cache has a shorter critical path and hence a lower access time compared to a larger cache.
-Figure~\ref{fig:cmp_model} shows an example 16-core CMP architecture with three cache levels and main memory.
+Figure~\ref{fig:cmp_model} shows an example 16-core \gls{cmp} architecture with three cache levels and main memory.
 For each cache level, both the size and access time increases.
 First level caches are the smallest while the third level caches are largest.
-To save area on CMPs, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
-In Figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared last-level cache (LLC), the L3 cache.
+To save area on \glspl{cmp}, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
+In Figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared \gls{llc}, the L3 cache.
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
 The cache management algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by some form of prioritization.
 
@@ -138,7 +138,7 @@ Figure~\ref{fig:algorithms:rf_pattern} illustrates an example memory access patt
 Because the pattern repeats and $k$ is less than the number of ways we know that the least recently used block will always be referenced before being evicted, if we assume a recency-assumption based algorithm.
 Hence, the algorithm will be able to provide hits for every access after the initial repetition, and the pattern is recency-friendly.
 
-\begin{figure}[ht]
+\begin{figure}[h]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})^N$
 \caption[Recency-friendly access pattern.]{Recency-friendly access pattern (k $<=$ number of ways, N $>$ 1).}
@@ -150,7 +150,7 @@ A trashing memory pattern is one that repeats in a similar manner to a recency-f
 Figure~\ref{fig:algorithms:tr_pattern} shows an example of one such pattern, the only thing separating this from the previous pattern in the value of $k$.
 Under a recency-assumption based algorithm, an access pattern similar to this will never hit because all blocks are evicted before they are re-referenced.
 A better management algorithm for these patterns might keep some of the working set in the cache, providing hits for parts of the access pattern.
-\begin{figure}[ht]
+\begin{figure}[h]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})^N$
 \caption[Trashing memory access pattern.]{Trashing memory access pattern (k $>$ number of ways, N $>$ 1).}
@@ -162,7 +162,7 @@ A streaming memory access pattern is one that has no re-references, or where the
 Figure~\ref{fig:algorithms:st_pattern} illustrates one such pattern, where k is infinite.
 No caching algorithm can provide hits for such an access pattern, simply because there are no re-references.
 
-\begin{figure}[ht]
+\begin{figure}[h]
 \centering
 $p_{rf} = (a_0 a_1 ... a_{k-1})$
 \caption[Streaming memory access pattern]{Streaming memory access pattern (k = $\infty$).}
@@ -185,10 +185,10 @@ Some of the algorithms we cover in the following sections will attempt to detect
 By analyzing the problem description, we have been able to extract a set of requirements that this thesis has to fulfill:
 
 \begin{description}
-    \item[R1] Introduce CMPs, their memory system, and the role of a cache management algorithm.
+    \item[R1] Introduce \glspl{cmp}, their memory system, and the role of a cache management algorithm.
     \item[R2] Present recent and important work in the cache management field. Compare similarities and differences of the various proposed algorithms.
     \item[R3] Create a framework for evaluation of various cache management algorithms.
-    \item[R4] Implement at least one of the presented algorithms and compare against a conventional LRU-managed cache.
+    \item[R4] Implement at least one of the presented algorithms and compare against a conventional \gls{lru}-managed cache.
 \end{description}
 Based on the problem description and discussions with the thesis advisors, we list an additional set of optional requirements that the thesis may fulfill:
 
@@ -223,7 +223,7 @@ The outline of the rest of this thesis is as follows:
 
   \item Chapter~\ref{cpt:methodology} contains a description of our simulated processor model and explains all metrics we later use to evaluate our experiments.
 
-  \item Chapter~\ref{cpt:results} presents an experiment where we compare all implemented algorithms against an LRU managed cache. Also, we compare all implemented algorithms against each other. This fulfills requirement \textbf{R4} and \textbf{O2}.
+  \item Chapter~\ref{cpt:results} presents an experiment where we compare all implemented algorithms against an \gls{lru} managed cache. Also, we compare all implemented algorithms against each other. This fulfills requirement \textbf{R4} and \textbf{O2}.
 
   \item Chapter~\ref{cpt:sresults} presents five different experiments all exploring either simulation framework or algorithm sensitivity to various architectural changes, fulfilling requirement \textbf{O3}.
 

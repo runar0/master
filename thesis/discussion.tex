@@ -9,7 +9,7 @@ We explain why various choices were made and what might have influenced our fina
 
 All of the algorithms we have implemented and evaluated in this thesis have one or more parameter controlling its operation.
 As Chapter~\ref{cpt:framework} explains, we have mainly opted to use parameter values from the original papers.
-Each of the original papers has attempted to show how their algorithm performs better that LRU and the current best theoretical algorithm.
+Each of the original papers has attempted to show how their algorithm performs better that \gls{lru} and the current best theoretical algorithm.
 It is fair to assume that the authors have chosen parameter values that are fitted to provide good results on their benchmarks.
 Because none of the papers uses the same benchmark set, and none of the benchmark sets matches the one we used in this thesis, there is a potential optimization opportunity here.
 
@@ -42,8 +42,8 @@ In the worst case the os scheduler may schedule all simulation threads serially,
 All the implemented cache partition algorithms assume that memory requests are in order, and this inaccuracy will break this assumption.
 In addition to the effects on the cache partitioning, memory bus scheduling is hard to estimate when requests come out of order, this was an issue covered in the author's autumn project~\cite{Olsen2014}.
 
-Section~\ref{sec:results:csmb_sensitivity} presents an experiment where we attempted to vary the CSMB interval, and we evaluate the performance using changes in measured STP and HMS.
-The results of this experiment showed that there is little change when lowering the CSMB from the default value of 100 cycles all the way to 1 cycle.
+Section~\ref{sec:results:csmb_sensitivity} presents an experiment where we attempted to vary the \gls{csmb} interval, and we evaluate the performance using changes in measured \gls{stp} and \gls{hms}.
+The results of this experiment showed that there is little change when lowering the \gls{csmb} from the default value of 100 cycles all the way to 1 cycle.
 This would indicate that although the potential issues outlined above are serious, they seem to not affect results when we synchronize every 100 cycles.
 The cache used in this experiment and all other four core experiments is 4MB with 32 blocks per set.
 In other words, there are 2048 sets.
@@ -61,14 +61,14 @@ With this reduced number of cache sets the effects of the clock skew, as investi
 We still however expect the effect to be minimal because multiple memory requests must issued out of order within the 100 cycle barrier and resolve to the same set, for the effect to be noticeable.
 
 
-\section{Uniform LLC Access}
+\section{Uniform \gls{llc} Access}
 
 In Section~\ref{sec:methodology:processor_model} we present the processor model used on our experiments.
-Our architecture, as shown in Figure~\ref{fig:processor_model}, assumes a uniform access latency to the LLC.
-All the algorithms presented in this thesis also assume uniform access latency to the LLC or rather does not take into account non-unform access latency when assigning cache space.
-This assumption of uniform access latency is reasonable for 4- and 8-core processors and requires a uniform access method between the L2 caches and the LLC.
+Our architecture, as shown in Figure~\ref{fig:processor_model}, assumes a uniform access latency to the \gls{llc}.
+All the algorithms presented in this thesis also assume uniform access latency to the \gls{llc} or rather does not take into account non-unform access latency when assigning cache space.
+This assumption of uniform access latency is reasonable for 4- and 8-core processors and requires a uniform access method between the L2 caches and the \gls{llc}.
 One possible solution is a crossbar.
 However, scaling this architecture to 16 cores is somewhat unreasonable as the crossbar grows exponentially.
 This is visible in the newer 18 core Intel i7 where the last level cache is distributed around the chip and interconnected using ring interconnects~\cite{Hruska2014}.
-This solution results in non-uniform access to the LLC.
+This solution results in non-uniform access to the \gls{llc}.
 Due to this fact, we chose not to simulate 32 and higher core workloads, even thought our simulation framework supports it.

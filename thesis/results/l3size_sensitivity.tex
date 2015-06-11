@@ -5,7 +5,7 @@
 \begin{figure}[th]
     \centering
     \includegraphics[scale=0.7]{figures/results/speedup/l3-stp-04M-all-l3}
-    \caption[Speedup with decreasing L3 size]{Speedup of cache partition algorithms normalized to LRU with decreasing shared L3 size}
+    \caption[Speedup with decreasing L3 size]{Speedup of cache partition algorithms normalized to \gls{lru} with decreasing shared L3 size}
     \label{fig:results:l3}
 \end{figure}
 
@@ -18,8 +18,8 @@ As a result, we have fewer sets in the cache and hence, more addresses map to th
 Table~\ref{tbl:processor_model:l3} shows detailed information about the two larger configurations.
 The details for the two smaller configurations are equal to the L2 configurations of the same size, shown in Table~\ref{tbl:processor_model:l2}, but with an associativity of 32.
 Fewer sets cause increased pressure on each set.
-We expect to see some of the algorithms further their improvement over LRU in this situation.
-Also, we expect PIPP, which already has shown bad performance compared to LRU, to continue this trend.
+We expect to see some of the algorithms further their improvement over \gls{lru} in this situation.
+Also, we expect \gls{pipp}, which already has shown bad performance compared to \gls{lru}, to continue this trend.
 
 Before showing the results of this experiment, we will briefly discuss a special case that arises in this experiment.
 When we set the L3 cache to 0.5MB, we have a situation where the sum of the L2 caches equals the L3 cache.
@@ -27,23 +27,23 @@ This is an extreme case in an inclusive cache architecture because when the L2 c
 In a real processor, it would not make sense to have an L3 of this size.
 We still experiment with this configuration, as interesting results may arise in situations where the L2 caches are not fully utilized, such as in a mixed workload with streaming and recency-friendly applications.
 
-Figure~\ref{fig:results:l3} show the speedup of all algorithms normalized to LRU for varying shared cache size.
-DRRIP is the algorithm that shows least variation across the various shared cache sizes.
-The figure shows DRRIP performing comparable to LRU in all cases, with a negligible increase of 0.3\% in the 1MB case.
-TADIP that in the baseline scenario performs as good as LRU seems to suffer from the increased set pressure, with increasingly worse performance as the cache size decreases.
+Figure~\ref{fig:results:l3} show the speedup of all algorithms normalized to \gls{lru} for varying shared cache size.
+\gls{drrip} is the algorithm that shows least variation across the various shared cache sizes.
+The figure shows \gls{drrip} performing comparable to \gls{lru} in all cases, with a negligible increase of 0.3\% in the 1MB case.
+\gls{tadip} that in the baseline scenario performs as good as \gls{lru} seems to suffer from the increased set pressure, with increasingly worse performance as the cache size decreases.
 In our implementation, we scale the number of duel-sets relative to the total number of cache sets.
-Hence, for both DRRIP and TADIP the fraction of duel sets is constant across the various L3 configurations.
+Hence, for both \gls{drrip} and \gls{tadip} the fraction of duel sets is constant across the various L3 configurations.
 
-As expected the performance of PIPP decreases as the set pressure increases.
-We have previously, in Section~\ref{sec:results:cache_partition}, postulated that the potentially short lifetime of blocks in a PIPP managed cache may be the cause of the performance decrease compared to LRU.
-This experiment further shows that when the number of accesses to a single set increases the performance of PIPP further decreases compared to LRU.
-The MPKI in the 0.5MB cases, not shown here, is over 50\% worse than the LRU case, compared to only 20\% worse in the 4MB case.
-PIPP-min8, a modified version of PIPP, have previously been shown to improve performance over normal PIPP replacement.
+As expected the performance of \gls{pipp} decreases as the set pressure increases.
+We have previously, in Section~\ref{sec:results:cache_partition}, postulated that the potentially short lifetime of blocks in a \gls{pipp} managed cache may be the cause of the performance decrease compared to \gls{lru}.
+This experiment further shows that when the number of accesses to a single set increases the performance of \gls{pipp} further decreases compared to \gls{lru}.
+The \gls{mpki} in the 0.5MB cases, not shown here, is over 50\% worse than the \gls{lru} case, compared to only 20\% worse in the 4MB case.
+PIPP-min8, a modified version of \gls{pipp}, have previously been shown to improve performance over normal \gls{pipp} replacement.
 This is also the case when reducing shared cache size.
-Figure~\ref{fig:results:l3} shows that PIPP-min8 not only performs as good as LRU in the base experiment, but with increased set pressure actually performs better than LRU.
-With a 0.5MB L3 cache, the modified PIPP algorithm performs 4\% better than LRU measured in STP.
-In the same configuration, the unmodified algorithm performs about 18\% worse compared to LRU.
-This result clearly shows the advantage of the extended block lifetime in the modified PIPP algorithm, and at the same time points a fundamental performance problem with PIPP.
+Figure~\ref{fig:results:l3} shows that PIPP-min8 not only performs as good as \gls{lru} in the base experiment, but with increased set pressure actually performs better than \gls{lru}.
+With a 0.5MB L3 cache, the modified \gls{pipp} algorithm performs 4\% better than \gls{lru} measured in \gls{stp}.
+In the same configuration, the unmodified algorithm performs about 18\% worse compared to \gls{lru}.
+This result clearly shows the advantage of the extended block lifetime in the modified \gls{pipp} algorithm, and at the same time points a fundamental performance problem with \gls{pipp}.
 
 
 \begin{figure}[t]
@@ -61,17 +61,17 @@ This result clearly shows the advantage of the extended block lifetime in the mo
         \label{fig:results:l3:mpki-ucp}
     \end{subfigure}
     \label{fig:results:l3:mpki}
-    \caption{MPKI normalized to LRU with decreasing L3 cache size.}
+    \caption{MPKI normalized to \gls{lru} with decreasing L3 cache size.}
 \end{figure}
 
-Next, we have PriSM, which shows a slight performance increase with the 2MB and 1MB cache. 
-At both 4MB and 0.5MB PriSM performs as good as LRU.
-Figure~\ref{fig:results:l3:mpki-prism} shows the MPKI for PriSM.
-From this figure, we observe that PriSM in all configurations causes the same number of misses as LRU.
-This is true even when PriSM shows an performance increase measured in STP.
-Finally, we observe a performance increase by UCP in Figure~\ref{fig:results:l3}. 
-In previous sections (\ref{sec:results:cache_partition} and \ref{sec:results:l2size_sensitivity}) we have shown that UCP is the top performer of our algorithms when measured in STP.
+Next, we have \gls{prism}, which shows a slight performance increase with the 2MB and 1MB cache. 
+At both 4MB and 0.5MB \gls{prism} performs as good as \gls{lru}.
+Figure~\ref{fig:results:l3:mpki-prism} shows the \gls{mpki} for \gls{prism}.
+From this figure, we observe that \gls{prism} in all configurations causes the same number of misses as \gls{lru}.
+This is true even when \gls{prism} shows an performance increase measured in \gls{stp}.
+Finally, we observe a performance increase by \gls{ucp} in Figure~\ref{fig:results:l3}. 
+In previous sections (\ref{sec:results:cache_partition} and \ref{sec:results:l2size_sensitivity}) we have shown that \gls{ucp} is the top performer of our algorithms when measured in \gls{stp}.
 This is also the case in this experiment.
-We observe that UCP increases performance compared to LRU in both the 2MB and 1MB case, in the 0.5MB case is comparable to the 1MB case.
-Interestingly, Figure~\ref{fig:results:l3:mpki-ucp} shows that while UCP increases performance compared to LRU it also causes more misses, shown by an increase in MPKI.
+We observe that \gls{ucp} increases performance compared to \gls{lru} in both the 2MB and 1MB case, in the 0.5MB case is comparable to the 1MB case.
+Interestingly, Figure~\ref{fig:results:l3:mpki-ucp} shows that while \gls{ucp} increases performance compared to \gls{lru} it also causes more misses, shown by an increase in \gls{mpki}.
 Previous experiments have also shown this effect, as seen in Section~\ref{sec:results:cache_partition}.
