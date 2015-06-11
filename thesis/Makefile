@@ -8,6 +8,7 @@ PDF=thesis.pdf
 FPDF=thesis-final.pdf
 
 build:
+	makeglossaries $(MAIN)
 	$(LATEX) $(MAIN).tex
 	$(BIBTEX) $(MAIN).aux
 	$(LATEX) $(MAIN).tex
