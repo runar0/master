@@ -43,21 +43,21 @@ In this case, it might be necessary to tweak the model until we find one that is
        ~ % Fill page, prevents latex from placing a single line of text under the figure
 \end{figure}
 
-Figure~\ref{fig:results:processor_model} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 miss status holding registers (MSHR), re-order buffer size (rob) and reservation station entries (rs).
+Figure~\ref{fig:results:processor_model} shows the average speedup of all benchmarks when we vary our five selected properties; Outstanding loads (ol), outstanding stores (os), L1 \gls{mshr}, re-order buffer size (rob) and reservation station entries (rs).
 Outstanding loads and stores specify the number of outstanding memory requests the core can have active in the rob.
-The number of L1 MSHRs decide how many outstanding cache misses the first level cache can handle before it has to block on a miss.
+The number of L1 \glspl{mshr} decide how many outstanding cache misses the first level cache can handle before it has to block on a miss.
 The size of the rob and rs together decide how many instructions can be live during execution.  
 Increasing the number of live instructions can increase the amount of \gls{ilp} the processor can extract from the program while possibly increasing the cost of a branch miss prediction.
 
 For two of the memory related properties; os and ol, we observe no improvement nor decrease in performance for the values we explored.
-When we increase the last memory related parameter, MSHR, we do observe a slight performance change.
-With an increasing number of MSHRs, the cache and hence the core can handle more outstanding memory requests. 
+When we increase the last memory related parameter, \gls{mshr}, we do observe a slight performance change.
+With an increasing number of \glspl{mshr}, the cache and hence the core can handle more outstanding memory requests. 
 As a result, the core will be able to exploit more \gls{ilp}, and a slight performance improvement is observed. 
-Unlike the MSHRs, we do not expect the value of os and ol to affect performance. 
+Unlike the \glspl{mshr}, we do not expect the value of os and ol to affect performance. 
 If the core is to gain performance from supporting more outstanding loads there has to be more than 48 loads among the 128 instructions that fit in the rob. 
 Equally there must be more than 32 stores per 128 instructions for an increased os limit to be beneficial.
-Also, both os and ol are limited by the number of memory requests the memory system can handle, and the total number of L1 MSHRs is less than the size of both os and ol.
-The observed performance gain when increasing the number of MSHRs in the first level caches, as seen in Figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
+Also, both os and ol are limited by the number of memory requests the memory system can handle, and the total number of L1 \glspl{mshr} is less than the size of both os and ol.
+The observed performance gain when increasing the number of \glspl{mshr} in the first level caches, as seen in Figure~\ref{fig:results:processor_model:mshr}, is less than 1\% with a 50\% storage increase. 
 We also observe a standard deviation of more than 3\%. 
 
 When Increasing the size of the rob and the number of rs entries, we observe a slight increase in performance.

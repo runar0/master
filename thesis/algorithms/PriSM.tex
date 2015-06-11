@@ -1,25 +1,25 @@
 \subsection{PriSM}
 \label{sec:algorithms:prism}
 
-Probabilistic Shared Cache Management (PriSM)~\cite{Manikantan2012} was first presented in 2012.
-PriSM is a framework for cache management with optimization algorithms targetting multiple performance goals.
-The original paper presents hit maximization, fairness and QoS goals.
+\gls{prism}~\cite{Manikantan2012} was first presented in 2012.
+\gls{prism} is a framework for cache management with optimization algorithms targetting multiple performance goals.
+The original paper presents hit maximization, fairness and \gls{qos} goals.
 We will focus on the hit maximization algorithm , or miss minimization algorithm, as all other algorithms in this thesis also targets this goal.
-PriSM utilizes ATDs to estimate private cache performance for each of the cores.
-The ATD will keep track of total misses and hits.
-It will not track hits per cache way like the ATDs in UCP and PIPP.
-In addition to the ATDs, the algorithm requires three counters per core tracking hits, misses and number of blocks owned by the core in the actual cache.
-PriSM utilizes the same insertion and promotion policies as \gls{lru}, but the replacement policy is optimized based on the ATD and the optimization target.
+\gls{prism} utilizes \glspl{atd} to estimate private cache performance for each of the cores.
+The \gls{atd} will keep track of total misses and hits.
+It will not track hits per cache way like the \glspl{atd} in \gls{ucp} and \gls{pipp}.
+In addition to the \glspl{atd}, the algorithm requires three counters per core tracking hits, misses and number of blocks owned by the core in the actual cache.
+\gls{prism} utilizes the same insertion and promotion policies as \gls{lru}, but the replacement policy is optimized based on the \gls{atd} and the optimization target.
 
-The replacement algorithm of PriSM utilizes eviction probabilities, $E_i$ ($\sum{E_i} = 1$), assigned to each core when selecting a victim block.
+The replacement algorithm of \gls{prism} utilizes eviction probabilities, $E_i$ ($\sum{E_i} = 1$), assigned to each core when selecting a victim block.
 On replacement, a victim core is first selected by a random draw using the eviction probabilities.
 The \gls{lru} block owned by the victim core within the cache set is the eviction target.
 In the case where the selected target does not own a block in the set, all blocks owned by cores with $E_i > 0$ are considered, and the \gls{lru} of these is the eviction target.
 At set intervals, an optimization algorithm determines the eviction probability, $E_i$, for each core.
 The original paper recalculated $E_i$ values at every 10000 cache miss.
 
-The insertion and promotion policy of PriSM is equal to \gls{lru}.
-On insertion, a block is promoted to the MRU position, and on any subsequent accesses the block is again promoted to MRU unless it already has that position.
+The insertion and promotion policy of \gls{prism} is equal to \gls{lru}.
+On insertion, a block is promoted to the \gls{mru} position, and on any subsequent accesses the block is again promoted to \gls{mru} unless it already has that position.
 
 Selecting an eviction probability $E_i$ for each core is done by considering how the eviction probability will effect a core's usage of the cache.
 Consider an interval of W misses where each core contributes a fraction of the misses, $M_i$.
@@ -29,7 +29,7 @@ $T_i$ is known as the target allocation, and is expressed by $T_i = C_i + M_i * 
 Here $M_i * W$ is the number of misses caused by $core_i$ during the interval, which also is the number of blocks inserted by the core.
 $N$ is the total number of blocks in the cache, and the fraction $M_i * W/N$ equals the fraction of the cache claimed by $core_i$ during the interval.
 If the core has a non-zero eviction probability, then this formula extends into $T_i = C_i + (M_i - E_i) * W/N$.
-As noted, PriSM defines three optimization targets, each one of these is responsible for calculating the optimal $T_i$ that will fulfill the optimization target.
+As noted, \gls{prism} defines three optimization targets, each one of these is responsible for calculating the optimal $T_i$ that will fulfill the optimization target.
 Rearranging the above formula for $E_i$ yields: $E_i = (C_i - T_i) * N/W + M_i$.
 Algorithm~\ref{alg:algorithms:prism} shows how $T_i$ values are calculated for hit maximization.
 It is a relatively simple algorithm that will adjust the target occupancy based on the current occupancy and the potential for gaining more hits.
@@ -51,6 +51,6 @@ It is a relatively simple algorithm that will adjust the target occupancy based 
 \end{algorithmic}
 \end{algorithm}
 
-While we have presented PriSM based on \gls{lru} replacement, as done in the original paper, it should be noted that PriSM is not dependent on this underlying replacement algorithm.
+While we have presented \gls{prism} based on \gls{lru} replacement, as done in the original paper, it should be noted that \gls{prism} is not dependent on this underlying replacement algorithm.
 Any algorithm is usable, as long as it is augmented to prioritize the selected victim during replacement.
-The algorithm run on the ATDs has to be the same as the underlying algorithm in the PriSM implementation.
+The algorithm run on the \glspl{atd} has to be the same as the underlying algorithm in the \gls{prism} implementation.

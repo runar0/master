@@ -9,39 +9,39 @@ In our experiments, we have used barrier synchronization with a barrier width of
 Any inter-core interactions that occur between two successive barriers are not guaranteed to occur in the correct order, but events separated by a barrier will be simulated in the correct order.
 In other words, within a single barrier there is the possibility that all simulation threads run sequentially.
 For our work, this implies that there is a possibility that memory requests within a barrier is sent to the cache sorted by the core id, rather than by time.
-Because of this possibility we expect that changing the clock skew minimization barrier (CSMB) value could have a noticeable effect on our experimentation results.
+Because of this possibility we expect that changing the \gls{csmb} value could have a noticeable effect on our experimentation results.
 
 \begin{figure}[th]
     \centering
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=0.8\textwidth]{figures/results/speedup/csmb-stp-0128k-0100-csmb-4}
-        \caption{STP sensitivity to CSMB.}
+        \caption{STP sensitivity to \gls{csmb}.}
         \label{fig:results:csmb:stp}
     \end{subfigure}%
     \begin{subfigure}[b]{0.5\textwidth}
         \includegraphics[width=.8\textwidth]{figures/results/speedup/csmb-hms-0128k-0100-csmb-4}
-        \caption{HMS sensitivty to CSMB.}
+        \caption{HMS sensitivty to \gls{csmb}.}
         \label{fig:results:csmb:hms}
     \end{subfigure}
     \begin{subfigure}[b]{0.6\textwidth}
         \includegraphics[width=.8\textwidth]{figures/results/speedup/csmb-walltime-0128k-0100-csmb-4}
-        \caption{walltime sensitivity to CSMB.}
+        \caption{walltime sensitivity to \gls{csmb}.}
         \label{fig:results:csmb:walltime}
     \end{subfigure}
-    \caption{STP, HMS and walltime sensitivity to size of CSMB.}
+    \caption{STP, \gls{hms} and walltime sensitivity to size of \gls{csmb}.}
     \label{fig:results:csmb}
 \end{figure}
 
 
 We devised an experiment to investigate how much the choice of synchronization barrier width affects our results, and also how much it affects simulation time.
-In the experiment, we vary the value of the CSMB and compare average STP, HMS and MPKI values for all 4-core workloads.
-Figure~\ref{fig:results:csmb} contains plots for both STP and HMS relative to the default 100 cycle barrier.
+In the experiment, we vary the value of the \gls{csmb} and compare average \gls{stp}, \gls{hms} and \gls{mpki} values for all 4-core workloads.
+Figure~\ref{fig:results:csmb} contains plots for both \gls{stp} and \gls{hms} relative to the default 100 cycle barrier.
 From the graph, it is apparent that lowering the value below 100 cycles causes negligible variations in our average results. 
-The most noticeable is PIPP; that varies by about 0.2\% with a tighter barrier interval.
+The most noticeable is \gls{pipp}; that varies by about 0.2\% with a tighter barrier interval.
 Increasing the interval to 1000 cycles results in a more noticeable difference in measurements.
-For both HMS, shown in Figure~\ref{fig:results:csmb:hms}, and MPKI, not shown, the trends are the same.
+For both \gls{hms}, shown in Figure~\ref{fig:results:csmb:hms}, and \gls{mpki}, not shown, the trends are the same.
 
-The variance in simulation walltime when we vary CSMB values, as shown in Figure~\ref{fig:results:csmb:walltime}, is as expected. 
+The variance in simulation walltime when we vary \gls{csmb} values, as shown in Figure~\ref{fig:results:csmb:walltime}, is as expected. 
 When lowering the barrier interval we measure an increase in average walltime.
 Increasing the barrier value causes a slight decrease in walltime.
 We observe that the performance gain by increasing the barrier is small compared to the result variation. 

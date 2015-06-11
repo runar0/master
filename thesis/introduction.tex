@@ -121,7 +121,7 @@ Figure~\ref{fig:cmp_model} shows an example 16-core \gls{cmp} architecture with 
 For each cache level, both the size and access time increases.
 First level caches are the smallest while the third level caches are largest.
 To save area on \glspl{cmp}, and also to provide an easy mechanism for data sharing between cores, it is common to have at least one level of shared cache.
-In Figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared last-level cache (LLC), the L3 cache.
+In Figure~\ref{fig:cmp_model} each core has a private L1 and L2 cache, and a shared \gls{llc}, the L3 cache.
 While sharing cache can improve performance, and improve overall utilization, it also makes the memory system exposed to destructive interference that potentially can hurt the performance of all processing cores. 
 The cache management algorithm, running on the shared cache, may either ignore the effects of interference or it may attempt to reduce it by some form of prioritization.
 

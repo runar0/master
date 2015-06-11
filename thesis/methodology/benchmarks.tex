@@ -58,7 +58,7 @@ All later experiments utilize these traces in place of the actual benchmark exec
 
 To better understand our simulation results, we perform a benchmark classification experiment on each of the previously generated traces.
 This experiment is intended to detect various properties in each trace that may affect how they behave on our simulated architecture with various cache partitioning algorithms.
-We choose to categorize traces based on their sensitivity to the size of the LLC and the bandwidth of the bus connecting the LLC and the DRAM.
+We choose to categorize traces based on their sensitivity to the size of the \gls{llc} and the bandwidth of the bus connecting the \gls{llc} and the DRAM.
 
 The system model used in this experiment is as shown in Table~\ref{tbl:processor_model:properties} with the smallest of the L2 configurations, 128KB.
 The size of the L3 cache and the speed of the memory bus is varied as shown in Table~\ref{tbl:benchmarks_workloads:classification_model}.
@@ -76,9 +76,9 @@ By reducing the size of the L3 cache and the speed of the memory bus, we intend 
 \label{tbl:benchmarks_workloads:classification_model}
 \end{table}
 
-We simulate each benchmark for each combination of LLC size and memory bus bandwidth, in total 20 simulations per benchmark.
+We simulate each benchmark for each combination of \gls{llc} size and memory bus bandwidth, in total 20 simulations per benchmark.
 Then we evaluate how changes to the architecture affected the benchmarks performance using the reported IPC.
-The evaluation is done by organizing the IPC measurements in a 2d data table with LLC size on one axis and bandwidth on the other.
+The evaluation is done by organizing the IPC measurements in a 2d data table with \gls{llc} size on one axis and bandwidth on the other.
 Between each data pair along each axis, we calculate the performance reduction.
 Using the arithmetic average of reductions along each axis, we classify each benchmark as either sensitive or not sensitive to changes in that axis property.
 The standard deviation is used to increase the required limits on the average reduction if a benchmark shows high variability along an axis.

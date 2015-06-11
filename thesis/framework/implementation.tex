@@ -27,7 +27,7 @@ By modifying how the CacheSet operates, cache management algorithms can be imple
 The CacheSetInfo instance is available to all cache sets and enables implementation of schemes that share data between cache sets.
 
 In the original Sniper implementation, only the block tag requested is made available to the CacheSet. 
-While this is enough to implement simple schemes, such as \gls{lru} and TADIP, we need more information to implement cache partitioning schemes such as UCP.
+While this is enough to implement simple schemes, such as \gls{lru} and \gls{tadip}, we need more information to implement cache partitioning schemes such as \gls{ucp}.
 We have therefore modified Sniper by adding a data structure that is sent from the core when it initiates a memory request, all the way down to the cache set.
 This data structure allows us to pass arbitrary data from the core to the cache set, allowing for more complex schemes.
 
@@ -38,14 +38,14 @@ This data structure allows us to pass arbitrary data from the core to the cache 
 \label{fig:framework:implementation:algorithms}
 \end{figure}
 
-Of the schemes presented in Chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; \gls{lru}, TADIP-F, DRRIP-3, PriSM, UCP, and PIPP.
+Of the schemes presented in Chapter~\ref{cpt:algorithms}, five have been implemented and tested in our simulation framework; \gls{lru}, \gls{tadip-f}, \gls{drrip}-3, \gls{prism}, \gls{ucp}, and \gls{pipp}.
 Figure~\ref{fig:framework:implementation:algorithms} shows how the five implemented algorithms relate to each other, and the base CacheSet class.
-\gls{lru}, which is included in Sniper, and the two set dueling schemes TADIP and DRRIP, are all implemented as direct subclasses of the CacheSet class.
-Based on the CacheSet class we have also implemented a cache with support for ATDs, also known as shadow tags.
-By default, the ATDs do full sampling of the cache, but we made this configurable.
-PriSM, which requires access statistics for each core, is implemented on top of the ATD implementation.
-Also, we create a UMON implementation on top of the ATDs; this adds the utility calculating and block assigning functionality needed by both UCP and PIPP.
-UCP and PIPP, are then implemented on top of the UMON base class.
+\gls{lru}, which is included in Sniper, and the two set dueling schemes \gls{tadip} and \gls{drrip}, are all implemented as direct subclasses of the CacheSet class.
+Based on the CacheSet class we have also implemented a cache with support for \glspl{atd}, also known as shadow tags.
+By default, the \glspl{atd} do full sampling of the cache, but we made this configurable.
+\gls{prism}, which requires access statistics for each core, is implemented on top of the \gls{atd} implementation.
+Also, we create a \gls{umon} implementation on top of the \glspl{atd}; this adds the utility calculating and block assigning functionality needed by both \gls{ucp} and \gls{pipp}.
+\gls{ucp} and \gls{pipp}, are then implemented on top of the \gls{umon} base class.
 
 Our implementation using inheritance reduces the number of code lines required when we implement multiple algorithms that share several properties.
 By reducing the number of code lines required, we improve implementation time, and we reduce the chance of bug causing issues in our simulations.
